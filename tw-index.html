@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW"><head><!-- frame-runtime --><!-- /frame-runtime --><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+
+
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="台股指數">
+<meta name="theme-color" content="#f6f5f1" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<title>台股即時指數（手機版）</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --card:#ffffff; --ink:#1d1d1b; --sub:#6b6a64; --line:#e4e2db;
+    --up:#d0342c; --upbg:#fde8e6; --down:#1f8a4c; --downbg:#e3f4ea;
+    --accent:#c98a00; --accentbg:#fff6dc; --blue:#2f6fd6; --fx:#e07a10;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141413; --card:#1f1f1d; --ink:#f0efe9; --sub:#a3a29b; --line:#33332f;
+      --up:#ff6b60; --upbg:#3a1f1d; --down:#4cc985; --downbg:#16301f;
+      --accent:#f2b630; --accentbg:#3a2f12; --blue:#7aa7ff; --fx:#ffa24d;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:560px;margin:0 auto;padding:16px 14px 48px}
+  header{padding:8px 2px 12px}
+  header .date{font-size:13px;color:var(--sub);letter-spacing:.04em}
+  header h1{font-size:24px;margin:2px 0 6px;line-height:1.3}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;margin-right:6px}
+  .pill.live{background:var(--upbg);color:var(--up)}
+  .pill.close{background:var(--accentbg);color:var(--accent)}
+  .pill.snap{background:var(--line);color:var(--sub)}
+  nav{position:sticky;top:0;z-index:5;background:var(--bg);margin:0 -14px;padding:8px 14px;
+    display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  nav::-webkit-scrollbar{display:none}
+  nav a{flex:0 0 auto;font-size:14px;text-decoration:none;color:var(--ink);background:var(--card);
+    border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  section{margin-top:22px;scroll-margin-top:56px}
+  h2{font-size:18px;margin:0 0 10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .hero .name{font-size:14px;color:var(--sub)}
+  .hero .big{font-size:40px;font-weight:800;line-height:1.15;font-variant-numeric:tabular-nums;margin:2px 0}
+  .hero .chg{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+  .hero .meta{font-size:13px;color:var(--sub);margin-top:6px}
+  .hero.upc{background:var(--upbg);border-color:transparent}
+  .hero.downc{background:var(--downbg);border-color:transparent}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+  .stat .k{font-size:13px;color:var(--sub)}
+  .stat .v{font-size:20px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat .d{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .up{color:var(--up)} .down{color:var(--down)}
+  .chart svg{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--sub);margin-top:8px}
+  .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+  table{border-collapse:collapse;font-size:13.5px;font-variant-numeric:tabular-nums;white-space:nowrap;width:100%}
+  th,td{padding:8px 7px;text-align:right;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--sub);font-weight:600;background:var(--card)}
+  th:first-child,td:first-child{position:sticky;left:0;background:var(--card);text-align:left;font-weight:600;z-index:1}
+  tr:last-child td{border-bottom:none}
+  td.cu{color:var(--up);background:var(--upbg)} td.cd{color:var(--down);background:var(--downbg)}
+  td small{display:block;font-size:11px;font-weight:600}
+  .hint{font-size:12px;color:var(--sub);margin:6px 2px 0}
+  .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+  .lastChk{font-size:12px;color:var(--sub)}
+  button{font:inherit;font-size:15px;border-radius:10px;border:1px solid var(--line);background:var(--card);
+    color:var(--ink);padding:9px 14px;cursor:pointer}
+  button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+  button:disabled{opacity:.5}
+  .note p{margin:0 0 10px} .note p:last-child{margin:0}
+  .note b{display:block;margin-bottom:2px}
+  .src{font-size:13px;color:var(--sub)}
+  .src li{margin:2px 0}
+  .log{display:flex;flex-direction:column;gap:10px}
+  .log .when{font-size:13px;font-weight:700;color:var(--accent)}
+  .log .ver{font-size:12px;color:var(--sub);margin-left:6px;font-weight:400}
+  .log ul{margin:4px 0 0;padding-left:18px} .log li{margin:2px 0;font-size:14px}
+  .log .ref{font-size:13px;color:var(--sub);margin-top:4px}
+  details summary{cursor:pointer;color:var(--blue);font-size:14px;margin-top:6px}
+  footer{margin-top:28px;font-size:12px;color:var(--sub)}
+  footer a{color:var(--blue)}
+  .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);
+    padding:8px 14px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
+  .toast.on{opacity:1}
+</style>
+
+
+<div class="wrap">
+  <header>
+    <div class="date" id="today"></div>
+    <h1>台股即時指數</h1>
+    <div><span class="pill snap" id="modePill">載入中</span><span class="src" id="modeText">正在抓取最新指數…</span></div>
+  </header>
+
+  <nav>
+    <a href="#idx">指數</a><a href="#trend">走勢</a><a href="#chips">籌碼</a><a href="#src">資料來源</a><a href="#install">存到手機</a><a href="#iter">迭代紀錄</a>
+  </nav>
+
+  <section id="idx">
+    <h2>加權指數</h2>
+    <div class="card hero" id="hero">
+      <div class="name">發行量加權股價指數（TAIEX）</div>
+      <div class="big" id="price">—</div>
+      <div class="chg" id="chg"></div>
+      <div class="meta" id="asof"></div>
+    </div>
+    <div class="grid" id="ohlc"></div>
+    <div class="grid" id="otcBox"></div>
+    <div class="btns">
+      <button class="pri" id="refreshBtn" type="button">重新整理</button>
+      <span class="lastChk" id="lastChk" aria-live="polite"></span>
+    </div>
+    <div class="hint" id="autoHint"></div>
+  </section>
+
+  <section id="trend">
+    <h2>走勢</h2>
+    <div class="card chart" id="intraWrap" hidden="">
+      <div style="font-weight:700;margin-bottom:4px">盤中走勢（1 分鐘）</div>
+      <div id="intra"></div>
+      <div class="hint">虛線＝昨收；線條紅色代表目前高於昨收、綠色代表低於昨收</div>
+    </div>
+    <div class="card chart" id="dailyWrap" style="margin-top:10px" hidden="">
+      <div style="font-weight:700;margin-bottom:4px" id="dailyTitle">近期收盤</div>
+      <div id="daily"></div>
+      <div class="legend" id="dailyLegend">
+        <span><i style="background:var(--blue)"></i>加權收盤（左軸）</span>
+        <span><i style="background:var(--fx)"></i>美元兌新台幣（右軸，數字越大＝台幣越貶）</span>
+      </div>
+    </div>
+    <div class="card" id="trendEmpty" hidden=""><span class="src">目前沒有足夠的走勢資料（即時來源連線成功時才會顯示盤中線圖）。</span></div>
+  </section>
+
+  <section id="chips">
+    <h2>籌碼（近 10 日）</h2>
+    <div class="src" id="chipsMode" style="margin-bottom:8px"></div>
+    <div style="font-weight:700;margin:4px 2px 6px">三大法人買賣超（億元）</div>
+    <div class="tbl"><table id="instTbl"></table></div>
+    <div style="font-weight:700;margin:14px 2px 6px">融資融券餘額（上市）</div>
+    <div class="hint" id="marginLag" style="margin:-2px 2px 6px" hidden=""></div>
+    <div class="tbl"><table id="marginTbl"></table></div>
+    <div style="font-weight:700;margin:14px 2px 6px">外資台指期（大台）未平倉淨口數</div>
+    <div class="tbl"><table id="futTbl"></table></div>
+    <div class="hint">← 表格可左右滑動｜紅＝買超／增加、綠＝賣超／減少｜融資融券約晚上 9 點後才有當日資料</div>
+  </section>
+
+  <section id="src">
+    <h2>資料來源與更新方式</h2>
+    <div class="card note">
+      <p><b>即時模式</b>頁面打開時先抓鉅亨網的即時報價（加權、櫃買、盤中分鐘走勢、美元兌台幣），失敗再改用 FinMind 開放資料的日收盤。三大法人、融資融券、外資台指期淨口數來自 FinMind 開放資料（整理自證交所、期交所公告）。盤中（週一至週五 9:00–13:30）每 30 秒自動更新一次。</p>
+      <p><b>快照模式</b>若所在環境擋住對外連線（例如在 Claude 的網頁預覽裡），會改顯示排程每 2 小時寫入的最新快照，並標示快照時間。</p>
+      <p><b>小提醒</b>兩個來源都是第三方免費介面，偶爾會失敗；按「重新整理」再試一次即可。正式數據以證交所公告為準。</p>
+    </div>
+    <ul class="src" id="tryLog"></ul>
+  </section>
+
+  <section id="install">
+    <h2>存到手機</h2>
+    <div class="card note">
+      <p><b>方法一：下載這個網頁檔</b>按下方按鈕下載 <code>tw-index.html</code>。Android 用 Chrome 開啟即可，每次打開都會即時抓指數，不需要開 Claude。</p>
+      <p><b>方法二：加入主畫面</b>iPhone 用 Safari 開啟分享連結 → 分享 → 「加入主畫面」；Android 用 Chrome 選單 → 「加到主畫面」。</p>
+      <p><b>iPhone 注意</b>iPhone「檔案」App 的預覽不會執行網頁程式，下載的檔案請改用能開啟本機 HTML 的瀏覽器 App；或直接用方法二。</p>
+      <div class="btns"><button id="dlBtn" type="button">下載網頁檔（.html）</button><button id="copyBtn" type="button">複製網頁原始碼</button></div>
+      <div class="hint" id="dlHint"></div>
+    </div>
+  </section>
+
+  <section id="iter">
+    <h2>迭代紀錄</h2>
+    <div class="card log" id="logList"></div>
+  </section>
+
+  <footer>
+    <p id="ver"></p>
+    <p>本頁僅供參考，不構成投資建議；正式數據以臺灣證券交易所公告為準。</p>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- 排程每 2 小時更新的快照（即時抓取失敗時顯示） -->
+<script id="snapshot" type="application/json" data-keep="">{"updated":"2026-11-20 18:55","tradeDate":"2026-11-20","status":"收盤","taiex":{"close":36033.29,"prev":38426.89,"open":37646.13,"high":37646.13,"low":35738.68,"turnover":8773.5},"otc":{"close":263.31,"prev":285.33},"recent":[{"d":"2026-10-20","c":46292.93,"fx":32.617},{"d":"2026-10-21","c":46887.77,"fx":32.488},{"d":"2026-10-22","c":46041.43,"fx":32.508},{"d":"2026-10-27","c":46096.23,"fx":32.452},{"d":"2026-10-28","c":47035.58,"fx":32.418},{"d":"2026-10-29","c":46368.33,"fx":32.492},{"d":"2026-10-30","c":45211.83,"fx":32.478},{"d":"2026-11-02","c":44920.14,"fx":32.592},{"d":"2026-11-03","c":43307.54,"fx":32.76},{"d":"2026-11-04","c":42948.91,"fx":32.821},{"d":"2026-11-05","c":41574.72,"fx":32.876},{"d":"2026-11-06","c":39701.64,"fx":32.768},{"d":"2026-11-09","c":41661.7,"fx":32.882},{"d":"2026-11-10","c":42711.92,"fx":32.865},{"d":"2026-11-11","c":44257.15,"fx":32.86},{"d":"2026-11-12","c":43091.87,"fx":32.889},{"d":"2026-11-13","c":43675.12,"fx":32.838},{"d":"2026-11-16","c":41040.08,"fx":32.886},{"d":"2026-11-17","c":40092.11,"fx":32.85},{"d":"2026-11-18","c":40194.91,"fx":32.947},{"d":"2026-11-19","c":38426.89,"fx":32.942},{"d":"2026-11-20","c":36033.29,"fx":32.937}],"source":"中央社 2026/11/20 收盤報導；鉅亨網日線與匯率；FinMind 開放資料（三大法人、融資融券、外資台指期）","chips":{"inst":[{"d":"2026-11-09","f":-900.56,"t":313.12,"p":-312.19,"s":-899.63},{"d":"2026-11-10","f":-341.17,"t":398.91,"p":-175.36,"s":-117.62},{"d":"2026-11-11","f":-7.66,"t":185.85,"p":62.57,"s":240.76},{"d":"2026-11-12","f":-6.85,"t":125.68,"p":-65.41,"s":53.42},{"d":"2026-11-13","f":288.37,"t":95.39,"p":68.92,"s":452.68},{"d":"2026-11-16","f":-701.89,"t":-183.02,"p":-259.03,"s":-1143.94},{"d":"2026-11-17","f":-380.94,"t":-38.21,"p":-156.96,"s":-576.11},{"d":"2026-11-18","f":-765.64,"t":166.12,"p":-42.01,"s":-641.53},{"d":"2026-11-19","f":-243.12,"t":43.9,"p":-233.03,"s":-432.25},{"d":"2026-11-20","f":-94.13,"t":-87.49,"p":-340.84,"s":-522.46}],"margin":[{"d":"2026-11-06","m":5340.53,"s":242766},{"d":"2026-11-09","m":5399.16,"s":222076},{"d":"2026-11-10","m":5366.79,"s":211131},{"d":"2026-11-11","m":5411.58,"s":209019},{"d":"2026-11-12","m":5334.75,"s":210522},{"d":"2026-11-13","m":5365.99,"s":208773},{"d":"2026-11-16","m":5244.98,"s":217384},{"d":"2026-11-17","m":5087.21,"s":207959},{"d":"2026-11-18","m":5080.27,"s":193544},{"d":"2026-11-19","m":4843.68,"s":209819}],"fut":[{"d":"2026-11-09","n":-101771},{"d":"2026-11-10","n":-103473},{"d":"2026-11-11","n":-104271},{"d":"2026-11-12","n":-99573},{"d":"2026-11-13","n":-100870},{"d":"2026-11-16","n":-96787},{"d":"2026-11-17","n":-97896},{"d":"2026-11-18","n":-99438},{"d":"2026-11-19","n":-99219},{"d":"2026-11-20","n":-97863}]}}</script>
+
+<!-- 迭代紀錄（新的放最前面） -->
+<script id="iterlog" type="application/json" data-keep="">[
+ {
+  "time": "台北時間 2026-11-20 18:56",
+  "version": "v1.4",
+  "items": [
+   "「重新整理」按鈕旁新增「上次檢查 HH:MM」與結果（即時／未連上／此環境不能連外），每次自動或手動更新後刷新，方便確認頁面是否還在更新",
+   "快照：11/20 收盤數值（加權 36,033.29、櫃買 263.31、三大法人合計賣超 522.46 億元、外資台指期淨空 97,863 口）沿用上次已核對的資料；本次搜尋未找到新的第二來源，未更動數字，只更新快照時間為 18:55",
+   "融資融券 11/20 尚未公布（約晚上 9 點後），保留 11/19 值（融資 4,843.68 億元、融券 209,819 張）",
+   "功能測試新增 3 項（上次檢查標示 × 三種情境），三種情境共 89 項全數通過；截圖確認即時與斷線畫面正常"
+  ],
+  "reflection": "融資融券 11/20 與成交金額 8,773.5 億元仍待第二來源核對，下次排程（晚上 9 點後）補上。下次優先：籌碼表在 390px 寬度時第一欄固定後的可讀性、檔尾多餘的 </body></html> 清理。"
+ },
+ {
+  "time": "台北時間 2026-11-20 16:58",
+  "version": "v1.3",
+  "items": [
+   "融資融券表上方新增提示：當融資融券比三大法人少一天時，標示「最新為 11/19；11/20 的融資融券約晚上 9 點後公布」，避免誤以為資料漏抓",
+   "指數卡片在快照模式改為「交易日 2026-11-20（收盤）｜快照時間 2026-11-20 16:55」，原本「資料時間 收盤」語意不清",
+   "深色模式加上對應的 theme-color（手機瀏覽器頂部列不再是淺色）",
+   "快照：核對中央社、Yahoo 新聞報導，11/20 加權收 36,033.29（−2,393.60）、三大法人合計賣超 522.46 億元，與快照一致，只更新快照時間為 16:55；融資融券 11/20 尚未公布，保留 11/19 值",
+   "功能測試新增 6 項（融資融券落後標示、指數卡片時間標示 × 三種情境），共 86 項全數通過"
+  ],
+  "reflection": "融資融券 11/20 數值需等晚上 9 點後的排程補上；成交金額 8,773.5 億元本次未再找到第二來源核對。下次優先：重新整理按鈕旁顯示「上次更新 HH:MM」、籌碼表在 390px 寬度時第一欄固定後的可讀性再檢查。"
+ },
+ {
+  "time": "2026-11-20 16:08",
+  "version": "v1.2",
+  "items": [
+   "問題：手機在 Claude App 打開時顯示「即時連線失敗」。查證：資料來源本身正常（從一般瀏覽器與本機檔案環境實測都能連），是 Claude App 的安全政策禁止網頁連外",
+   "改為自動偵測這種環境：不再顯示「連線失敗」，改說明「在 Claude App 裡不能連外，顯示排程快照」並附快照時間與距今多久",
+   "真的斷線時另外提示「暫時連不上，可按重新整理再試」",
+   "功能測試新增「模擬 Claude App 禁止連外」情境，三種情境共 80 項全數通過"
+  ],
+  "reflection": "Claude App 內只能看快照，最多落後 2 小時；iPhone 要即時，需要把網頁放到公開網址（例如 GitHub Pages）。"
+ },
+ {
+  "time": "2026-11-20 16:05",
+  "version": "v1.1",
+  "items": [
+   "近一個月收盤圖加上副座標：美元兌新台幣（右軸），附圖例",
+   "新增「籌碼（近 10 日）」：三大法人買賣超（外資／投信／自營商／合計）、上市融資融券餘額與單日增減、外資台指期（大台）未平倉淨口數與增減",
+   "籌碼與匯率在一般瀏覽器即時抓（FinMind、鉅亨網，已實測可直接連線）；抓不到時顯示快照",
+   "新增自動化功能測試（51 項）：重新整理、導覽列 6 個按鈕、下載（含下載後的檔案能否開啟執行）、複製原始碼、即時與斷線兩種情境、手機寬度不溢出，全部通過",
+   "快照補上 10/20 起的匯率與近 10 日籌碼資料"
+  ],
+  "reflection": "融資融券當日資料要晚上才公布，盤中會缺最新一天；FinMind 免費額度有限，籌碼只在開頁時抓、不跟著 30 秒更新。之後可評估加入 0050、00878 等個股報價。"
+ },
+ {
+  "time": "2026-11-20 15:55",
+  "version": "v1.0",
+  "items": [
+   "建立第一版：手機友善排版（沿用台股盤前分析的卡片、膠囊導覽列、紅漲綠跌、深色模式）",
+   "實測資料來源：證交所 MIS、Yahoo、證交所 OpenAPI 從瀏覽器直接抓都被擋（CORS），公開轉接服務也全數失敗；改用實測可直接抓的鉅亨網即時報價為主、FinMind 日收盤為備援",
+   "顯示加權指數、漲跌、開高低昨收、櫃買指數、盤中 1 分鐘走勢與近一個月收盤",
+   "盤中每 30 秒自動更新；切回此頁時立即更新",
+   "抓不到即時資料時改顯示排程快照，並標示快照時間",
+   "新增下載網頁檔與複製原始碼，讓手機不用開 Claude 也能看",
+   "新增本迭代紀錄區塊（每 2 小時排程檢查後追加）"
+  ],
+  "reflection": "Claude 的網頁預覽會擋住對外連線，所以分享連結裡看到的是排程快照；下載的網頁檔在一般瀏覽器開啟才會即時抓。iPhone 若要全程即時，可考慮放到 GitHub Pages 等公開靜態空間。"
+ }
+]</script>
+
+<script data-keep="">
+(function(){
+  // 先擷取乾淨的原始碼（渲染前），供下載使用
+  var SOURCE = (function(){
+    try{
+      var doc = document.documentElement.cloneNode(true);
+      Array.prototype.slice.call(doc.querySelectorAll('script:not([data-keep])')).forEach(function(s){ s.remove(); });
+      return '<!DOCTYPE html>\n' + doc.outerHTML;
+    }catch(e){ return ''; }
+  })();
+
+  var $ = function(id){ return document.getElementById(id); };
+  var SNAP = JSON.parse($('snapshot').textContent);
+  var LOG = JSON.parse($('iterlog').textContent);
+  var CNYES='https://ws.api.cnyes.com/ws/api/v1/';
+  var timer = null, busy = false, tries = [];
+  // 偵測「此環境禁止連外」（例如 Claude App／網頁預覽的安全政策），這時不是網路壞掉
+  var BLOCKED = false;
+  document.addEventListener('securitypolicyviolation', function(e){ if(/connect/.test(e.effectiveDirective||e.violatedDirective||'')) BLOCKED = true; });
+  function snapAge(){
+    var t=Date.parse(SNAP.updated.replace(' ','T')+':00+08:00'); if(isNaN(t)) return '';
+    var m=Math.round((Date.now()-t)/60000); if(m<1) return '剛剛';
+    if(m<60) return m+' 分鐘前'; if(m<1440) return Math.floor(m/60)+' 小時前'; return Math.floor(m/1440)+' 天前';
+  }
+  function snapMsg(){
+    var age=snapAge();
+    return BLOCKED
+      ? '在 Claude App／預覽裡不能連外，顯示排程快照（'+SNAP.updated+(age?'，'+age:'')+'，每 2 小時自動更新）。要看即時數字請用下載的網頁檔。'
+      : '暫時連不上資料來源，先顯示排程快照（'+SNAP.updated+(age?'，'+age:'')+'）。';
+  }
+
+  function fmt(n, d){ if(n==null||isNaN(n)) return '—'; return Number(n).toLocaleString('zh-TW',{minimumFractionDigits:d==null?2:d,maximumFractionDigits:d==null?2:d}); }
+  function sign(n){ return n>0?'+':(n<0?'−':''); }
+  function cls(n){ return n>0?'up':(n<0?'down':''); }
+  function num(x){ if(x==null) return null; var v=parseFloat(String(x).replace(/,/g,'')); return isNaN(v)?null:v; }
+  function toast(t){ var el=$('toast'); el.textContent=t; el.classList.add('on'); setTimeout(function(){el.classList.remove('on');},1800); }
+  function twFmt(sec){ return new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(sec*1000)).replace(',',''); }
+
+  function twNow(){
+    var p = new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',weekday:'short',hour12:false}).formatToParts(new Date());
+    var o={}; p.forEach(function(x){o[x.type]=x.value;});
+    return {date:o.year+'-'+o.month+'-'+o.day, hm:(o.hour==='24'?'00':o.hour)+':'+o.minute, wd:o.weekday, mins:(+o.hour%24)*60+(+o.minute)};
+  }
+  function inSession(){ var t=twNow(); return ['Sat','Sun'].indexOf(t.wd)<0 && t.mins>=540 && t.mins<=810; }
+
+  function getJSON(url, ms){
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    var id = setTimeout(function(){ ctl && ctl.abort(); }, ms||8000);
+    return fetch(url, {signal: ctl?ctl.signal:undefined, cache:'no-store'})
+      .then(function(r){ clearTimeout(id); if(!r.ok) throw new Error('HTTP '+r.status); return r.json(); })
+      .catch(function(e){ clearTimeout(id); throw e; });
+  }
+
+  // 來源 1：鉅亨網報價（加權＋櫃買，盤中即時）
+  function fromCnyes(){
+    return getJSON(CNYES+'quote/quotes/TWS:TSE01:INDEX,TWS:OTC01:INDEX?_='+Date.now()).then(function(j){
+      var arr=j.data||[], t=arr.filter(function(a){return a['0']==='TWS:TSE01:INDEX';})[0], o=arr.filter(function(a){return a['0']==='TWS:OTC01:INDEX';})[0];
+      if(!t || num(t['6'])==null || num(t['21'])==null) throw new Error('bad data');
+      var ts=twFmt(t['200007']);
+      return {src:'鉅亨網即時報價', tradeDate:ts.slice(0,10), time:ts.slice(11),
+        taiex:{close:num(t['6']), prev:num(t['21']), open:num(t['19']), high:num(t['12']), low:num(t['13'])},
+        otc: o ? {close:num(o['6']), prev:num(o['21'])} : null};
+    });
+  }
+  // 來源 2：FinMind 開放資料（日收盤，備援）
+  function fromFinMind(){
+    var d=new Date(Date.now()-14*864e5).toISOString().slice(0,10);
+    return getJSON('https://api.finmindtrade.com/api/v4/data?dataset=TaiwanStockPrice&data_id=TAIEX&start_date='+d).then(function(j){
+      var rows=j.data||[]; if(rows.length<2) throw new Error('few rows');
+      var a=rows[rows.length-1], b=rows[rows.length-2];
+      return {src:'FinMind 開放資料（日收盤）', tradeDate:a.date, time:'收盤',
+        taiex:{close:a.close, prev:b.close, open:a.open, high:a.max, low:a.min}, otc:null,
+        daily:rows.map(function(r){return {d:r.date,c:r.close};})};
+    });
+  }
+  function cnyesIntra(){
+    return getJSON(CNYES+'charting/history?resolution=1&symbol=TWS:TSE01:INDEX&_='+Date.now()).then(function(j){
+      var t=j.data.t||[], c=j.data.c||[], pts=[];
+      for(var i=t.length-1;i>=0;i--){ if(c[i]!=null) pts.push([t[i],c[i]]); }
+      return pts;
+    });
+  }
+  function cnyesDaily(){
+    return getJSON(CNYES+'charting/history?resolution=D&symbol=TWS:TSE01:INDEX').then(function(j){
+      var t=j.data.t||[], c=j.data.c||[], out=[];
+      for(var i=Math.min(21,t.length-1);i>=0;i--){ if(c[i]!=null) out.push({d:twFmt(t[i]).slice(0,10), c:c[i]}); }
+      if(out.length<3) throw new Error('few');
+      return cnyesFx().then(function(fx){ out.forEach(function(r){ if(fx[r.d]!=null) r.fx=fx[r.d]; }); return out; }, function(){ return out; });
+    });
+  }
+  function cnyesFx(){
+    return getJSON(CNYES+'charting/history?resolution=D&symbol=FX:USDTWD:FOREX').then(function(j){
+      var t=j.data.t||[], c=j.data.c||[], m={};
+      for(var i=0;i<Math.min(45,t.length);i++){ if(c[i]!=null) m[twFmt(t[i]).slice(0,10)]=c[i]; }
+      return m;
+    });
+  }
+
+  // 籌碼：FinMind（三大法人、融資融券、外資台指期）
+  function fm(ds, extra){
+    var d=new Date(Date.now()-30*864e5).toISOString().slice(0,10);
+    return getJSON('https://api.finmindtrade.com/api/v4/data?dataset='+ds+'&start_date='+d+(extra||''), 10000).then(function(j){
+      if(!j.data || !j.data.length) throw new Error(j.msg||'empty'); return j.data; });
+  }
+  function fetchChips(){
+    var inst=fm('TaiwanStockTotalInstitutionalInvestors').then(function(rows){
+      var I={}; rows.forEach(function(r){ (I[r.date]=I[r.date]||{})[r.name]=(r.buy-r.sell)/1e8; });
+      return Object.keys(I).sort().slice(-10).map(function(d){ var x=I[d];
+        return {d:d, f:(x.Foreign_Investor||0)+(x.Foreign_Dealer_Self||0), t:x.Investment_Trust||0, p:(x.Dealer_self||0)+(x.Dealer_Hedging||0), s:x.total||0}; });
+    });
+    var margin=fm('TaiwanStockTotalMarginPurchaseShortSale').then(function(rows){
+      var M={}; rows.forEach(function(r){ (M[r.date]=M[r.date]||{})[r.name]=r.TodayBalance; });
+      return Object.keys(M).sort().filter(function(d){return M[d].MarginPurchaseMoney!=null;}).slice(-11).map(function(d){ return {d:d, m:M[d].MarginPurchaseMoney/1e8, s:M[d].ShortSale}; });
+    });
+    var fut=fm('TaiwanFuturesInstitutionalInvestors','&data_id=TX').then(function(rows){
+      return rows.filter(function(r){return r.institutional_investors==='外資';}).slice(-11).map(function(r){
+        return {d:r.date, n:r.long_open_interest_balance_volume-r.short_open_interest_balance_volume}; });
+    });
+    return Promise.all([inst.catch(function(){return null;}), margin.catch(function(){return null;}), fut.catch(function(){return null;})]);
+  }
+  function renderChips(c, mode){
+    var S=SNAP.chips||{};
+    var inst=c&&c[0]||S.inst, margin=c&&c[1]||S.margin, fut=c&&c[2]||S.fut;
+    var liveCount=c?c.filter(function(x){return x;}).length:0;
+    $('chipsMode').textContent = liveCount===3 ? '即時抓取（FinMind 開放資料）' : (liveCount>0 ? '部分即時、部分為快照（'+SNAP.updated+'）' : '排程快照（'+SNAP.updated+(snapAge()?'，'+snapAge():'')+'）');
+    function md(d){ return d.slice(5).replace('-','/'); }
+    // 融資融券晚上才公布：比三大法人少一天時明確標示
+    var iLast=inst&&inst.length?inst[inst.length-1].d:'', mLast=margin&&margin.length?margin[margin.length-1].d:'';
+    $('marginLag').textContent = (iLast && mLast && mLast<iLast) ? '最新為 '+md(mLast)+'；'+md(iLast)+' 的融資融券約晚上 9 點後公布' : '';
+    $('marginLag').hidden = !$('marginLag').textContent;
+    function cell(v, dig, unit){ if(v==null||isNaN(v)) return '<td>—</td>'; var c=v>0?'cu':(v<0?'cd':''); return '<td class="'+c+'">'+(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),dig)+(unit||'')+'</td>'; }
+    // 三大法人：新到舊
+    var ir=(inst||[]).slice().reverse();
+    var sum={f:0,t:0,p:0,s:0}; ir.forEach(function(r){sum.f+=r.f;sum.t+=r.t;sum.p+=r.p;sum.s+=r.s;});
+    $('instTbl').innerHTML='<tr><th>日期</th><th>外資</th><th>投信</th><th>自營商</th><th>合計</th></tr>'+
+      ir.map(function(r){ return '<tr><td>'+md(r.d)+'</td>'+cell(r.f,1)+cell(r.t,1)+cell(r.p,1)+cell(r.s,1)+'</tr>'; }).join('')+
+      (ir.length?'<tr><td>合計</td>'+cell(sum.f,1)+cell(sum.t,1)+cell(sum.p,1)+cell(sum.s,1)+'</tr>':'');
+    // 融資融券：需要前一日算增減
+    var mr=(margin||[]);
+    var mrows=[]; for(var i=mr.length-1;i>=Math.max(0,mr.length-10);i--){ var p=mr[i-1]; mrows.push({d:mr[i].d,m:mr[i].m,dm:p?mr[i].m-p.m:null,s:mr[i].s,ds:p?mr[i].s-p.s:null}); }
+    $('marginTbl').innerHTML='<tr><th>日期</th><th>融資餘額(億)</th><th>增減(億)</th><th>融券(張)</th><th>增減(張)</th></tr>'+
+      mrows.map(function(r){ return '<tr><td>'+md(r.d)+'</td><td>'+fmt(r.m)+'</td>'+cell(r.dm,2)+'<td>'+fmt(r.s,0)+'</td>'+cell(r.ds,0)+'</tr>'; }).join('');
+    var fr=(fut||[]);
+    var frows=[]; for(var k=fr.length-1;k>=Math.max(0,fr.length-10);k--){ var q=fr[k-1]; frows.push({d:fr[k].d,n:fr[k].n,dn:q?fr[k].n-q.n:null}); }
+    $('futTbl').innerHTML='<tr><th>日期</th><th>淨口數</th><th>增減</th></tr>'+
+      frows.map(function(r){ return '<tr><td>'+md(r.d)+'</td>'+cell(r.n,0,' 口')+cell(r.dn,0)+'</tr>'; }).join('');
+  }
+  function loadChips(){
+    $('chipsMode').textContent='籌碼資料載入中…';
+    return fetchChips().then(function(c){
+      var ok=c.filter(function(x){return x;}).length;
+      note('FinMind 籌碼資料', ok===3, ok===3?'':(ok?'部分成功':'無法連線')); renderTries();
+      renderChips(ok?c:null);
+    }, function(){ renderChips(null); });
+  }
+
+  function note(name, ok, msg){ tries.push({name:name, ok:ok, msg:msg}); }
+
+  function render(data, mode){
+    var t=data.taiex, ch=(t.close!=null&&t.prev!=null)?t.close-t.prev:null, pct=ch!=null?ch/t.prev*100:null;
+    $('price').textContent=fmt(t.close);
+    $('price').className='big '+cls(ch);
+    $('chg').innerHTML = ch==null?'' : '<span class="'+cls(ch)+'">'+(ch>0?'▲ ':ch<0?'▼ ':'')+sign(ch)+fmt(Math.abs(ch))+'（'+sign(pct)+fmt(Math.abs(pct))+'%）</span>';
+    $('hero').className='card hero '+(ch>0?'upc':ch<0?'downc':'');
+    var now=twNow(), isToday=data.tradeDate===now.date, live=mode==='live';
+    var label, pc;
+    if(!live){ label='快照'; pc='snap'; }
+    else if(isToday && inSession()){ label='盤中即時'; pc='live'; }
+    else { label=isToday?'今日收盤':'最近收盤'; pc='close'; }
+    $('modePill').textContent=label; $('modePill').className='pill '+pc;
+    $('modeText').textContent = live ? ('來源：'+data.src) : snapMsg();
+    $('asof').textContent = live
+      ? '交易日 '+data.tradeDate+(data.time?'　資料時間 '+data.time:'')+'　｜　抓取於 '+now.hm
+      : '交易日 '+data.tradeDate+(data.time?'（'+data.time+'）':'')+'　｜　快照時間 '+SNAP.updated;
+    var cells=[['開盤',t.open],['最高',t.high],['最低',t.low],['昨收',t.prev]];
+    if(t.turnover) cells.push(['成交金額（億元）',t.turnover]);
+    $('ohlc').innerHTML=cells.filter(function(c){return c[1]!=null;}).map(function(c){
+      return '<div class="card stat"><div class="k">'+c[0]+'</div><div class="v">'+fmt(c[1])+'</div></div>';}).join('');
+    var o=data.otc;
+    if(o && o.close!=null && o.prev!=null){
+      var oc=o.close-o.prev;
+      $('otcBox').innerHTML='<div class="card stat" style="grid-column:1/-1"><div class="k">櫃買指數</div><div class="v">'+fmt(o.close)+'</div><div class="d '+cls(oc)+'">'+sign(oc)+fmt(Math.abs(oc))+'（'+sign(oc)+fmt(Math.abs(oc/o.prev*100))+'%）</div></div>';
+    } else $('otcBox').innerHTML='';
+    $('autoHint').textContent = live && inSession() ? '盤中每 30 秒自動更新' : (live ? '非交易時段，顯示最近一次收盤' : (BLOCKED ? '快照每 2 小時由排程更新' : '目前為快照；按「重新整理」可再試即時連線'));
+    renderTries();
+  }
+
+  function renderTries(){
+    $('tryLog').innerHTML = tries.map(function(x){ return '<li>'+(x.ok?'✅ ':'⚠️ ')+x.name+(x.msg?'：'+x.msg:'')+'</li>'; }).join('');
+  }
+
+  function line(points, opts){
+    // points: [[x,y]...]
+    var W=520,H=200,P={l:52,r:opts.y2?46:10,t:10,b:24};
+    var ys=points.map(function(p){return p[1];}); if(opts.base!=null) ys.push(opts.base);
+    var mn=Math.min.apply(null,ys), mx=Math.max.apply(null,ys); var pad=(mx-mn)*0.08||10; mn-=pad; mx+=pad;
+    var x0=points[0][0], x1=points[points.length-1][0]; if(opts.xMin!=null){x0=opts.xMin;x1=opts.xMax;}
+    var X=function(x){return P.l+(x-x0)/((x1-x0)||1)*(W-P.l-P.r);}, Y=function(y){return P.t+(mx-y)/((mx-mn)||1)*(H-P.t-P.b);};
+    var d=points.map(function(p,i){return (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1);}).join(' ');
+    var last=points[points.length-1][1], col=opts.base!=null?(last>=opts.base?'var(--up)':'var(--down)'):'var(--blue)';
+    var g='';
+    for(var i=0;i<=3;i++){ var v=mn+(mx-mn)*i/3; g+='<line x1="'+P.l+'" x2="'+(W-P.r)+'" y1="'+Y(v)+'" y2="'+Y(v)+'" stroke="var(--line)"/><text x="'+(P.l-6)+'" y="'+(Y(v)+4)+'" font-size="11" text-anchor="end" fill="var(--sub)">'+Math.round(v).toLocaleString('zh-TW')+'</text>'; }
+    if(opts.base!=null) g+='<line x1="'+P.l+'" x2="'+(W-P.r)+'" y1="'+Y(opts.base)+'" y2="'+Y(opts.base)+'" stroke="var(--sub)" stroke-dasharray="4 4"/>';
+    (opts.xLabels||[]).forEach(function(l,i,a){ var an=i===0?'start':(i===a.length-1?'end':'middle'); g+='<text x="'+X(l[0])+'" y="'+(H-6)+'" font-size="11" text-anchor="'+an+'" fill="var(--sub)">'+l[1]+'</text>'; });
+    var sec='';
+    if(opts.y2){
+      var y2=opts.y2.map(function(p){return p[1];}), a=Math.min.apply(null,y2), b=Math.max.apply(null,y2), pd=(b-a)*0.1||0.05; a-=pd; b+=pd;
+      var Y2=function(y){return P.t+(b-y)/((b-a)||1)*(H-P.t-P.b);};
+      for(var k=0;k<=3;k++){ var w=a+(b-a)*k/3; sec+='<text x="'+(W-P.r+6)+'" y="'+(Y2(w)+4)+'" font-size="11" text-anchor="start" fill="var(--fx)">'+w.toFixed(2)+'</text>'; }
+      sec+='<path d="'+opts.y2.map(function(p,i){return (i?'L':'M')+X(p[0]).toFixed(1)+' '+Y2(p[1]).toFixed(1);}).join(' ')+'" fill="none" stroke="var(--fx)" stroke-width="1.8"/>';
+    }
+    var dots = opts.dots ? points.map(function(p){return '<circle cx="'+X(p[0])+'" cy="'+Y(p[1])+'" r="2.5" fill="'+col+'"/>';}).join('') : '';
+    return '<svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="走勢圖">'+g+sec+'<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="2.2"/>'+dots+'</svg>';
+  }
+
+  function renderIntra(pts, prev){
+    if(!pts || pts.length<3){ $('intraWrap').hidden=true; return checkEmpty(); }
+    var day=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date(pts[0][0]*1000));
+    var base=Date.parse(day+'T09:00:00+08:00')/1000, end=Date.parse(day+'T13:30:00+08:00')/1000;
+    var labels=[[base,'09:00'],[base+3600*2,'11:00'],[end,'13:30']];
+    $('intra').innerHTML=line(pts,{base:prev,xMin:base,xMax:end,xLabels:labels});
+    $('intraWrap').hidden=false; checkEmpty();
+  }
+  function renderDaily(rows, title){
+    if(!rows || rows.length<3){ $('dailyWrap').hidden=true; return checkEmpty(); }
+    var pts=rows.map(function(r,i){return [i,r.c];});
+    var fxp=[]; rows.forEach(function(r,i){ if(r.fx!=null) fxp.push([i,r.fx]); });
+    var n=rows.length, labels=[[0,rows[0].d.slice(5)],[Math.floor((n-1)/2),rows[Math.floor((n-1)/2)].d.slice(5)],[n-1,rows[n-1].d.slice(5)]];
+    $('daily').innerHTML=line(pts,{xLabels:labels,dots:n<=12,y2:fxp.length>=2?fxp:null});
+    $('dailyLegend').children[1].style.display = fxp.length>=2 ? '' : 'none';
+    $('dailyTitle').textContent=title; $('dailyWrap').hidden=false; checkEmpty();
+  }
+  function checkEmpty(){ $('trendEmpty').hidden = !($('intraWrap').hidden && $('dailyWrap').hidden); }
+
+  function load(manual){
+    if(busy) return; busy=true; tries=[];
+    $('refreshBtn').disabled=true; $('refreshBtn').textContent='更新中…';
+    var live=null;
+    fromCnyes().then(function(d){ note('鉅亨網即時報價',true); return d; }, function(){
+      note('鉅亨網即時報價',false,'無法連線');
+      return fromFinMind().then(function(d){ note('FinMind 開放資料',true); return d; }, function(){
+        note('FinMind 開放資料',false,'無法連線'); return null; });
+    }).then(function(d){ return d ? d : new Promise(function(r){ setTimeout(function(){ r(null); }, 80); }); }).then(function(d){
+      if(!d && BLOCKED) tries.forEach(function(x){ if(!x.ok) x.msg='此環境禁止連外'; });
+      live=d;
+      if(d){ render(d,'live'); if(manual) toast('已更新'); }
+      else { render({src:'快照',tradeDate:SNAP.tradeDate,time:SNAP.status,taiex:SNAP.taiex,otc:SNAP.otc},'snap'); renderIntra(null); renderDaily(SNAP.recent,'近一個月收盤（快照）'); if(manual) toast(BLOCKED?'此環境不能連外，顯示快照':'連不上資料來源，顯示快照'); }
+      if(d){
+        cnyesIntra().then(function(p){ renderIntra(p, d.taiex.prev); }, function(){ renderIntra(null); });
+        cnyesDaily().then(function(r){ renderDaily(r,'近一個月收盤'); }, function(){ renderDaily(d.daily||SNAP.recent, d.daily?'近期收盤':'近一個月收盤（快照）'); });
+      }
+    }).then(function(){
+      busy=false; $('refreshBtn').disabled=false; $('refreshBtn').textContent='重新整理';
+      $('lastChk').textContent='上次檢查 '+twNow().hm+(live?'（即時）':(BLOCKED?'（此環境不能連外，顯示快照）':'（未連上，顯示快照）'));
+      clearTimeout(timer);
+      if(live && inSession()) timer=setTimeout(function(){ load(false); }, 30000);
+    });
+  }
+
+  function renderLog(){
+    var html=LOG.map(function(e,i){
+      var body='<div class="when">'+e.time+'<span class="ver">'+(e.version||'')+'</span></div><ul>'+e.items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(e.reflection?'<div class="ref">反思：'+e.reflection+'</div>':'');
+      return '<div>'+body+'</div>';
+    });
+    var shown=html.slice(0,3).join('<hr style="border:none;border-top:1px solid var(--line);margin:0">');
+    if(html.length>3) shown+='<details><summary>顯示較早的 '+(html.length-3)+' 筆</summary>'+html.slice(3).join('<hr style="border:none;border-top:1px solid var(--line);margin:8px 0">')+'</details>';
+    $('logList').innerHTML=shown;
+    $('ver').textContent='版本 '+(LOG[0]&&LOG[0].version||'')+'｜最後迭代 '+(LOG[0]&&LOG[0].time||'').replace(/^台北時間\s*/,'')+'（台北時間）｜快照 '+SNAP.updated;
+  }
+
+  // 下載
+  function setupDownload(){
+    $('copyBtn').onclick=function(){
+      if(!navigator.clipboard){ $('dlHint').textContent='此環境不支援複製'; return; }
+      navigator.clipboard.writeText(SOURCE).then(function(){ toast('已複製原始碼'); }, function(){ $('dlHint').textContent='複製被瀏覽器拒絕'; });
+    };
+    $('dlBtn').onclick=function(){
+      var cap = window.__dl;
+      if(cap){
+        cap.save({filename:'tw-index.html', data:new Blob([SOURCE],{type:'text/html'})}).then(function(){ toast('已下載'); }, function(){ $('dlHint').textContent='下載已取消或被拒絕'; });
+        return;
+      }
+      try{
+        var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([SOURCE],{type:'text/html'})); a.download='tw-index.html';
+        document.body.appendChild(a); a.click(); a.remove();
+        $('dlHint').textContent='若沒有開始下載，請改用「複製網頁原始碼」。';
+      }catch(e){ $('dlHint').textContent='此環境無法直接下載，請改用「複製網頁原始碼」。'; }
+    };
+    var tryCap=function(n){
+      if(window.claude && window.claude.use){ window.claude.use('downloads').then(function(d){ if(d) window.__dl=d; }, function(){}); }
+      else if(n<5) setTimeout(function(){ tryCap(n+1); }, 600);
+    }; tryCap(0);
+  }
+
+  var t=twNow(); $('today').textContent=t.date.replace(/-/g,'/')+'（週'+'日一二三四五六'.charAt(['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(t.wd))+'）';
+  renderLog(); setupDownload();
+  $('refreshBtn').onclick=function(){ load(true); loadChips(); };
+  document.addEventListener('visibilitychange', function(){ if(document.visibilityState==='visible') load(false); });
+  renderChips(null);
+  load(false); loadChips();
+})();
+</script></body></html>
