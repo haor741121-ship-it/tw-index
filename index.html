@@ -32,6 +32,9 @@
   header{padding:8px 2px 12px}
   header .date{font-size:13px;color:var(--sub);letter-spacing:.04em}
   header h1{font-size:24px;margin:2px 0 6px;line-height:1.3}
+  .htop{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .htop button{flex:0 0 auto}
+  header .lastChk{display:block;margin-top:2px}
   .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;margin-right:6px}
   .pill.live{background:var(--upbg);color:var(--up)}
   .pill.close{background:var(--accentbg);color:var(--accent)}
@@ -69,6 +72,17 @@
   .hint{font-size:12px;color:var(--sub);margin:6px 2px 0}
   .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
   .lastChk{font-size:12px;color:var(--sub)}
+  :root{--c1:#2f6fd6;--c2:#d97706;--c3:#8e5bd0}
+  @media (prefers-color-scheme: dark){ :root{--c1:#5d93f0;--c2:#cc7a26;--c3:#a877e0} }
+  .ana .ttl{font-weight:700;margin-bottom:2px}
+  .ana .sub{font-size:12px;color:var(--sub);margin-bottom:4px}
+  .ana svg{touch-action:pan-y;cursor:crosshair}
+  .readout{font-size:13px;font-variant-numeric:tabular-nums;min-height:20px;margin-top:4px;color:var(--ink)}
+  .readout b{font-weight:700}
+  .readout i{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 8px;vertical-align:-1px}
+  .readout i:first-of-type{margin-left:0}
+  .legend i.dot{width:8px;height:8px;border-radius:50%}
+  .mini{display:grid;grid-template-columns:1fr;gap:10px;margin-top:10px}
   button{font:inherit;font-size:15px;border-radius:10px;border:1px solid var(--line);background:var(--card);
     color:var(--ink);padding:9px 14px;cursor:pointer}
   button.pri{background:var(--ink);color:var(--bg);border-color:var(--ink)}
@@ -94,12 +108,13 @@
 <div class="wrap">
   <header>
     <div class="date" id="today"></div>
-    <h1>台股即時指數</h1>
+    <div class="htop"><h1>台股即時指數</h1><button class="pri" id="refreshBtn" type="button">重新整理</button></div>
     <div><span class="pill snap" id="modePill">載入中</span><span class="src" id="modeText">正在抓取最新指數…</span></div>
+    <span class="lastChk" id="lastChk" aria-live="polite"></span>
   </header>
 
   <nav>
-    <a href="#idx">指數</a><a href="#trend">走勢</a><a href="#chips">籌碼</a><a href="#src">資料來源</a><a href="#install">存到手機</a><a href="#iter">迭代紀錄</a>
+    <a href="#idx">指數</a><a href="#trend">走勢</a><a href="#chips">籌碼</a><a href="#ana">分析</a><a href="#src">資料來源</a><a href="#install">存到手機</a><a href="#iter">迭代紀錄</a>
   </nav>
 
   <section id="idx">
@@ -112,10 +127,6 @@
     </div>
     <div class="grid" id="ohlc"></div>
     <div class="grid" id="otcBox"></div>
-    <div class="btns">
-      <button class="pri" id="refreshBtn" type="button">重新整理</button>
-      <span class="lastChk" id="lastChk" aria-live="polite"></span>
-    </div>
     <div class="hint" id="autoHint"></div>
   </section>
 
@@ -148,6 +159,41 @@
     <div style="font-weight:700;margin:14px 2px 6px">外資台指期（大台）未平倉淨口數</div>
     <div class="tbl"><table id="futTbl"></table></div>
     <div class="hint">← 表格可左右滑動｜紅＝買超／增加、綠＝賣超／減少｜融資融券約晚上 9 點後才有當日資料</div>
+  </section>
+
+  <section id="ana">
+    <h2>分析圖表</h2>
+    <div class="src" id="anaMode" style="margin-bottom:8px">點圖或在圖上滑動可看各日數值</div>
+    <div class="grid" id="anaStats"></div>
+    <div class="card chart ana" id="maWrap" style="margin-top:10px">
+      <div class="ttl">收盤與均線</div>
+      <div class="sub" id="maSub"></div>
+      <div id="maChart"></div>
+      <div class="legend" id="maLegend"></div>
+      <div class="readout" id="maRead"></div>
+    </div>
+    <div class="card chart ana" id="instWrap" style="margin-top:10px">
+      <div class="ttl">三大法人每日買賣超（億元）</div>
+      <div class="sub">0 線以上＝買超、以下＝賣超；圓點＝三者合計</div>
+      <div id="instChart"></div>
+      <div class="legend"><span><i style="background:var(--c1)"></i>外資</span><span><i style="background:var(--c2)"></i>投信</span><span><i style="background:var(--c3)"></i>自營商</span><span><i class="dot" style="background:var(--ink)"></i>合計</span></div>
+      <div class="readout" id="instRead"></div>
+    </div>
+    <div class="mini">
+      <div class="card chart ana" id="futWrap">
+        <div class="ttl">外資台指期淨口數</div>
+        <div class="sub">負值＝淨空單；長條越往下，外資避險或看空部位越大</div>
+        <div id="futChart"></div>
+        <div class="readout" id="futRead"></div>
+      </div>
+      <div class="card chart ana" id="mgWrap">
+        <div class="ttl">上市融資餘額（億元）</div>
+        <div class="sub">融資減少＝散戶槓桿下降（常見於急跌後的斷頭或減碼）</div>
+        <div id="mgChart"></div>
+        <div class="readout" id="mgRead"></div>
+      </div>
+    </div>
+    <div class="hint">統計與均線以頁面上可取得的收盤資料計算，僅供參考。</div>
   </section>
 
   <section id="src">
@@ -188,6 +234,19 @@
 
 <!-- 迭代紀錄（新的放最前面） -->
 <script id="iterlog" type="application/json" data-keep="">[
+ {
+  "time": "台北時間 2026-11-20 19:58",
+  "version": "v1.5",
+  "items": [
+   "依使用者要求：「重新整理」按鈕與「上次檢查」移到頁面最上方標題旁",
+   "新增「分析圖表」區塊（導覽列加「分析」）：近一個月統計卡（區間漲跌、距高點、最大回檔、漲跌天數與日波動、外資與三大法人近 10 日累計及連續買賣超天數）",
+   "新增收盤與均線圖（5 日＋20 日；快照只有約一個月資料時改用 10 日），並標示乖離率與短線多空",
+   "新增三大法人每日買賣超堆疊長條（外資／投信／自營商＋合計圓點）、外資台指期淨口數長條、上市融資餘額走勢",
+   "所有新圖可點擊或滑動查看各日數值；配色經色盲與深淺色模式檢查；即時模式日線改抓約 60 日供 20 日均線計算，近一個月圖仍只畫最後 22 日",
+   "功能測試新增 33 項（按鈕位置、分析統計、四張圖有資料與點擊互動 × 三種情境），共 122 項全數通過；淺色與深色截圖確認正常"
+  ],
+  "reflection": "外資期貨淨口數長條以 0 為基準，日變化不明顯，之後可加一張「日增減」小圖；統計卡在快照模式只用 22 日資料。下次優先：補 11/20 融資融券、清理檔尾多餘的 </body></html>。"
+ },
  {
   "time": "台北時間 2026-11-20 18:56",
   "version": "v1.4",
@@ -335,7 +394,7 @@
   function cnyesDaily(){
     return getJSON(CNYES+'charting/history?resolution=D&symbol=TWS:TSE01:INDEX').then(function(j){
       var t=j.data.t||[], c=j.data.c||[], out=[];
-      for(var i=Math.min(21,t.length-1);i>=0;i--){ if(c[i]!=null) out.push({d:twFmt(t[i]).slice(0,10), c:c[i]}); }
+      for(var i=Math.min(59,t.length-1);i>=0;i--){ if(c[i]!=null) out.push({d:twFmt(t[i]).slice(0,10), c:c[i]}); }
       if(out.length<3) throw new Error('few');
       return cnyesFx().then(function(fx){ out.forEach(function(r){ if(fx[r.d]!=null) r.fx=fx[r.d]; }); return out; }, function(){ return out; });
     });
@@ -343,7 +402,7 @@
   function cnyesFx(){
     return getJSON(CNYES+'charting/history?resolution=D&symbol=FX:USDTWD:FOREX').then(function(j){
       var t=j.data.t||[], c=j.data.c||[], m={};
-      for(var i=0;i<Math.min(45,t.length);i++){ if(c[i]!=null) m[twFmt(t[i]).slice(0,10)]=c[i]; }
+      for(var i=0;i<Math.min(90,t.length);i++){ if(c[i]!=null) m[twFmt(t[i]).slice(0,10)]=c[i]; }
       return m;
     });
   }
@@ -396,6 +455,7 @@
     var frows=[]; for(var k=fr.length-1;k>=Math.max(0,fr.length-10);k--){ var q=fr[k-1]; frows.push({d:fr[k].d,n:fr[k].n,dn:q?fr[k].n-q.n:null}); }
     $('futTbl').innerHTML='<tr><th>日期</th><th>淨口數</th><th>增減</th></tr>'+
       frows.map(function(r){ return '<tr><td>'+md(r.d)+'</td>'+cell(r.n,0,' 口')+cell(r.dn,0)+'</tr>'; }).join('');
+    ANA.inst=inst||[]; ANA.margin=margin||[]; ANA.fut=fut||[]; ANA.chipsLive=liveCount; renderAnalysis();
   }
   function loadChips(){
     $('chipsMode').textContent='籌碼資料載入中…';
@@ -474,6 +534,8 @@
     $('intraWrap').hidden=false; checkEmpty();
   }
   function renderDaily(rows, title){
+    if(rows && rows.length>=3){ ANA.daily=rows; renderAnalysis(); }
+    if(rows) rows=rows.slice(-22);
     if(!rows || rows.length<3){ $('dailyWrap').hidden=true; return checkEmpty(); }
     var pts=rows.map(function(r,i){return [i,r.c];});
     var fxp=[]; rows.forEach(function(r,i){ if(r.fx!=null) fxp.push([i,r.fx]); });
@@ -483,6 +545,150 @@
     $('dailyTitle').textContent=title; $('dailyWrap').hidden=false; checkEmpty();
   }
   function checkEmpty(){ $('trendEmpty').hidden = !($('intraWrap').hidden && $('dailyWrap').hidden); }
+
+  // ===== 分析圖表 =====
+  var ANA={daily:null, inst:[], margin:[], fut:[], chipsLive:0};
+  var CW=360, CH=180;
+  function ma(arr, n){ return arr.map(function(_,i){ if(i<n-1) return null; var s=0; for(var k=i-n+1;k<=i;k++) s+=arr[k]; return s/n; }); }
+  function md2(d){ return d.slice(5).replace('-','/'); }
+  function scaleY(vals, padFrac, zero){
+    var v=vals.filter(function(x){return x!=null&&!isNaN(x);}); if(zero) v.push(0);
+    var mn=Math.min.apply(null,v), mx=Math.max.apply(null,v), pad=(mx-mn)*(padFrac||0.08)||Math.abs(mx)*0.02||1;
+    if(!(zero&&mn>=0)) mn-=pad; if(!(zero&&mx<=0)) mx+=pad;
+    // 取整齊的刻度（1、2、2.5、5 × 10^n）
+    var raw=(mx-mn)/4, p10=Math.pow(10,Math.floor(Math.log10(raw))), st=[1,2,2.5,5,10].map(function(m){return m*p10;}).filter(function(x){return x>=raw;})[0];
+    mn=Math.floor(mn/st)*st; mx=Math.ceil(mx/st)*st;
+    var ticks=[]; for(var t=mn;t<=mx+st/2;t+=st) ticks.push(Math.round(t/st)*st);
+    return {mn:mn,mx:mx,ticks:ticks};
+  }
+  function gridSvg(P, sc, Y, dig){
+    var g=''; sc.ticks.forEach(function(v){
+      g+='<line x1="'+P.l+'" x2="'+(CW-P.r)+'" y1="'+Y(v).toFixed(1)+'" y2="'+Y(v).toFixed(1)+'" stroke="var(--line)"/>'+
+         '<text x="'+(P.l-6)+'" y="'+(Y(v)+4).toFixed(1)+'" font-size="11" text-anchor="end" fill="var(--sub)">'+fmt(v,dig||0)+'</text>'; });
+    return g;
+  }
+  function xLabelsSvg(dates, X, P){
+    var n=dates.length, idx=[0,Math.floor((n-1)/2),n-1];
+    return idx.map(function(i,j){ var an=j===0?'start':(j===2?'end':'middle'); return '<text x="'+X(i).toFixed(1)+'" y="'+(CH-6)+'" font-size="11" text-anchor="'+an+'" fill="var(--sub)">'+md2(dates[i])+'</text>'; }).join('');
+  }
+  // 互動：點擊或滑動選日期，顯示垂直參考線與數值
+  function bindHover(box, n, X, P, onPick){
+    var svg=box.querySelector('svg'); if(!svg) return;
+    var guide=svg.querySelector('.guide');
+    function pick(ev){
+      var r=svg.getBoundingClientRect(); var x=(ev.clientX-r.left)/r.width*CW;
+      var best=0, bd=1e9; for(var i=0;i<n;i++){ var d=Math.abs(X(i)-x); if(d<bd){bd=d;best=i;} }
+      guide.setAttribute('x1',X(best)); guide.setAttribute('x2',X(best)); guide.style.display='';
+      onPick(best);
+    }
+    svg.addEventListener('pointermove', pick); svg.addEventListener('pointerdown', pick);
+    svg.addEventListener('pointerleave', function(){ guide.style.display='none'; onPick(n-1); });
+    onPick(n-1);
+  }
+  function sw(c){ return '<i style="background:'+c+'"></i>'; }
+  function sgn(v,dig,unit){ return v==null||isNaN(v)?'—':(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),dig)+(unit||''); }
+
+  function renderMA(){
+    var rows=ANA.daily; if(!rows||rows.length<6){ $('maWrap').hidden=true; return; }
+    $('maWrap').hidden=false;
+    var c=rows.map(function(r){return r.c;}), m5=ma(c,5), longN=c.length>=40?20:10, mL=ma(c,longN);
+    var show=Math.min(rows.length, 30), off=rows.length-show;
+    var R=rows.slice(off), C=c.slice(off), A=m5.slice(off), B=mL.slice(off);
+    var P={l:46,r:8,t:8,b:22}, sc=scaleY(C.concat(A,B));
+    var X=function(i){return P.l+i/((show-1)||1)*(CW-P.l-P.r);}, Y=function(v){return P.t+(sc.mx-v)/((sc.mx-sc.mn)||1)*(CH-P.t-P.b);};
+    function path(a,col,w){ var d='',on=false; a.forEach(function(v,i){ if(v==null){on=false;return;} d+=(on?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1)+' '; on=true; }); return d?'<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'" stroke-linejoin="round" stroke-linecap="round"/>':''; }
+    var svg='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="收盤與均線">'+gridSvg(P,sc,Y)+xLabelsSvg(R.map(function(r){return r.d;}),X,P)+
+      path(B,'var(--c3)',2)+path(A,'var(--c2)',2)+path(C,'var(--c1)',2.4)+
+      '<line class="guide" y1="'+P.t+'" y2="'+(CH-P.b)+'" stroke="var(--sub)" stroke-dasharray="3 3" style="display:none"/></svg>';
+    $('maChart').innerHTML=svg;
+    $('maLegend').innerHTML='<span><i style="background:var(--c1)"></i>收盤</span><span><i style="background:var(--c2)"></i>5 日均線</span><span><i style="background:var(--c3)"></i>'+longN+' 日均線</span>';
+    var last=C[C.length-1], lm=B[B.length-1], l5=A[A.length-1];
+    var bias=lm?((last-lm)/lm*100):null;
+    $('maSub').textContent=(lm?('收盤'+(last>=lm?'高於':'低於')+' '+longN+' 日均線 '+fmt(Math.abs(bias))+'%（乖離率）'):'')+(l5&&lm?('；5 日線在 '+longN+' 日線'+(l5>=lm?'之上（短線偏多）':'之下（短線偏空）')):'')+(longN===10?'｜快照只有約一個月資料，以 10 日線代替 20 日線':'');
+    bindHover($('maChart'), show, X, P, function(i){
+      $('maRead').innerHTML='<b>'+md2(R[i].d)+'</b>　'+sw('var(--c1)')+'收盤 '+fmt(C[i])+sw('var(--c2)')+'5日 '+(A[i]==null?'—':fmt(A[i]))+sw('var(--c3)')+longN+'日 '+(B[i]==null?'—':fmt(B[i]));
+    });
+  }
+
+  function renderInstChart(){
+    var R=ANA.inst; if(!R||R.length<2){ $('instWrap').hidden=true; return; }
+    $('instWrap').hidden=false;
+    var n=R.length, P={l:42,r:8,t:8,b:22};
+    var pos=R.map(function(r){return [r.f,r.t,r.p].reduce(function(a,v){return a+(v>0?v:0);},0);}), neg=R.map(function(r){return [r.f,r.t,r.p].reduce(function(a,v){return a+(v<0?v:0);},0);});
+    var sc=scaleY(pos.concat(neg, R.map(function(r){return r.s;})), 0.08, true);
+    var slot=(CW-P.l-P.r)/n, bw=Math.min(22, slot*0.62);
+    var X=function(i){return P.l+slot*(i+0.5);}, Y=function(v){return P.t+(sc.mx-v)/((sc.mx-sc.mn)||1)*(CH-P.t-P.b);};
+    var cols=['var(--c1)','var(--c2)','var(--c3)'], bars='';
+    R.forEach(function(r,i){
+      var up=0, dn=0;
+      [r.f,r.t,r.p].forEach(function(v,k){ if(!v) return;
+        var a=v>0?up:dn, b=a+v; if(v>0) up=b; else dn=b;
+        var y1=Y(Math.max(a,b)), h=Math.abs(Y(a)-Y(b));
+        bars+='<rect x="'+(X(i)-bw/2).toFixed(1)+'" y="'+y1.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0.5).toFixed(1)+'" fill="'+cols[k]+'" stroke="var(--card)" stroke-width="1"/>'; });
+    });
+    var dots=R.map(function(r,i){ return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(r.s).toFixed(1)+'" r="4.5" fill="var(--ink)" stroke="var(--card)" stroke-width="2"/>'; }).join('');
+    var zero='<line x1="'+P.l+'" x2="'+(CW-P.r)+'" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--sub)"/>';
+    $('instChart').innerHTML='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="三大法人每日買賣超">'+gridSvg(P,sc,Y)+xLabelsSvg(R.map(function(r){return r.d;}),X,P)+bars+zero+dots+
+      '<line class="guide" y1="'+P.t+'" y2="'+(CH-P.b)+'" stroke="var(--sub)" stroke-dasharray="3 3" style="display:none"/></svg>';
+    bindHover($('instChart'), n, X, P, function(i){ var r=R[i];
+      $('instRead').innerHTML='<b>'+md2(r.d)+'</b>　'+sw('var(--c1)')+'外資 '+sgn(r.f,1)+sw('var(--c2)')+'投信 '+sgn(r.t,1)+sw('var(--c3)')+'自營 '+sgn(r.p,1)+'　合計 <b class="'+cls(r.s)+'">'+sgn(r.s,1)+'</b>';
+    });
+  }
+
+  function simpleChart(boxId, readId, R, key, opts){
+    var wrap=$(boxId).parentNode; if(!R||R.length<2){ wrap.hidden=true; return; }
+    wrap.hidden=false;
+    var n=R.length, P={l:56,r:8,t:8,b:22}, vals=R.map(function(r){return r[key];});
+    var sc=scaleY(vals, 0.1, opts.bar), slot=(CW-P.l-P.r)/n, bw=Math.min(20, slot*0.6);
+    var X=opts.bar?function(i){return P.l+slot*(i+0.5);}:function(i){return P.l+i/((n-1)||1)*(CW-P.l-P.r);};
+    var Y=function(v){return P.t+(sc.mx-v)/((sc.mx-sc.mn)||1)*(CH-P.t-P.b);};
+    var marks='';
+    if(opts.bar){
+      marks=vals.map(function(v,i){ var y=Math.min(Y(v),Y(0)), h=Math.abs(Y(v)-Y(0)); return '<rect x="'+(X(i)-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0.5).toFixed(1)+'" rx="3" fill="'+opts.color+'"/>'; }).join('')+
+        '<line x1="'+P.l+'" x2="'+(CW-P.r)+'" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--sub)"/>';
+    } else {
+      marks='<path d="'+vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ')+'" fill="none" stroke="'+opts.color+'" stroke-width="2.2" stroke-linejoin="round"/>'+
+        vals.map(function(v,i){return '<circle cx="'+X(i).toFixed(1)+'" cy="'+Y(v).toFixed(1)+'" r="4" fill="'+opts.color+'" stroke="var(--card)" stroke-width="2"/>';}).join('');
+    }
+    $(boxId).innerHTML='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="'+opts.label+'">'+gridSvg(P,sc,Y,opts.dig)+xLabelsSvg(R.map(function(r){return r.d;}),X,P)+marks+
+      '<line class="guide" y1="'+P.t+'" y2="'+(CH-P.b)+'" stroke="var(--sub)" stroke-dasharray="3 3" style="display:none"/></svg>';
+    bindHover($(boxId), n, X, P, function(i){ var v=vals[i], pv=i?vals[i-1]:null;
+      $(readId).innerHTML='<b>'+md2(R[i].d)+'</b>　'+opts.label+' '+fmt(v,opts.dig)+(opts.unit||'')+(pv!=null?'　增減 <span class="'+cls(v-pv)+'">'+sgn(v-pv,opts.dig)+'</span>':'');
+    });
+  }
+
+  function renderStats(){
+    var rows=ANA.daily, out=[];
+    if(rows&&rows.length>=6){
+      var R=rows.slice(-22), c=R.map(function(r){return r.c;});
+      var chg=(c[c.length-1]/c[0]-1)*100, peak=c[0], mdd=0, upD=0, dnD=0, rets=[];
+      for(var i=1;i<c.length;i++){ var r=c[i]/c[i-1]-1; rets.push(r); if(r>0) upD++; else if(r<0) dnD++; }
+      c.forEach(function(v){ if(v>peak) peak=v; var dd=(v/peak-1)*100; if(dd<mdd) mdd=dd; });
+      var mean=rets.reduce(function(a,b){return a+b;},0)/rets.length, sd=Math.sqrt(rets.reduce(function(a,b){return a+(b-mean)*(b-mean);},0)/Math.max(1,rets.length-1))*100;
+      var hi=Math.max.apply(null,c), offHi=(c[c.length-1]/hi-1)*100;
+      out.push(['近 '+c.length+' 個交易日漲跌', '<span class="'+cls(chg)+'">'+sgn(chg,2,'%')+'</span>', md2(R[0].d)+' → '+md2(R[R.length-1].d)]);
+      out.push(['距區間高點', '<span class="'+cls(offHi)+'">'+sgn(offHi,2,'%')+'</span>', '高點 '+fmt(hi)]);
+      out.push(['最大回檔', '<span class="down">'+sgn(mdd,2,'%')+'</span>', '區間內從高點到低點']);
+      out.push(['漲／跌天數', upD+' 漲／'+dnD+' 跌', '日波動 '+fmt(sd)+'%（標準差）']);
+    }
+    var I=ANA.inst||[];
+    if(I.length){ var f=I.reduce(function(a,r){return a+r.f;},0), s=I.reduce(function(a,r){return a+r.s;},0), streak=0, sg=Math.sign(I[I.length-1].f);
+      for(var j=I.length-1;j>=0&&Math.sign(I[j].f)===sg&&sg!==0;j--) streak++;
+      out.push(['外資近 '+I.length+' 日累計', '<span class="'+cls(f)+'">'+sgn(f,1)+' 億</span>', '連續'+(sg>0?'買超':'賣超')+' '+streak+' 天']);
+      out.push(['三大法人近 '+I.length+' 日', '<span class="'+cls(s)+'">'+sgn(s,1)+' 億</span>', '外資＋投信＋自營商']);
+    }
+    $('anaStats').innerHTML=out.map(function(o){ return '<div class="card stat"><div class="k">'+o[0]+'</div><div class="v">'+o[1]+'</div><div class="k" style="font-size:12px">'+o[2]+'</div></div>'; }).join('');
+  }
+
+  function renderAnalysis(){
+    try{
+      renderStats(); renderMA(); renderInstChart();
+      simpleChart('futChart','futRead',ANA.fut,'n',{bar:true,color:'var(--c1)',dig:0,unit:' 口',label:'淨口數'});
+      simpleChart('mgChart','mgRead',ANA.margin,'m',{bar:false,color:'var(--c2)',dig:0,unit:' 億',label:'融資'});
+      var dl=ANA.daily&&ANA.daily.length>=40, cl=ANA.chipsLive===3;
+      $('anaMode').textContent='資料：'+(dl?'即時日線':'快照（'+SNAP.updated+'）')+'、籌碼'+(cl?'即時':'快照')+'｜點圖或在圖上滑動可看各日數值';
+    }catch(e){ $('anaMode').textContent='分析圖表暫時無法顯示'; }
+  }
 
   function load(manual){
     if(busy) return; busy=true; tries=[];
