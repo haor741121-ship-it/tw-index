@@ -1,0 +1,1056 @@
+<!DOCTYPE html>
+<html lang="zh-Hant-TW">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>美股走勢模擬（手機版）</title>
+<style>
+  :root{
+    --bg:#f6f5f1; --card:#ffffff; --ink:#1d1d1b; --sub:#6b6a64; --line:#e4e2db;
+    --up:#d0342c; --upbg:#fde8e6; --down:#1f8a4c; --downbg:#e3f4ea;
+    --accent:#c98a00; --accentbg:#fff6dc; --blue:#2f6fd6; --gray:#8a8984; --grbg:#efeee9;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#141413; --card:#1f1f1d; --ink:#f0efe9; --sub:#a3a29b; --line:#33332f;
+      --up:#ff6b60; --upbg:#3a1f1d; --down:#4cc985; --downbg:#16301f;
+      --accent:#f2b630; --accentbg:#3a2f12; --blue:#7aa7ff; --gray:#a3a29b; --grbg:#2a2a27;
+    }
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif;
+    font-size:16px;line-height:1.55;-webkit-text-size-adjust:100%}
+  .wrap{max-width:560px;margin:0 auto;padding:16px 14px 48px}
+  header{padding:8px 2px 12px}
+  header .date{font-size:13px;color:var(--sub);letter-spacing:.04em}
+  header h1{font-size:24px;margin:2px 0 6px;line-height:1.3}
+  .pill{display:inline-block;font-size:12px;font-weight:700;border-radius:999px;padding:2px 10px;background:var(--grbg);color:var(--sub);margin-right:6px}
+  nav{position:sticky;top:0;z-index:5;background:var(--bg);margin:0 -14px;padding:8px 14px;
+    display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line)}
+  nav::-webkit-scrollbar{display:none}
+  nav a{flex:0 0 auto;font-size:14px;text-decoration:none;color:var(--ink);background:var(--card);
+    border:1px solid var(--line);border-radius:999px;padding:5px 12px}
+  section{margin-top:22px;scroll-margin-top:56px}
+  h2{font-size:18px;margin:0 0 10px}
+  h3{font-size:15px;margin:0 0 6px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .mt{margin-top:10px}
+  .mood{background:var(--accentbg);border-color:transparent}
+  .mood .tag{display:inline-block;font-weight:700;font-size:20px;color:var(--accent)}
+  .mood p{margin:6px 0 0}
+  .mood .hz{font-size:13px;color:var(--sub);margin-top:4px}
+  ol.sum{margin:0;padding-left:20px}
+  ol.sum li{margin:6px 0}
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .stat .k{font-size:13px;color:var(--sub)}
+  .stat .v{font-size:22px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+  .stat .d{font-size:14px;font-weight:600;font-variant-numeric:tabular-nums}
+  .stat .n{font-size:13px;color:var(--sub);margin-top:4px}
+  .up{color:var(--up)} .down{color:var(--down)}
+  .sc{border-left:5px solid var(--gray)}
+  .sc.bull{border-left-color:var(--up)} .sc.bear{border-left-color:var(--down)} .sc.base{border-left-color:var(--blue)}
+  .sc .top{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+  .sc .nm{font-weight:700;font-size:17px}
+  .sc .p{font-weight:700;font-size:20px;font-variant-numeric:tabular-nums}
+  .bar{height:6px;border-radius:3px;background:var(--grbg);margin:6px 0 8px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:3px}
+  .sc .rg{font-variant-numeric:tabular-nums;font-weight:600}
+  .sc .ln{font-size:14px;margin-top:4px}
+  .sc .ln b{color:var(--sub);font-weight:600;margin-right:4px}
+  .drv{display:flex;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+  .drv:first-child{padding-top:0} .drv:last-child{border-bottom:none;padding-bottom:0}
+  .drv .b{flex:0 0 auto;font-size:12px;font-weight:700;border-radius:6px;padding:2px 8px;height:fit-content;margin-top:2px}
+  .b.pos{background:var(--upbg);color:var(--up)} .b.neg{background:var(--downbg);color:var(--down)} .b.neu{background:var(--grbg);color:var(--sub)}
+  .drv .c{font-weight:700} .drv .now{font-size:14px;font-variant-numeric:tabular-nums}
+  .drv .im{font-size:14px;color:var(--sub);margin-top:2px}
+  .levels{display:flex;flex-direction:column;gap:8px}
+  .lv{display:flex;align-items:center;gap:10px}
+  .lv .b{flex:0 0 auto;font-size:12px;font-weight:700;border-radius:6px;padding:2px 8px}
+  .lv .b.r{background:var(--upbg);color:var(--up)} .lv .b.s{background:var(--downbg);color:var(--down)}
+  .lv .x{font-weight:700;font-variant-numeric:tabular-nums}
+  .lv .t{color:var(--sub);font-size:14px}
+  .list{margin:0;padding-left:18px} .list li{margin:4px 0}
+  .chart svg{width:100%;height:auto;display:block}
+  .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--sub);margin-top:8px}
+  .legend i{display:inline-block;width:16px;height:3px;border-radius:2px;vertical-align:middle;margin-right:5px}
+  .tbl{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--line);border-radius:12px;background:var(--card)}
+  table{border-collapse:collapse;font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap}
+  th,td{padding:8px 10px;text-align:right;border-bottom:1px solid var(--line)}
+  th{font-size:12px;color:var(--sub);font-weight:600;background:var(--card)}
+  th:first-child,td:first-child{position:sticky;left:0;background:var(--card);text-align:left;font-weight:600;z-index:1}
+  tr:last-child td{border-bottom:none}
+  td.cu{color:var(--up);background:var(--upbg)} td.cd{color:var(--down);background:var(--downbg)}
+  .hint{font-size:12px;color:var(--sub);margin:6px 2px 0}
+  .kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--line)}
+  .kv:last-child{border-bottom:none;padding-bottom:0} .kv:first-child{padding-top:0}
+  .kv .k{color:var(--sub);font-size:14px;flex:0 0 auto} .kv .v{font-weight:600;text-align:right}
+  .it h3{margin-top:10px} .it h3:first-child{margin-top:0}
+  .it ul{margin:0;padding-left:18px} .it li{margin:3px 0}
+  .pro{color:var(--up)} .con{color:var(--down)}
+  details{border-bottom:1px solid var(--line);padding:8px 0}
+  details:last-child{border-bottom:none} details:first-child{padding-top:0}
+  summary{cursor:pointer;font-weight:600;list-style-position:outside}
+  details .body{font-size:14px;margin-top:6px}
+  details .body ul{margin:2px 0 6px;padding-left:18px}
+  .empty{color:var(--sub);font-size:14px}
+  footer{margin-top:28px;font-size:12px;color:var(--sub)}
+  footer a,.card a{color:var(--blue)}
+  footer ul{padding-left:18px;margin:4px 0}
+  .btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+  .btns button{font:inherit;font-size:15px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:999px;padding:8px 16px;cursor:pointer}
+  .btns button:active{opacity:.7}
+  .note p{margin:0 0 10px} .note p b{display:block;margin-bottom:2px}
+  code{font-size:13px;background:var(--grbg);border-radius:4px;padding:0 4px}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;border-radius:999px;padding:8px 16px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="date" id="date"></div>
+    <h1>美股走勢模擬</h1>
+    <div><span class="pill" id="round"></span><span class="pill" id="basis"></span><span class="pill" id="freq"></span></div>
+    <div id="lead" style="margin-top:6px"></div>
+  </header>
+
+  <nav>
+    <a href="#sum">總結</a><a href="#sc">情境</a><a href="#trend">走勢＋準確度</a><a href="#idx">指數</a>
+    <a href="#drv">驅動因子</a><a href="#lv">點位</a><a href="#cal">日程</a><a href="#rev">校準</a><a href="#iter">迭代</a><a href="#install">存到手機</a>
+  </nav>
+
+  <section id="sum">
+    <h2>下個月預判</h2>
+    <div class="card mood"><span class="tag" id="outlook"></span><div class="hz" id="horizon"></div><p id="outlookWhy"></p></div>
+    <div class="card mt"><ol class="sum" id="sumList"></ol></div>
+  </section>
+
+  <section id="sc">
+    <h2>三種情境（S&amp;P 500 一個月後）</h2>
+    <div id="scenarios" style="display:flex;flex-direction:column;gap:10px"></div>
+  </section>
+
+  <section id="trend">
+    <h2>過去一個月＋下個月模擬</h2>
+    <div class="card chart">
+      <div id="chart"></div>
+      <div class="legend">
+        <span><i style="background:var(--ink)"></i>S&amp;P 500 實際收盤</span>
+        <span><i style="background:repeating-linear-gradient(90deg,var(--up) 0 4px,transparent 4px 7px)"></i>樂觀</span>
+        <span><i style="background:repeating-linear-gradient(90deg,var(--blue) 0 4px,transparent 4px 7px)"></i>基準</span>
+        <span><i style="background:repeating-linear-gradient(90deg,var(--down) 0 4px,transparent 4px 7px)"></i>悲觀</span>
+        <span><i style="background:repeating-linear-gradient(90deg,var(--sub) 0 2px,transparent 2px 5px);opacity:.6"></i>淡色：前 5 天的模擬（越舊越淡）</span>
+      </div>
+      <div class="hint" id="projNote"></div>
+    </div>
+    <div class="card mt"><h3>模擬準確度回顧（前幾天的模擬 vs 實際）</h3><div id="acc"></div></div>
+    <div class="tbl mt"><table id="histTable"></table></div>
+    <div class="hint">← 表格可左右滑動｜每週最後交易日收盤｜紅漲綠跌</div>
+  </section>
+
+  <section id="idx">
+    <h2>四大指數（近一個月）</h2>
+    <div class="grid" id="indices"></div>
+  </section>
+
+  <section id="drv">
+    <h2>驅動因子</h2>
+    <div class="card" id="drivers"></div>
+  </section>
+
+  <section id="lv">
+    <h2>關鍵點位（S&amp;P 500）</h2>
+    <div class="card levels" id="levels"></div>
+    <div class="card mt">
+      <h3>觀察訊號：出現就修正情境</h3>
+      <ul class="list" id="watch"></ul>
+    </div>
+  </section>
+
+  <section id="cal">
+    <h2>未來一個月重要日程</h2>
+    <div class="card" id="calendar"></div>
+  </section>
+
+  <section id="rev">
+    <h2>上輪預判校準</h2>
+    <div class="card" id="review"></div>
+  </section>
+
+  <section id="iter">
+    <h2>本輪迭代</h2>
+    <div class="card mt" id="freqCard" style="margin-bottom:10px"></div>
+    <div class="card it" id="iterNow"></div>
+    <h3 style="margin-top:16px">迭代紀錄（最新在上）</h3>
+    <div class="card" id="log"></div>
+    <div class="hint" id="notionLink"></div>
+  </section>
+
+  <section id="install">
+    <h2>存到手機</h2>
+    <div class="card note">
+      <p><b>方法一：固定網址（最推薦）</b>用瀏覽器開 <a href="https://haor741121-ship-it.github.io/tw-index/us-sim/">haor741121-ship-it.github.io/tw-index/us-sim</a>，這個網址永遠是最新一輪。iPhone 用 Safari 開 → 分享 → 「加入主畫面」，之後點圖示就能看；Android 用 Chrome 選單 → 「加到主畫面」。</p>
+      <p><b>方法二：下載一次網頁檔</b>按下方按鈕下載 <code>us-sim.html</code>，只要下載一次：之後每次打開，它會自動到 GitHub 檢查有沒有新一輪的模擬，有的話直接換成最新版（需要連網；沒網路時顯示檔案裡的那一輪）。</p>
+      <p><b>iPhone 注意</b>「檔案」App 的預覽不會執行網頁程式，下載的檔案請用能開啟本機 HTML 的瀏覽器 App 開啟；或直接用方法一。</p>
+      <div class="btns"><button id="dlBtn" type="button">下載網頁檔（.html）</button><button id="copyBtn" type="button">複製網頁原始碼</button></div>
+      <div class="hint" id="dlHint"></div>
+      <div class="hint" id="updState"></div>
+    </div>
+  </section>
+
+  <footer>
+    <div>資料來源：</div>
+    <ul id="src"></ul>
+    <p>情境模擬是依公開資料推估的可能走勢，不是預測保證；本內容僅供參考，不構成投資建議。</p>
+  </footer>
+</div>
+<div class="toast" id="toast"></div>
+
+<script id="data" type="application/json" data-keep>
+{
+  "round": 3,
+  "updated": "2026/11/21（週六）10:34（台北）",
+  "basis": "資料基準：美東 11/20 收盤",
+  "lead": "補資金流向、獲利預估與一月基期",
+  "outlook": "震盪偏多（高波動）",
+  "horizon": "模擬區間：2026/11/23–2026/12/18",
+  "outlookWhy": "歷史上週跌逾 5% 後 4 週上漲機率約 61%，且 Q4 獲利預估仍上修 1.1%、本益比已降至約 16.7 倍（推算），有利反彈；但 VIX 35.89 與 12/9 升息、AI 疑慮代表仍可能再探底。",
+  "summary": [
+    "<b>過去一個月</b>：S&P 500 自 10/20 的 7,712.57 跌至 6,910.39（−10.4%），那指 −14.4%、道瓊 −8.3%",
+    "<b>利率與美債</b>：11/20 10 年債 4.92–4.93%、2 年債 4.63–4.65%，曲線約 +28bp；12/9 升息 1 碼幾成定局",
+    "<b>能源與國際</b>：WTI 11/20 結算 $83.98、布蘭特 $92.57，油價三週跌；美伊戰事未停",
+    "<b>政策與政治</b>：臨時撥款 12/11 到期；兩黨傾向再延長，部分民主黨參議員要求限制伊朗戰費",
+    "<b>下月關鍵</b>：11/25 PCE、12/4 非農、12/9 FOMC 與博通財報、12/10 CPI、12/11 撥款到期"
+  ],
+  "scenarios": [
+    {
+      "name": "樂觀",
+      "p": 30,
+      "spx": "7,300–7,550",
+      "nas": "科技股超跌反彈，那指回升 8–12%",
+      "why": "七連跌後技術性反彈，PCE 溫和、Fed 只升 1 碼且不暗示加速，10 年債續降；獲利預估仍上修提供估值支撐",
+      "trigger": "10 年債跌破 4.8%、VIX 回到 22 以下、輝達與費半止跌"
+    },
+    {
+      "name": "基準",
+      "p": 45,
+      "spx": "6,750–7,200",
+      "nas": "高檔震盪，難回 11/13 水準",
+      "why": "超賣反彈與 Fed 升息、AI 獲利疑慮互相拉扯，指數在修正區內來回整理",
+      "trigger": "PCE 與 CPI 符合預期、Fed 升 1 碼、撥款順利延長"
+    },
+    {
+      "name": "悲觀",
+      "p": 25,
+      "spx": "6,250–6,700",
+      "nas": "AI 股再跌，那指逼近熊市（距高點 −20%以上）",
+      "why": "Fed 升 2 碼或點陣圖轉鷹、政府關門、美伊衝突升級推高油價，AI 資本支出疑慮擴散",
+      "trigger": "核心 PCE／CPI 月增 ≥0.4%、10 年債重回 5.1% 以上、VIX 升破 40 或收盤跌破 6,732"
+    }
+  ],
+  "hist": [
+    {
+      "d": "10/22",
+      "spx": 7663.43
+    },
+    {
+      "d": "10/23",
+      "spx": 7623.68
+    },
+    {
+      "d": "10/26",
+      "spx": 7676.77
+    },
+    {
+      "d": "10/27",
+      "spx": 7722.6
+    },
+    {
+      "d": "10/28",
+      "spx": 7743.98
+    },
+    {
+      "d": "10/29",
+      "spx": 7720.39
+    },
+    {
+      "d": "10/30",
+      "spx": 7580.07
+    },
+    {
+      "d": "11/2",
+      "spx": 7541.4
+    },
+    {
+      "d": "11/3",
+      "spx": 7568.92
+    },
+    {
+      "d": "11/4",
+      "spx": 7688.62
+    },
+    {
+      "d": "11/5",
+      "spx": 7353.73
+    },
+    {
+      "d": "11/6",
+      "spx": 7376.86
+    },
+    {
+      "d": "11/9",
+      "spx": 7549.94
+    },
+    {
+      "d": "11/10",
+      "spx": 7520.93
+    },
+    {
+      "d": "11/11",
+      "spx": 7619.38
+    },
+    {
+      "d": "11/12",
+      "spx": 7592.4
+    },
+    {
+      "d": "11/13",
+      "spx": 7561.67
+    },
+    {
+      "d": "11/16",
+      "spx": 7416.59
+    },
+    {
+      "d": "11/17",
+      "spx": 7340.53
+    },
+    {
+      "d": "11/18",
+      "spx": 7323.63
+    },
+    {
+      "d": "11/19",
+      "spx": 7175.83
+    },
+    {
+      "d": "11/20",
+      "spx": 6910.39
+    }
+  ],
+  "proj": {
+    "labels": [
+      "11/27",
+      "12/4",
+      "12/11",
+      "12/18"
+    ],
+    "bull": [
+      7080,
+      7220,
+      7330,
+      7430
+    ],
+    "base": [
+      7000,
+      6940,
+      6900,
+      6980
+    ],
+    "bear": [
+      6780,
+      6640,
+      6480,
+      6450
+    ]
+  },
+  "projNote": "VIX 11/20 收 35.89，換算一個月預期波動約 ±10.4%（35.89/√12）；12/18 選擇權隱含 ±6.5%（約 6,732–7,665，11/19）。機率參考週跌逾 5% 後 4 週上漲 61%（ICFS）與 FactSet 獲利預估；本輪無新收盤，路徑沿用第 2 輪。",
+  "weekly": [
+    {
+      "d": "10/23 週",
+      "spx": "7,623.68",
+      "chg": "−0.5%",
+      "nas": "—",
+      "y10": "4.99%",
+      "vix": "19.45",
+      "oil": "103.27",
+      "why": "油價飆高、AI 成本疑慮"
+    },
+    {
+      "d": "10/30 週",
+      "spx": "7,580.07",
+      "chg": "−0.6%",
+      "nas": "−2.0%",
+      "y10": "4.93%",
+      "vix": "19.42",
+      "oil": "104.12",
+      "why": "科技財報令人失望"
+    },
+    {
+      "d": "11/6 週",
+      "spx": "7,376.86",
+      "chg": "−2.7%",
+      "nas": "−3.4%",
+      "y10": "4.85%",
+      "vix": "25.64",
+      "oil": "90.83",
+      "why": "11/5 AI 股崩跌 4.4%"
+    },
+    {
+      "d": "11/13 週",
+      "spx": "7,561.67",
+      "chg": "+2.5%",
+      "nas": "+2.3%",
+      "y10": "5.15%",
+      "vix": "19.30",
+      "oil": "88.56",
+      "why": "反彈；黃仁勳請辭"
+    },
+    {
+      "d": "11/20 週",
+      "spx": "6,910.39",
+      "chg": "−8.6%",
+      "nas": "−10.0%",
+      "y10": "4.93%",
+      "vix": "35.89",
+      "oil": "83.98",
+      "why": "AI 拋售、七連跌入修正"
+    }
+  ],
+  "indices": [
+    {
+      "k": "S&P 500",
+      "v": "6,910.39",
+      "d": "−3.7%",
+      "n": "近一月 −10.4%｜距高點 −11.6%"
+    },
+    {
+      "k": "那斯達克",
+      "v": "22,617.73",
+      "d": "−5.3%",
+      "n": "近一月 −14.4%｜距高點 −18.1%"
+    },
+    {
+      "k": "道瓊",
+      "v": "48,147.33",
+      "d": "−1.9%",
+      "n": "近一月 −8.3%｜距 8/5 高點約 −11.4%（DIA 換算）"
+    },
+    {
+      "k": "費城半導體",
+      "v": "≈8,412",
+      "d": "−10.7%",
+      "n": "近一月約 −25.5%｜本週約 −17%（點位為推算）"
+    }
+  ],
+  "drivers": [
+    {
+      "cat": "指數與技術面",
+      "now": "S&P 500 11/20 收 6,910.39，七連跌、單週 −8.6%（2025/4 以來最差），距 10/6 高點 7,818.93 約 −11.6%",
+      "dir": "利空",
+      "impact": "已跌破前支撐；但歷史上六連跌後一個月上漲 13/18 次（中位數 +3.6%），其中半數 3 個月內再跌 5% 以上，反彈不代表落底"
+    },
+    {
+      "cat": "美債",
+      "now": "10 年債 11/20 為 4.92%（Cappnotes）／4.93%（AP），連 5 日下滑；2 年債 4.63%（Cappnotes）／4.65%（Trading Economics），曲線約 +28bp",
+      "dir": "利多",
+      "impact": "避險買盤壓低殖利率，若續降可緩解估值壓力；重回 5% 以上則不利"
+    },
+    {
+      "cat": "能源",
+      "now": "WTI 11/20 結算 $83.98（12 月合約，Rigzone）、布蘭特 $92.57（AP），連三週下跌；EIA 11/13 週原油庫存 +338 萬桶（預期減少）",
+      "dir": "中性",
+      "impact": "供給過剩壓低油價有助通膨降溫，但荷莫茲航道風險仍可能突然推高油價"
+    },
+    {
+      "cat": "國際新聞",
+      "now": "美伊戰事持續（11/18 美軍打擊格什姆島、伊朗反擊海灣基地），多哈談判無突破；11/19 APEC 川習會同意擬「戰略穩定」行動計畫",
+      "dir": "利空",
+      "impact": "地緣風險溢價延續；美伊若出現停火框架則是重要利多"
+    },
+    {
+      "cat": "金融",
+      "now": "VIX 11/20 收 35.89；輝達跌 14%、費半本週約 −17%；美元指數約 103.84；截至 11/18 當週美股基金淨流入 457 億美元（科技基金 +103 億），貨幣基金淨流出 191 億（LSEG Lipper）；FactSet 11/13 Q4 EPS 預估較 9/30 上修 1.1%，前瞻本益比 18.3 倍，依 11/20 收盤推算約 16.7 倍",
+      "dir": "利空",
+      "impact": "資金在 11/19–20 崩跌前仍在逢低買進，若下週轉為大幅流出代表投降賣壓；獲利預估未下修、估值已低於 5 年均值 19.8，是基本面支撐"
+    },
+    {
+      "cat": "政策",
+      "now": "Fed 利率 3.75–4.00%，10 月會議紀要「幾乎所有」官員認為需再升息；Waller 主張可考慮升 2 碼；CME 顯示 12 月升 1 碼近乎確定",
+      "dir": "利空",
+      "impact": "升 1 碼已大致反映；關鍵是 12/9 點陣圖與 1 月是否續升"
+    },
+    {
+      "cat": "政治角力",
+      "now": "臨時撥款 12/11 到期，兩黨領袖傾向再延；部分民主黨參議員要求限制伊朗戰費，川普力推 3,500 億美元國防追加；美國 11/16 擴大 AI 晶片出口許可，北京揚言反制",
+      "dir": "利空",
+      "impact": "短期關門風險不高但非零；美中晶片管制摩擦可能壓抑半導體"
+    }
+  ],
+  "levels": [
+    {
+      "t": "壓力",
+      "x": "7,665",
+      "d": "12/18 選擇權預期區間上緣（Squawkflow，11/19）"
+    },
+    {
+      "t": "壓力",
+      "x": "7,350",
+      "d": "11/5 收盤附近，11/18 未能守住（TheStreet Pro）"
+    },
+    {
+      "t": "壓力",
+      "x": "7,100–7,200",
+      "d": "摩根士丹利 10/30 所提支撐區，現已跌破"
+    },
+    {
+      "t": "支撐",
+      "x": "6,732",
+      "d": "12/18 選擇權預期區間下緣（Squawkflow，11/19）"
+    }
+  ],
+  "watch": [
+    "若 11/25 核心 PCE 月增 ≤0.2% 且 10 年債跌破 4.8%，則偏向樂觀情境",
+    "若 12/9 Fed 升 2 碼或點陣圖暗示 1 月續升，則偏向悲觀情境",
+    "若輝達與費半連續數日止跌、VIX 回落至 25 以下，且下週資金流向未轉為大幅流出，則由基準偏向樂觀",
+    "若 12/11 前未通過撥款或美伊衝突升級使布蘭特重回 $100，則偏向悲觀情境",
+    "若指數收盤跌破 6,732，則偏向悲觀情境"
+  ],
+  "calendar": [
+    {
+      "t": "台北 11/24 05:00（美東 11/23 16:00）",
+      "e": "紐約 Fed 總裁 Williams 談話"
+    },
+    {
+      "t": "台北 11/25 21:30（美東 11/25 08:30）",
+      "e": "第三季 GDP 修正值＋10 月 PCE"
+    },
+    {
+      "t": "台北 11/26 夜間（美東 11/26 全日）",
+      "e": "感恩節休市（11/27 美東 13:00 提前收盤）"
+    },
+    {
+      "t": "台北 12/4 21:30（美東 12/4 08:30）",
+      "e": "11 月非農就業"
+    },
+    {
+      "t": "台北 12/10 03:00（美東 12/9 14:00）",
+      "e": "FOMC 利率決議（盤後博通財報）"
+    },
+    {
+      "t": "台北 12/10 21:30（美東 12/10 08:30）",
+      "e": "11 月 CPI"
+    },
+    {
+      "t": "台北 12/12 13:00（美東 12/11 24:00）",
+      "e": "政府臨時撥款到期"
+    },
+    {
+      "t": "台北 12/18–19（美東 12/18）",
+      "e": "12 月季度選擇權到期"
+    }
+  ],
+  "review": {
+    "prev": "第 2 輪（11/21 06:49）基準：一個月後 6,750–7,200（45%）",
+    "actual": "之後仍無新交易日（週末），S&P 500 為 11/20 收盤 6,910.39",
+    "verdict": "尚無法判定（時間太短）",
+    "note": "尚無前一天的模擬可比對；新增資金流向（逢低買進）與獲利上修屬偏多，但資料早於 11/19–20 崩跌，故三情境機率維持 30/45/25，待 11/23 起新收盤再校準。"
+  },
+  "iter": {
+    "fixed": [
+      "部分改進：費半 11/20 仍無官方收盤；改以 Investing 10/20 收盤 11,283.8 算出近一月約 −25.5%（推算），並以 Yahoo「本週約 −17%」交叉檢查；下輪改用 SOXX ETF 收盤換算",
+      "已改：取得 AP 10/20 收盤（那指 26,424.82、道瓊 52,495.88），近一月改為 −14.4%／−8.3%；道瓊距 8/5 高點約 −11.4%（DIA 換算）",
+      "已改：納入 LSEG Lipper 截至 11/18 資金流向與 FactSet 11/13 獲利預估（Q4 EPS +1.1%、前瞻本益比 18.3 倍）"
+    ],
+    "pros": [
+      "四大指數「近一月」統一以 10/20 收盤為基期，可直接比較",
+      "新增資金流向與獲利預估兩項基本面依據，驅動因子不再只看價格與利率",
+      "10 年債、2 年債、美元指數以 Cappnotes 與 AP／Trading Economics 兩源核對"
+    ],
+    "cons": [
+      "資金流向資料只到 11/18，未涵蓋 11/19–20 崩跌後的贖回情況",
+      "崩跌後主要投行是否下修 S&P 500 目標價尚未查到，點位仍偏重選擇權區間",
+      "費半官方點位仍缺，近一月與距高點需改用 SOXX 或 Nasdaq 官方資料確認"
+    ]
+  },
+  "log": [
+    {
+      "round": 3,
+      "time": "11/21 10:34",
+      "outlook": "震盪偏多（高波動）",
+      "base": "S&P 500 一個月後 6,750–7,200（45%），機率維持 30/45/25",
+      "newData": false,
+      "pchg": 0,
+      "pros": [
+        "四大指數「近一月」統一以 10/20 收盤為基期，可直接比較",
+        "新增資金流向與獲利預估兩項基本面依據，驅動因子不再只看價格與利率",
+        "10 年債、2 年債、美元指數以 Cappnotes 與 AP／Trading Economics 兩源核對"
+      ],
+      "cons": [
+        "資金流向資料只到 11/18，未涵蓋 11/19–20 崩跌後的贖回情況",
+        "崩跌後主要投行是否下修 S&P 500 目標價尚未查到，點位仍偏重選擇權區間",
+        "費半官方點位仍缺，近一月與距高點需改用 SOXX 或 Nasdaq 官方資料確認"
+      ]
+    },
+    {
+      "round": 2,
+      "time": "11/21 06:49",
+      "outlook": "震盪偏多（高波動）",
+      "base": "S&P 500 一個月後 6,750–7,200（45%），樂觀上調至 30%",
+      "pros": [
+        "VIX、WTI 週資料補齊並以 FRED 與 Newsquawk 核對",
+        "利率與美元改為兩源核對，曲線更新為 +28bp",
+        "機率改用歷史統計校準，不再只憑主觀判斷"
+      ],
+      "cons": [
+        "費半 11/20 點位仍是推算值，尚無官方收盤",
+        "那指、道瓊的近一月與距高點仍用替代基期，未取得 10/20 收盤與道瓊歷史高點",
+        "未納入資金流向（EPFR／ICI）與企業獲利預估修正"
+      ],
+      "newData": false,
+      "pchg": 5
+    },
+    {
+      "round": 1,
+      "time": "11/21 06:42",
+      "outlook": "區間震盪（高波動）",
+      "base": "S&P 500 一個月後 6,750–7,200（45%），修正區內高波動整理",
+      "pros": [
+        "回補 22 個交易日 S&P 500 收盤（AP 逐日資料，缺漏日以點數變動交叉驗算）",
+        "情境區間以 VIX 換算一個月 ±8.7% 與 12/18 選擇權隱含 ±6.5% 雙重錨定",
+        "日程涵蓋 PCE、非農、FOMC、CPI、撥款到期與季到期，並換算台北時間"
+      ],
+      "cons": [
+        "VIX 與 WTI 的 11/20 收盤、費半點位未查到，週表原油暫以布蘭特代替",
+        "2 年債與美元指數只有單一來源且非 11/20 當日值",
+        "機率仍偏主觀，未引用「單週跌逾 8%」後一個月報酬的歷史統計"
+      ],
+      "newData": true
+    }
+  ],
+  "notion": "https://app.notion.com/p/41e1fdff98eb81879a4fd47c2be693a9",
+  "sources": [
+    {
+      "t": "AP：How major US stock indexes fared 11/20/2026",
+      "u": "https://mymotherlode.com/news/national/11327378/how-major-us-stock-indexes-fared-friday-11-20-2026.html"
+    },
+    {
+      "t": "AP/NPR：S&P 500 sinks 3.7%（11/20）",
+      "u": "https://www.wwno.org/npr-news/2026-11-20/s-p-500-sinks-3-7-and-the-nasdaq-composite-goes-negative-for-the-year"
+    },
+    {
+      "t": "Reuters/MarketScreener：Wall St ends sharply lower（11/20）",
+      "u": "https://www.marketscreener.com/news/wall-st-ends-sharply-lower-on-ai-selloff-s-p-500-dow-in-correction-ce785ed3dd80f527"
+    },
+    {
+      "t": "TradingKey：Nasdaq plunges 5%（11/20）",
+      "u": "https://tradingkey.com/analysis/stocks/us-stocks/262316111-nasdaq-falls-ai-stock-selloff-nvidia-sec-probe-tradingkey"
+    },
+    {
+      "t": "AP：How major US stock indexes fared 11/19/2026",
+      "u": "https://abcnews.com/Business/wireStory/major-us-stock-indexes-fared-thursday-11192026-138303454"
+    },
+    {
+      "t": "AP（La Nación 轉載）：逐日指數收盤 10/20–11/18",
+      "u": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-wednesday-11182026-nid18112026/"
+    },
+    {
+      "t": "Trading Economics：美國 10 年債新聞",
+      "u": "https://tradingeconomics.com/united-states/government-bond-yield/news/601580"
+    },
+    {
+      "t": "BabyPips：11 月美債標售解析",
+      "u": "https://www.babypips.com/analysis/explainer-treasury-auction-demand-bond-yields-2026-november"
+    },
+    {
+      "t": "Reuters/BOE Report：Oil prices fall（11/18）",
+      "u": "https://boereport.com/2026/11/18/oil-prices-fall-as-higher-us-crude-stocks-temper-supply-risks/amp/"
+    },
+    {
+      "t": "Newsquawk：WTI/Brent 結算（11/13）",
+      "u": "https://www.newsquawk.com/headlines/crude-wrap-wti-z6-settles-usd-018-lower-at-usd-8856bbl-brent-f7-settles-usd-002-higher-at-usd-9584bbl"
+    },
+    {
+      "t": "StockAnalysis：10 月 FOMC 會議紀要",
+      "u": "https://stockanalysis.com/news/fed-minutes-october-2026/"
+    },
+    {
+      "t": "BusinessDay：Waller 暗示更積極升息（11/18）",
+      "u": "https://www.businessday.co.za/world/americas/2026-11-18-waller-hints-at-more-aggressive-fed-response-over-inflation/"
+    },
+    {
+      "t": "Cboe：Week of 11/9 波動率週報",
+      "u": "https://www.cboe.com/insights/posts/week-of-11-9-2026-no-contagion-yet-equity-vol-spikes-macro-vol-fades"
+    },
+    {
+      "t": "Squawkflow：選擇權到期與預期波動",
+      "u": "https://squawkflow.com/opex/2026-11"
+    },
+    {
+      "t": "TheStreet Pro：S&P 500 fifth down day（11/18）",
+      "u": "https://pro.thestreet.com/market-commentary/a-concerning-nvidia-reversal-pulls-the-sp-500-to-a-fifth-down-day"
+    },
+    {
+      "t": "IBTimes：撥款期限與預算談判",
+      "u": "https://www.ibtimes.com/trump-funding-deadline-democrats-budget-talks-3809411"
+    },
+    {
+      "t": "China Briefing：APEC 深圳川習會（11/20）",
+      "u": "https://www.china-briefing.com/news/apec-2026-in-shenzhen-what-the-leaders-meeting-and-trump-xi-talks-mean-for-business/"
+    },
+    {
+      "t": "Al Jazeera：美國阻擋中國遠端取得 AI 晶片（11/17）",
+      "u": "https://aljazeera.com/economy/2026/11/17/us-moves-to-block-chinas-remote-access-to-ai-chips-amid-nvidia-scandal"
+    },
+    {
+      "t": "BLS：2026 年 12 月發布時程",
+      "u": "https://www.bls.gov/schedule/2026/12_sched_list.htm"
+    },
+    {
+      "t": "FRED：ICE BofA 高收益債利差",
+      "u": "https://fred.stlouisfed.org/series/BAMLH0A0HYM2"
+    },
+    {
+      "t": "FRED：VIXCLS",
+      "u": "https://fred.stlouisfed.org/series/VIXCLS"
+    },
+    {
+      "t": "Investing.com：Anthropic debut fails to revive AI trade",
+      "u": "https://www.investing.com/news/stock-market-news/wall-street-futures-fall-as-anthropic-debut-fails-to-revive-ai-trade-5040450"
+    },
+    {
+      "t": "Rigzone：Oil posts third weekly loss（11/20）",
+      "u": "https://www.rigzone.com/news/oil_posts_third_weekly_loss_amid_surplus-20-nov-2026-185141-article"
+    },
+    {
+      "t": "Newsquawk：EIA 原油庫存（11/13 週）",
+      "u": "https://www.newsquawk.com/headlines/us-eia-crude-oil-stocks-change-nov13-3380m-vs-exp--05m-prev-4657m"
+    },
+    {
+      "t": "247WallSt：Chip stocks reversal（11/20）",
+      "u": "https://247wallst.com/investing/2026/11/20/chip-stocks-just-had-a-reversal-last-seen-in-march-2020/"
+    },
+    {
+      "t": "Trading Economics：美國 2 年債",
+      "u": "https://tradingeconomics.com/united-states/2-year-note-yield"
+    },
+    {
+      "t": "MarketScreener：Dollar falls（11/20）",
+      "u": "https://www.marketscreener.com/news/dollar-falls-as-fed-fueled-rally-stalls-lower-us-yields-help-yen-ce785ed3da8af521"
+    },
+    {
+      "t": "ICFS：S&P 500 週跌幅後報酬統計",
+      "u": "https://icfs.com/specialists-desk/sp500-weekly-drops"
+    },
+    {
+      "t": "TheStreet Pro：六連跌後報酬（11/20）",
+      "u": "https://pro.thestreet.com/stock-market-today/2026-11-20"
+    },
+    {
+      "t": "AP（La Nación 轉載）：How major US stock indexes fared 10/20/2026",
+      "u": "https://www.lanacion.com.ar/usa/how-major-us-stock-indexes-fared-tuesday-10202026-nid20102026/"
+    },
+    {
+      "t": "Reuters：US equity funds draw inflows for a third straight week（11/20）",
+      "u": "https://www.1049thewolf.com/2026/11/20/us-equity-funds-draw-inflows-for-a-third-straight-week/"
+    },
+    {
+      "t": "FactSet Earnings Insight（11/13）",
+      "u": "https://advantage.factset.com/hubfs/Website/Resources%20Section/Research%20Desk/Earnings%20Insight/EarningsInsight_111326.pdf"
+    },
+    {
+      "t": "Cappnotes：Closing Look 11/20/2026",
+      "u": "https://cappnotes.substack.com/p/closing-look-friday-november-20-2026"
+    },
+    {
+      "t": "StockTitan：Stock Market Today 11/20/2026",
+      "u": "https://www.stocktitan.net/articles/stock-market-today-live-november-20-2026"
+    },
+    {
+      "t": "Yahoo Finance：Chips are crashing like it's 2008（11/20）",
+      "u": "https://finance.yahoo.com/markets/article/chips-are-crashing-like-its-2008-as-the-nasdaq-100-nears-a-bear-market-192805534.html"
+    },
+    {
+      "t": "Investing.com：費城半導體歷史資料",
+      "u": "https://ca.investing.com/indices/phlx-semiconductor-historical-data"
+    },
+    {
+      "t": "Cannon Trading：PCE 與感恩節週行事曆",
+      "u": "https://www.cannontrading.com/tools/support-resistance-levels/pce-nov-23-2026/"
+    }
+  ],
+  "today": "11/21",
+  "archive": [
+    {
+      "day": "11/21",
+      "made": "11/21 10:34",
+      "round": 3,
+      "start": {
+        "d": "11/20",
+        "v": 6910.39
+      },
+      "labels": [
+        "11/27",
+        "12/4",
+        "12/11",
+        "12/18"
+      ],
+      "bull": [
+        7080,
+        7220,
+        7330,
+        7430
+      ],
+      "base": [
+        7000,
+        6940,
+        6900,
+        6980
+      ],
+      "bear": [
+        6780,
+        6640,
+        6480,
+        6450
+      ],
+      "p": [
+        30,
+        45,
+        25
+      ]
+    }
+  ],
+  "freq": {
+    "now": "每 5 小時（A 級，已是上限）",
+    "why": "近 3 輪中只有第 1 輪有新收盤（1/3）；第 2、3 輪皆在週末，資料基準相同。11/20 S&P 500 單日 −3.7% 符合升級條件，但已是最高級 A，維持不變；降級需累積 6 輪紀錄。",
+    "rule": "每輪記錄是否有新收盤、情境機率變動幅度。累積滿 6 輪後評估：近 6 輪中 ≥4 輪無新收盤且機率變動 ≤5 個百分點 → 降一級；VIX ≥30 或 FOMC／CPI／非農前 1 個交易日且單日變動 ≥2% → 可升一級。級別：A 每 5 小時 → B 每交易日 2 次（台北 06:40 盤後、21:40 盤前）→ C 每交易日 1 次（台北 06:40 盤後）。",
+    "next": "累積滿 6 筆 newData 紀錄後評估（目前 3 筆），預計 11/22 晚間",
+    "changed": "—"
+  }
+}
+</script>
+<script data-keep>
+(function(){
+  var D = JSON.parse(document.getElementById('data').textContent);
+  function $(id){return document.getElementById(id);}
+  function esc(s){var d=document.createElement('div');d.textContent=String(s==null?'':s);return d.innerHTML;}
+  function sign(s){ if(s==null) return ''; s=String(s); if(s==='—'||s==='') return '';
+    var m=s.match(/（([+−-])/); if(m) return m[1]==='+'?'up':'down';
+    if(s[0]==='+') return 'up'; if(s[0]==='−'||s[0]==='-') return 'down'; return ''; }
+  function emptyMsg(el,msg){ el.innerHTML='<div class="empty">'+esc(msg||'本輪尚無資料')+'</div>'; }
+  function num(v){ return typeof v==='number'?v:parseFloat(String(v).replace(/,/g,'').replace('−','-')); }
+
+  $('date').textContent = '更新：' + D.updated;
+  $('round').textContent = '第 ' + D.round + ' 輪';
+  $('basis').textContent = D.basis;
+  $('lead').textContent = D.lead;
+  var F=D.freq||{};
+  $('freq').textContent = '更新頻率：'+(F.now||'—');
+  (function(){ var lg=D.log||[], k=lg.filter(function(g){return g.newData===true;}).length, m=lg.filter(function(g){return typeof g.newData==='boolean';}).length;
+    $('freqCard').innerHTML='<h3>⏱ 更新頻率：'+esc(F.now||'—')+'</h3>'+
+      (F.why?'<div class="ln" style="font-size:14px">'+esc(F.why)+'</div>':'')+
+      (m?'<div class="hint" style="margin:6px 0 0">近 '+m+' 輪中有新收盤資料：'+k+' 輪</div>':'')+
+      (F.rule?'<div class="hint" style="margin:6px 0 0">自我校正規則：'+esc(F.rule)+'</div>':'')+
+      (F.next?'<div class="hint" style="margin:4px 0 0">下次評估：'+esc(F.next)+'</div>':''); })();
+  $('outlook').textContent = '下月傾向：' + D.outlook;
+  $('horizon').textContent = D.horizon;
+  $('outlookWhy').textContent = D.outlookWhy;
+  if(D.summary.length) $('sumList').innerHTML = D.summary.map(function(s){return '<li>'+s+'</li>';}).join('');
+  else emptyMsg($('sumList').parentNode,'首輪分析完成後顯示 5 點總結');
+
+  // scenarios
+  var scCls={'樂觀':'bull','基準':'base','悲觀':'bear'}, scCol={'樂觀':'var(--up)','基準':'var(--blue)','悲觀':'var(--down)'};
+  if(D.scenarios.length){
+    $('scenarios').innerHTML = D.scenarios.map(function(s){
+      return '<div class="card sc '+(scCls[s.name]||'')+'"><div class="top"><span class="nm">'+esc(s.name)+'</span><span class="p">'+esc(s.p)+'%</span></div>'+
+        '<div class="bar"><i style="width:'+Math.max(0,Math.min(100,num(s.p)))+'%;background:'+(scCol[s.name]||'var(--gray)')+'"></i></div>'+
+        '<div class="rg">S&amp;P 500：'+esc(s.spx)+'</div>'+
+        (s.nas?'<div class="ln"><b>那斯達克</b>'+esc(s.nas)+'</div>':'')+
+        '<div class="ln"><b>劇本</b>'+esc(s.why)+'</div>'+
+        '<div class="ln"><b>觸發條件</b>'+esc(s.trigger)+'</div></div>';
+    }).join('');
+  } else { $('scenarios').innerHTML='<div class="card"><div class="empty">首輪分析完成後顯示樂觀／基準／悲觀三種情境與機率</div></div>'; }
+
+  // chart: actual + projections + past projections (archive)
+  function parseMD(s){ var p=String(s).split('/'); if(p.length<2) return null;
+    var mo=+p[0], da=parseInt(p[1],10); var uy=parseInt(String(D.updated||'').slice(0,4),10)||new Date().getFullYear();
+    var um=parseInt(String(D.updated||'').slice(5,7),10)||(new Date().getMonth()+1); var yr=uy;
+    if(mo-um>6) yr--; else if(um-mo>6) yr++; return Date.UTC(yr,mo-1,da)/864e5; }
+  function bdays(a,b){ var n=0; for(var t=a+1;t<=b;t++){ var w=new Date(t*864e5).getUTCDay(); if(w!==0&&w!==6) n++; } return n; }
+  var H0=D.hist||[], HD=H0.map(function(r){return parseMD(r.d);});
+  function idx(d){ var t=parseMD(d); if(t==null||!HD.length) return null; var n0=HD.length;
+    if(t<HD[0]) return null; if(t>HD[n0-1]) return n0-1+bdays(HD[n0-1],t);
+    for(var i=n0-1;i>=0;i--){ if(HD[i]<=t) return i; } return 0; }
+  var ARC=(D.archive||[]).filter(function(a){return a.day!==D.today && a.start && idx(a.start.d)!=null;});
+  (function(){
+    var P=D.proj||{labels:[]};
+    if(H0.length<2){ $('chart').innerHTML='<div class="empty">首輪分析完成後顯示走勢圖</div>'; return; }
+    var act=H0.map(function(r){return num(r.spx);}), n0=act.length, pl=(P.labels||[]).length;
+    var show=ARC.slice(0,5);
+    var all=act.slice(); ['bull','base','bear'].forEach(function(k){ (P[k]||[]).forEach(function(v){all.push(num(v));});
+      show.forEach(function(a){ (a[k]||[]).forEach(function(v){all.push(num(v));}); }); });
+    var pidx=(P.labels||[]).map(function(d,i){ var v=idx(d); return v==null?n0+i:v; });
+    var N=Math.max(n0, pl?pidx[pl-1]+1:n0);
+    show.forEach(function(a){ (a.labels||[]).forEach(function(d){ var v=idx(d); if(v!=null&&v+1>N) N=v+1; }); });
+    var lo=Math.min.apply(null,all), hi=Math.max.apply(null,all), pad=(hi-lo)*0.08||50;
+    var step=hi-lo>1500?500:(hi-lo>600?200:100);
+    var mn=Math.floor((lo-pad)/step)*step, mx=Math.ceil((hi+pad)/step)*step;
+    var W=340,Hh=220,L=36,R=10,T=16,B=26;
+    function x(i){return L+i*(W-L-R)/Math.max(1,N-1);}
+    function y(v){return T+(mx-v)/(mx-mn)*(Hh-T-B);}
+    var cs=getComputedStyle(document.documentElement); function c(k){return cs.getPropertyValue(k).trim();}
+    var ink=c('--ink'),sub=c('--sub'),line=c('--line'),up=c('--up'),dn=c('--down'),bl=c('--blue');
+    var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="S&P 500 過去一個月走勢、下個月三種情境模擬與前幾天的模擬">';
+    for(var g=mn; g<=mx+0.1; g+=step){ var gy=y(g);
+      s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'" stroke="'+line+'"/>';
+      s+='<text x="'+(L-4)+'" y="'+(gy+3)+'" font-size="9" fill="'+sub+'" text-anchor="end">'+Math.round(g).toLocaleString()+'</text>'; }
+    if(pl){ var xs=x(n0-1); s+='<rect x="'+xs+'" y="'+T+'" width="'+(W-R-xs)+'" height="'+(Hh-T-B)+'" fill="'+line+'" opacity=".35"/>';
+      s+='<text x="'+(xs+4)+'" y="'+(T+10)+'" font-size="9" fill="'+sub+'">模擬區</text>'; }
+    // past projections (faded)
+    show.slice().reverse().forEach(function(a,k){ var op=(0.2+0.4*(k+1)/show.length).toFixed(2), si=idx(a.start.d), sv=num(a.start.v);
+      [['bull',up],['base',bl],['bear',dn]].forEach(function(p){ var arr=a[p[0]]||[]; if(!arr.length) return;
+        var pts=[x(si).toFixed(1)+','+y(sv).toFixed(1)];
+        arr.forEach(function(v,i){ var xi=idx(a.labels[i]); if(xi!=null) pts.push(x(xi).toFixed(1)+','+y(num(v)).toFixed(1)); });
+        s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="1.3" stroke-dasharray="2 3" opacity="'+op+'"/>'; });
+      s+='<circle cx="'+x(si)+'" cy="'+y(sv)+'" r="2.6" fill="none" stroke="'+sub+'" stroke-width="1.2"/>';
+      s+='<text x="'+x(si)+'" y="'+(y(sv)-9)+'" font-size="8" fill="'+sub+'" text-anchor="middle">'+esc(a.day)+'</text>'; });
+    [['bull',up],['base',bl],['bear',dn]].forEach(function(p){
+      var arr=P[p[0]]||[]; if(!arr.length) return;
+      var pts=[x(n0-1).toFixed(1)+','+y(act[n0-1]).toFixed(1)];
+      arr.forEach(function(v,i){pts.push(x(pidx[i]).toFixed(1)+','+y(num(v)).toFixed(1));});
+      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="2" stroke-dasharray="5 3"/>';
+      var lv=num(arr[arr.length-1]); s+='<text x="'+(x(pidx[pl-1])-2)+'" y="'+(y(lv)-4)+'" font-size="9" font-weight="700" fill="'+p[1]+'" text-anchor="end">'+Math.round(lv).toLocaleString()+'</text>';
+    });
+    s+='<polyline points="'+act.map(function(v,i){return x(i).toFixed(1)+','+y(v).toFixed(1);}).join(' ')+'" fill="none" stroke="'+ink+'" stroke-width="2.4" stroke-linejoin="round"/>';
+    s+='<circle cx="'+x(n0-1)+'" cy="'+y(act[n0-1])+'" r="3.5" fill="'+ink+'"/>';
+    s+='<text x="'+(x(n0-1)-4)+'" y="'+(y(act[n0-1])+14)+'" font-size="10" font-weight="700" fill="'+ink+'" text-anchor="end">'+Math.round(act[n0-1]).toLocaleString()+'</text>';
+    var every=Math.max(1,Math.round(n0/4));
+    H0.forEach(function(r,i){ if((i%every===0&&i<n0-4)||i===n0-1) s+='<text x="'+x(i)+'" y="'+(Hh-8)+'" font-size="9" fill="'+sub+'" text-anchor="middle">'+esc(r.d)+'</text>'; });
+    (P.labels||[]).forEach(function(d,i){ if(i%2===1||i===pl-1) s+='<text x="'+x(pidx[i])+'" y="'+(Hh-8)+'" font-size="9" fill="'+bl+'" text-anchor="'+(i===pl-1?'end':'middle')+'">'+esc(d)+'</text>'; });
+    $('chart').innerHTML=s+'</svg>';
+  })();
+  $('projNote').textContent = D.projNote||'';
+
+  // accuracy of past projections
+  (function(){ var el=$('acc'); if(!el) return;
+    if(!ARC.length){ el.innerHTML='<div class="empty">尚無前幾天的模擬可比對（同一天的更新會覆蓋；隔天起保留前一天的模擬，並在此比對實際走勢）</div>'; return; }
+    var n0=H0.length, li=n0-1, lc=num(H0[li].spx), hit=0, cnt=0;
+    var rows=ARC.slice(0,5).map(function(a){ var si=idx(a.start.d), sv=num(a.start.v);
+      if(si>=li) return '<div class="kv"><span class="k">'+esc(a.day)+' 模擬（起點 '+esc(a.start.d)+'）</span><span class="v">尚無新交易日</span></div>';
+      function at(k){ var px=[si], py=[sv]; (a.labels||[]).forEach(function(d,i){ var xi=idx(d); if(xi!=null){px.push(xi);py.push(num(a[k][i]));} });
+        for(var j=1;j<px.length;j++){ if(li<=px[j]) return py[j-1]+(py[j]-py[j-1])*(li-px[j-1])/Math.max(1,px[j]-px[j-1]); } return py[py.length-1]; }
+      var bu=at('bull'), ba=at('base'), be=at('bear');
+      var near=[['樂觀',bu],['基準',ba],['悲觀',be]].sort(function(p,q){return Math.abs(p[1]-lc)-Math.abs(q[1]-lc);})[0][0];
+      var err=(lc/ba-1)*100, inBand=lc<=Math.max(bu,be)&&lc>=Math.min(bu,be); cnt++; if(near==='基準') hit++;
+      var es=(err>=0?'+':'−')+Math.abs(err).toFixed(1)+'%';
+      return '<div class="kv" style="display:block"><div class="k">'+esc(a.day)+' 的模擬（起點 '+esc(a.start.d)+' '+Math.round(sv).toLocaleString()+'）</div><div style="font-size:14px;margin-top:2px">'+
+        esc(H0[li].d)+' 實際 <b>'+Math.round(lc).toLocaleString()+'</b>｜同期基準 '+Math.round(ba).toLocaleString()+'｜<span class="'+(err>=0?'up':'down')+'">偏差 '+es+'</span>｜最接近'+near+(inBand?'':'｜<b>超出區間</b>')+'</div></div>'; });
+    el.innerHTML=(cnt?'<div class="hint" style="margin:0 0 8px">已可比對 '+cnt+' 次，最接近基準 '+hit+' 次</div>':'')+rows.join('');
+  })();
+
+  function table(el, cols, rows){
+    if(!rows.length){ el.innerHTML='<tbody><tr><td>首輪分析完成後顯示</td></tr></tbody>'; return; }
+    var h='<thead><tr>'+cols.map(function(c){return '<th>'+esc(c.h)+'</th>';}).join('')+'</tr></thead><tbody>';
+    rows.slice().reverse().forEach(function(r){
+      h+='<tr>'+cols.map(function(c){ var v=r[c.k]; var cls='';
+        if(c.color){ var s=sign(v); cls=s==='up'?'cu':(s==='down'?'cd':''); }
+        return '<td class="'+cls+'">'+esc(v==null?'—':v)+'</td>'; }).join('')+'</tr>'; });
+    el.innerHTML=h+'</tbody>';
+  }
+  table($('histTable'),[
+    {h:'週',k:'d'},{h:'S&P 500',k:'spx'},{h:'週漲跌',k:'chg',color:1},{h:'那指',k:'nas',color:1},
+    {h:'10年債',k:'y10'},{h:'VIX',k:'vix'},{h:'原油',k:'oil'},{h:'當週主因',k:'why'}
+  ], D.weekly||[]);
+
+  if(D.indices.length) $('indices').innerHTML = D.indices.map(function(s){
+    return '<div class="card stat"><div class="k">'+esc(s.k)+'</div><div class="v">'+esc(s.v)+
+      '</div><div class="d '+sign(s.d)+'">'+esc(s.d)+'</div><div class="n">'+esc(s.n)+'</div></div>'; }).join('');
+  else $('indices').innerHTML='<div class="card" style="grid-column:1/-1"><div class="empty">首輪分析完成後顯示</div></div>';
+
+  var dirCls={'利多':'pos','利空':'neg','中性':'neu'};
+  if(D.drivers.length) $('drivers').innerHTML = D.drivers.map(function(d){
+    return '<div class="drv"><span class="b '+(dirCls[d.dir]||'neu')+'">'+esc(d.dir)+'</span><div><div class="c">'+esc(d.cat)+'</div>'+
+      '<div class="now">'+esc(d.now)+'</div><div class="im">'+esc(d.impact)+'</div></div></div>'; }).join('');
+  else emptyMsg($('drivers'),'首輪分析完成後顯示：指數、美債、能源、國際新聞、金融、政策、政治角力');
+
+  if(D.levels.length) $('levels').innerHTML = D.levels.map(function(l){
+    return '<div class="lv"><span class="b '+(l.t==='支撐'?'s':'r')+'">'+esc(l.t)+'</span><span class="x">'+esc(l.x)+'</span><span class="t">'+esc(l.d)+'</span></div>'; }).join('');
+  else emptyMsg($('levels'));
+  if(D.watch.length) $('watch').innerHTML = D.watch.map(function(w){return '<li>'+esc(w)+'</li>';}).join('');
+  else emptyMsg($('watch'));
+
+  if(D.calendar.length) $('calendar').innerHTML = D.calendar.map(function(c){
+    return '<div class="kv"><span class="k">'+esc(c.t)+'</span><span class="v">'+esc(c.e)+'</span></div>'; }).join('');
+  else emptyMsg($('calendar'));
+
+  var R=D.review||{};
+  $('review').innerHTML = '<div class="kv"><span class="k">上輪預判</span><span class="v">'+esc(R.prev)+'</span></div>'+
+    '<div class="kv"><span class="k">之後實際</span><span class="v">'+esc(R.actual)+'</span></div>'+
+    '<div class="kv"><span class="k">判定</span><span class="v">'+esc(R.verdict)+'</span></div>'+
+    '<div class="hint" style="margin:8px 0 0">'+esc(R.note)+'</div>';
+
+  function ul(arr,cls){ return arr&&arr.length?'<ul>'+arr.map(function(a){return '<li class="'+(cls||'')+'">'+esc(a)+'</li>';}).join('')+'</ul>':'<div class="empty">—</div>'; }
+  var I=D.iter||{};
+  $('iterNow').innerHTML = '<h3>🔧 上輪缺點的改進</h3>'+ul(I.fixed)+'<h3 class="pro">👍 本輪三個優點</h3>'+ul(I.pros)+'<h3 class="con">👎 本輪三個缺點（下輪改進）</h3>'+ul(I.cons);
+
+  if(D.log.length) $('log').innerHTML = D.log.map(function(g){
+    return '<details><summary>第 '+esc(g.round)+' 輪｜'+esc(g.time)+'｜'+esc(g.outlook)+'</summary><div class="body">'+
+      (g.base?'<div>基準情境：'+esc(g.base)+'</div>':'')+
+      '<div class="pro" style="margin-top:4px">優點</div>'+ul(g.pros)+'<div class="con">缺點</div>'+ul(g.cons)+'</div></details>'; }).join('');
+  else emptyMsg($('log'),'尚無紀錄');
+  $('notionLink').innerHTML = D.notion?'完整迭代紀錄：<a href="'+esc(D.notion)+'">Notion</a>':'';
+
+  if(D.sources.length) $('src').innerHTML = D.sources.map(function(s){return '<li><a href="'+esc(s.u)+'">'+esc(s.t)+'</a></li>';}).join('');
+  else $('src').innerHTML='<li>—</li>';
+})();
+</script>
+<script data-keep>
+(function(){
+  // 下載用的乾淨原始碼（只保留 data-keep 的 script）
+  var SOURCE=(function(){ try{ var d=document.documentElement.cloneNode(true);
+    Array.prototype.slice.call(d.querySelectorAll('script:not([data-keep])')).forEach(function(s){ s.remove(); });
+    Array.prototype.slice.call(d.querySelectorAll('#toast')).forEach(function(t){ t.className='toast'; });
+    return '<!DOCTYPE html>\n'+d.outerHTML; }catch(e){ return ''; } })();
+  function $(id){ return document.getElementById(id); }
+  var D=JSON.parse($('data').textContent);
+  function toast(m){ var t=$('toast'); t.textContent=m; t.className='toast on'; setTimeout(function(){ t.className='toast'; },2200); }
+
+  // 自動更新：下載的網頁檔打開時，到 GitHub 檢查有沒有新一輪，有就直接換成最新版
+  var UPDATE_URL='https://raw.githubusercontent.com/haor741121-ship-it/tw-index/main/us-sim/index.html';
+  function isNewer(n,c){ var a=+n.round||0, b=+c.round||0; return a>b || (a===b && String(n.updated||'')>String(c.updated||'')); }
+  function checkUpdate(){
+    if(/github\.io$/.test(location.hostname) || !window.fetch) return;   // 固定網址本身就是最新版
+    var ctl=window.AbortController?new AbortController():null, to=setTimeout(function(){ if(ctl) ctl.abort(); },8000);
+    $('updState').textContent='檢查更新中…';
+    fetch(UPDATE_URL+'?t='+Date.now(),{cache:'no-store',signal:ctl?ctl.signal:undefined}).then(function(r){ return r.ok?r.text():null; }).then(function(txt){
+      clearTimeout(to);
+      if(!txt || !/^<!DOCTYPE html>/i.test(txt.trim())){ $('updState').textContent='無法檢查更新，顯示檔案內的第 '+D.round+' 輪'; return; }
+      var m=/<script id="data"[^>]*>([\s\S]*?)<\/script>/.exec(txt), N;
+      try{ N=JSON.parse(m[1]); }catch(e){ $('updState').textContent='無法檢查更新，顯示檔案內的第 '+D.round+' 輪'; return; }
+      if(!isNewer(N,D)){ $('updState').textContent='已是最新版（第 '+D.round+' 輪）'; return; }
+      window.__usUpdatedFrom=D.round;
+      document.open(); document.write(txt); document.close();
+    }).catch(function(){ clearTimeout(to); $('updState').textContent='無法檢查更新，顯示檔案內的第 '+D.round+' 輪'; });
+  }
+
+  $('copyBtn').onclick=function(){
+    if(!navigator.clipboard){ $('dlHint').textContent='此環境不支援複製'; return; }
+    navigator.clipboard.writeText(SOURCE).then(function(){ toast('已複製原始碼'); },function(){ $('dlHint').textContent='複製被瀏覽器拒絕'; });
+  };
+  $('dlBtn').onclick=function(){
+    var cap=window.__dl;
+    if(cap){ cap.save({filename:'us-sim.html',data:new Blob([SOURCE],{type:'text/html'})}).then(function(){ toast('已下載'); },function(){ $('dlHint').textContent='下載已取消或被拒絕'; }); return; }
+    try{ var a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([SOURCE],{type:'text/html'})); a.download='us-sim.html';
+      document.body.appendChild(a); a.click(); a.remove(); $('dlHint').textContent='若沒有開始下載，請改用「複製網頁原始碼」。';
+    }catch(e){ $('dlHint').textContent='此環境無法直接下載，請改用「複製網頁原始碼」。'; }
+  };
+  (function tryCap(n){ if(window.claude && window.claude.use){ window.claude.use('downloads').then(function(d){ if(d) window.__dl=d; },function(){}); }
+    else if(n<5) setTimeout(function(){ tryCap(n+1); },600); })(0);
+
+  if(window.__usUpdatedFrom!==undefined){ toast('已自動更新到第 '+D.round+' 輪'); $('updState').textContent='已從第 '+window.__usUpdatedFrom+' 輪自動更新到第 '+D.round+' 輪'; window.__usUpdatedFrom=undefined; }
+  else checkUpdate();
+})();
+</script>
+</body>
+</html>
