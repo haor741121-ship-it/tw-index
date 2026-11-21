@@ -132,6 +132,13 @@ async def scenario(p, mode):
         check(tag + '盤前顯示尚未開盤說明', '尚未開盤' in mk and tdl_ in mk, mk)
     else:
         check(tag + '交易日不顯示休市說明', '休市' not in mk, mk or '（無）')
+    # 國定假日休市說明（用固定日期呼叫頁面的判斷函式）
+    hn = await pg.evaluate("window.__twMktNote({date:'2026-12-25',wd:'Fri',mins:600}, '2026-12-24')")
+    check(tag + '國定假日（12/25 行憲紀念日）顯示休市說明', '休市' in hn and '行憲紀念日' in hn and '12/24（週四）' in hn, hn)
+    wn = await pg.evaluate("window.__twMktNote({date:'2026-12-24',wd:'Thu',mins:600}, '2026-12-24')")
+    check(tag + '一般交易日盤中不顯示休市說明', wn == '', wn or '（無）')
+    pn = await pg.evaluate("window.__twMktNote({date:'2026-12-28',wd:'Mon',mins:480}, '2026-12-24')")
+    check(tag + '假日後盤前顯示尚未開盤', '尚未開盤' in pn and '12/24' in pn, pn)
     mt = await pg.inner_text('#modeText')
     if mode == 'csp':
         check(tag + '在 Claude App 環境說明「不能連外」而不是「連線失敗」', '不能連外' in mt and '失敗' not in mt, mt)
