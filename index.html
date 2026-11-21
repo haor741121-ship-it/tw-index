@@ -1,8 +1,6 @@
 <!DOCTYPE html>
-<html lang="zh-Hant-TW"><head><!-- frame-runtime --><!-- /frame-runtime --><meta charset="utf8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
-
-
-
+<html lang="zh-Hant-TW">
+<head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -69,6 +67,7 @@
   tr:last-child td{border-bottom:none}
   td.cu{color:var(--up);background:var(--upbg)} td.cd{color:var(--down);background:var(--downbg)}
   td small{display:block;font-size:11px;font-weight:600}
+  @media (max-width:420px){ table{font-size:12.5px} th,td{padding:7px 5px} th{font-size:11px} }
   .hint{font-size:12px;color:var(--sub);margin:6px 2px 0}
   .btns{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
   .lastChk{font-size:12px;color:var(--sub)}
@@ -97,14 +96,26 @@
   .log ul{margin:4px 0 0;padding-left:18px} .log li{margin:2px 0;font-size:14px}
   .log .ref{font-size:13px;color:var(--sub);margin-top:4px}
   details summary{cursor:pointer;color:var(--blue);font-size:14px;margin-top:6px}
+  .sechead{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 0 10px}
+  .sechead h2{margin:0}
+  .sechead button{font-size:13px;padding:5px 12px}
+  .log{gap:0;padding:4px 14px}
+  .log details.entry{border-bottom:1px solid var(--line)}
+  .log details.entry:last-child{border-bottom:none}
+  .log details.entry>summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 0;margin:0;color:var(--ink);min-height:24px}
+  .log details.entry>summary::-webkit-details-marker{display:none}
+  .log details.entry>summary::after{content:"";width:7px;height:7px;flex:0 0 auto;border-right:2px solid var(--sub);border-bottom:2px solid var(--sub);transform:rotate(45deg);transition:transform .15s;margin:0 4px 3px auto}
+  .log details.entry[open]>summary::after{transform:rotate(-135deg);margin-bottom:-3px}
+  .log details.entry>summary .cnt{font-size:12px;color:var(--sub);white-space:nowrap}
+  .log details.entry .body{padding:0 0 10px}
   footer{margin-top:28px;font-size:12px;color:var(--sub)}
   footer a{color:var(--blue)}
   .toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);background:var(--ink);color:var(--bg);
     padding:8px 14px;border-radius:10px;font-size:14px;opacity:0;transition:opacity .3s;pointer-events:none}
   .toast.on{opacity:1}
 </style>
-
-
+</head>
+<body>
 <div class="wrap">
   <header>
     <div class="date" id="today"></div>
@@ -124,6 +135,7 @@
       <div class="big" id="price">—</div>
       <div class="chg" id="chg"></div>
       <div class="meta" id="asof"></div>
+      <div class="meta" id="mktNote" hidden></div>
     </div>
     <div class="grid" id="ohlc"></div>
     <div class="grid" id="otcBox"></div>
@@ -132,12 +144,12 @@
 
   <section id="trend">
     <h2>走勢</h2>
-    <div class="card chart" id="intraWrap" hidden="">
-      <div style="font-weight:700;margin-bottom:4px">盤中走勢（1 分鐘）</div>
+    <div class="card chart" id="intraWrap" hidden>
+      <div style="font-weight:700;margin-bottom:4px" id="intraTitle">盤中走勢（1 分鐘）</div>
       <div id="intra"></div>
       <div class="hint">虛線＝昨收；線條紅色代表目前高於昨收、綠色代表低於昨收</div>
     </div>
-    <div class="card chart" id="dailyWrap" style="margin-top:10px" hidden="">
+    <div class="card chart" id="dailyWrap" style="margin-top:10px" hidden>
       <div style="font-weight:700;margin-bottom:4px" id="dailyTitle">近期收盤</div>
       <div id="daily"></div>
       <div class="legend" id="dailyLegend">
@@ -145,7 +157,7 @@
         <span><i style="background:var(--fx)"></i>美元兌新台幣（右軸，數字越大＝台幣越貶）</span>
       </div>
     </div>
-    <div class="card" id="trendEmpty" hidden=""><span class="src">目前沒有足夠的走勢資料（即時來源連線成功時才會顯示盤中線圖）。</span></div>
+    <div class="card" id="trendEmpty" hidden><span class="src">目前沒有足夠的走勢資料（即時來源連線成功時才會顯示盤中線圖）。</span></div>
   </section>
 
   <section id="chips">
@@ -154,11 +166,11 @@
     <div style="font-weight:700;margin:4px 2px 6px">三大法人買賣超（億元）</div>
     <div class="tbl"><table id="instTbl"></table></div>
     <div style="font-weight:700;margin:14px 2px 6px">融資融券餘額（上市）</div>
-    <div class="hint" id="marginLag" style="margin:-2px 2px 6px" hidden=""></div>
+    <div class="hint" id="marginLag" style="margin:-2px 2px 6px" hidden></div>
     <div class="tbl"><table id="marginTbl"></table></div>
     <div style="font-weight:700;margin:14px 2px 6px">外資台指期（大台）未平倉淨口數</div>
     <div class="tbl"><table id="futTbl"></table></div>
-    <div class="hint">← 表格可左右滑動｜紅＝買超／增加、綠＝賣超／減少｜融資融券約晚上 9 點後才有當日資料</div>
+    <div class="hint">紅＝買超／增加、綠＝賣超／減少｜融資融券約晚上 9 點後才有當日資料</div>
   </section>
 
   <section id="ana">
@@ -181,8 +193,8 @@
     </div>
     <div class="mini">
       <div class="card chart ana" id="futWrap">
-        <div class="ttl">外資台指期淨口數</div>
-        <div class="sub">負值＝淨空單；長條越往下，外資避險或看空部位越大</div>
+        <div class="ttl">外資台指期淨口數：每日增減</div>
+        <div class="sub" id="futSub">紅＝淨口數增加（空單減少）、綠＝淨口數減少（空單增加）；點圖可看當日淨口數</div>
         <div id="futChart"></div>
         <div class="readout" id="futRead"></div>
       </div>
@@ -200,7 +212,7 @@
     <h2>資料來源與更新方式</h2>
     <div class="card note">
       <p><b>即時模式</b>頁面打開時先抓鉅亨網的即時報價（加權、櫃買、盤中分鐘走勢、美元兌台幣），失敗再改用 FinMind 開放資料的日收盤。三大法人、融資融券、外資台指期淨口數來自 FinMind 開放資料（整理自證交所、期交所公告）。盤中（週一至週五 9:00–13:30）每 30 秒自動更新一次。</p>
-      <p><b>快照模式</b>若所在環境擋住對外連線（例如在 Claude 的網頁預覽裡），會改顯示排程每 2 小時寫入的最新快照，並標示快照時間。</p>
+      <p><b>快照模式</b>若所在環境擋住對外連線（例如在 Claude 的網頁預覽裡），會改顯示排程每 5 小時寫入的最新快照，並標示快照時間。</p>
       <p><b>小提醒</b>兩個來源都是第三方免費介面，偶爾會失敗；按「重新整理」再試一次即可。正式數據以證交所公告為準。</p>
     </div>
     <ul class="src" id="tryLog"></ul>
@@ -218,7 +230,7 @@
   </section>
 
   <section id="iter">
-    <h2>迭代紀錄</h2>
+    <div class="sechead"><h2>迭代紀錄</h2><button id="logToggle" type="button" aria-controls="logList">全部展開</button></div>
     <div class="card log" id="logList"></div>
   </section>
 
@@ -229,87 +241,23 @@
 </div>
 <div class="toast" id="toast"></div>
 
-<!-- 排程每 2 小時更新的快照（即時抓取失敗時顯示） -->
-<script id="snapshot" type="application/json" data-keep="">{"updated":"2026-11-20 18:55","tradeDate":"2026-11-20","status":"收盤","taiex":{"close":36033.29,"prev":38426.89,"open":37646.13,"high":37646.13,"low":35738.68,"turnover":8773.5},"otc":{"close":263.31,"prev":285.33},"recent":[{"d":"2026-10-20","c":46292.93,"fx":32.617},{"d":"2026-10-21","c":46887.77,"fx":32.488},{"d":"2026-10-22","c":46041.43,"fx":32.508},{"d":"2026-10-27","c":46096.23,"fx":32.452},{"d":"2026-10-28","c":47035.58,"fx":32.418},{"d":"2026-10-29","c":46368.33,"fx":32.492},{"d":"2026-10-30","c":45211.83,"fx":32.478},{"d":"2026-11-02","c":44920.14,"fx":32.592},{"d":"2026-11-03","c":43307.54,"fx":32.76},{"d":"2026-11-04","c":42948.91,"fx":32.821},{"d":"2026-11-05","c":41574.72,"fx":32.876},{"d":"2026-11-06","c":39701.64,"fx":32.768},{"d":"2026-11-09","c":41661.7,"fx":32.882},{"d":"2026-11-10","c":42711.92,"fx":32.865},{"d":"2026-11-11","c":44257.15,"fx":32.86},{"d":"2026-11-12","c":43091.87,"fx":32.889},{"d":"2026-11-13","c":43675.12,"fx":32.838},{"d":"2026-11-16","c":41040.08,"fx":32.886},{"d":"2026-11-17","c":40092.11,"fx":32.85},{"d":"2026-11-18","c":40194.91,"fx":32.947},{"d":"2026-11-19","c":38426.89,"fx":32.942},{"d":"2026-11-20","c":36033.29,"fx":32.937}],"source":"中央社 2026/11/20 收盤報導；鉅亨網日線與匯率；FinMind 開放資料（三大法人、融資融券、外資台指期）","chips":{"inst":[{"d":"2026-11-09","f":-900.56,"t":313.12,"p":-312.19,"s":-899.63},{"d":"2026-11-10","f":-341.17,"t":398.91,"p":-175.36,"s":-117.62},{"d":"2026-11-11","f":-7.66,"t":185.85,"p":62.57,"s":240.76},{"d":"2026-11-12","f":-6.85,"t":125.68,"p":-65.41,"s":53.42},{"d":"2026-11-13","f":288.37,"t":95.39,"p":68.92,"s":452.68},{"d":"2026-11-16","f":-701.89,"t":-183.02,"p":-259.03,"s":-1143.94},{"d":"2026-11-17","f":-380.94,"t":-38.21,"p":-156.96,"s":-576.11},{"d":"2026-11-18","f":-765.64,"t":166.12,"p":-42.01,"s":-641.53},{"d":"2026-11-19","f":-243.12,"t":43.9,"p":-233.03,"s":-432.25},{"d":"2026-11-20","f":-94.13,"t":-87.49,"p":-340.84,"s":-522.46}],"margin":[{"d":"2026-11-06","m":5340.53,"s":242766},{"d":"2026-11-09","m":5399.16,"s":222076},{"d":"2026-11-10","m":5366.79,"s":211131},{"d":"2026-11-11","m":5411.58,"s":209019},{"d":"2026-11-12","m":5334.75,"s":210522},{"d":"2026-11-13","m":5365.99,"s":208773},{"d":"2026-11-16","m":5244.98,"s":217384},{"d":"2026-11-17","m":5087.21,"s":207959},{"d":"2026-11-18","m":5080.27,"s":193544},{"d":"2026-11-19","m":4843.68,"s":209819}],"fut":[{"d":"2026-11-09","n":-101771},{"d":"2026-11-10","n":-103473},{"d":"2026-11-11","n":-104271},{"d":"2026-11-12","n":-99573},{"d":"2026-11-13","n":-100870},{"d":"2026-11-16","n":-96787},{"d":"2026-11-17","n":-97896},{"d":"2026-11-18","n":-99438},{"d":"2026-11-19","n":-99219},{"d":"2026-11-20","n":-97863}]}}</script>
+<!-- 排程每 5 小時更新的快照（即時抓取失敗時顯示） -->
+<script id="snapshot" type="application/json" data-keep>{"updated":"2026-11-21 10:55","tradeDate":"2026-11-20","status":"收盤","taiex":{"close":36033.29,"prev":38426.89,"open":37646.13,"high":37646.13,"low":35738.68,"turnover":8773.5},"otc":{"close":263.31,"prev":285.33},"recent":[{"d":"2026-10-20","c":46292.93,"fx":32.617},{"d":"2026-10-21","c":46887.77,"fx":32.488},{"d":"2026-10-22","c":46041.43,"fx":32.508},{"d":"2026-10-27","c":46096.23,"fx":32.452},{"d":"2026-10-28","c":47035.58,"fx":32.418},{"d":"2026-10-29","c":46368.33,"fx":32.492},{"d":"2026-10-30","c":45211.83,"fx":32.478},{"d":"2026-11-02","c":44920.14,"fx":32.592},{"d":"2026-11-03","c":43307.54,"fx":32.76},{"d":"2026-11-04","c":42948.91,"fx":32.821},{"d":"2026-11-05","c":41574.72,"fx":32.876},{"d":"2026-11-06","c":39701.64,"fx":32.768},{"d":"2026-11-09","c":41661.7,"fx":32.882},{"d":"2026-11-10","c":42711.92,"fx":32.865},{"d":"2026-11-11","c":44257.15,"fx":32.86},{"d":"2026-11-12","c":43091.87,"fx":32.889},{"d":"2026-11-13","c":43675.12,"fx":32.838},{"d":"2026-11-16","c":41040.08,"fx":32.886},{"d":"2026-11-17","c":40092.11,"fx":32.85},{"d":"2026-11-18","c":40194.91,"fx":32.947},{"d":"2026-11-19","c":38426.89,"fx":32.942},{"d":"2026-11-20","c":36033.29,"fx":32.937}],"source":"中央社 2026/11/20 收盤報導（成交金額 8,773.50 億元已核對）；中央社 11/20 融資餘額報導（與區塊客、壹蘋核對）；鉅亨網日線與匯率；FinMind 開放資料（三大法人、融資融券、外資台指期）","chips":{"inst":[{"d":"2026-11-09","f":-900.56,"t":313.12,"p":-312.19,"s":-899.63},{"d":"2026-11-10","f":-341.17,"t":398.91,"p":-175.36,"s":-117.62},{"d":"2026-11-11","f":-7.66,"t":185.85,"p":62.57,"s":240.76},{"d":"2026-11-12","f":-6.85,"t":125.68,"p":-65.41,"s":53.42},{"d":"2026-11-13","f":288.37,"t":95.39,"p":68.92,"s":452.68},{"d":"2026-11-16","f":-701.89,"t":-183.02,"p":-259.03,"s":-1143.94},{"d":"2026-11-17","f":-380.94,"t":-38.21,"p":-156.96,"s":-576.11},{"d":"2026-11-18","f":-765.64,"t":166.12,"p":-42.01,"s":-641.53},{"d":"2026-11-19","f":-243.12,"t":43.9,"p":-233.03,"s":-432.25},{"d":"2026-11-20","f":-94.13,"t":-87.49,"p":-340.84,"s":-522.46}],"margin":[{"d":"2026-11-06","m":5340.53,"s":242766},{"d":"2026-11-09","m":5399.16,"s":222076},{"d":"2026-11-10","m":5366.79,"s":211131},{"d":"2026-11-11","m":5411.58,"s":209019},{"d":"2026-11-12","m":5334.75,"s":210522},{"d":"2026-11-13","m":5365.99,"s":208773},{"d":"2026-11-16","m":5244.98,"s":217384},{"d":"2026-11-17","m":5087.21,"s":207959},{"d":"2026-11-18","m":5080.27,"s":193544},{"d":"2026-11-19","m":4843.68,"s":209819},{"d":"2026-11-20","m":4352.27,"s":null}],"fut":[{"d":"2026-11-09","n":-101771},{"d":"2026-11-10","n":-103473},{"d":"2026-11-11","n":-104271},{"d":"2026-11-12","n":-99573},{"d":"2026-11-13","n":-100870},{"d":"2026-11-16","n":-96787},{"d":"2026-11-17","n":-97896},{"d":"2026-11-18","n":-99438},{"d":"2026-11-19","n":-99219},{"d":"2026-11-20","n":-97863}]}}</script>
 
 <!-- 迭代紀錄（新的放最前面） -->
-<script id="iterlog" type="application/json" data-keep="">[
- {
-  "time": "台北時間 2026-11-20 19:58",
-  "version": "v1.5",
-  "items": [
-   "依使用者要求：「重新整理」按鈕與「上次檢查」移到頁面最上方標題旁",
-   "新增「分析圖表」區塊（導覽列加「分析」）：近一個月統計卡（區間漲跌、距高點、最大回檔、漲跌天數與日波動、外資與三大法人近 10 日累計及連續買賣超天數）",
-   "新增收盤與均線圖（5 日＋20 日；快照只有約一個月資料時改用 10 日），並標示乖離率與短線多空",
-   "新增三大法人每日買賣超堆疊長條（外資／投信／自營商＋合計圓點）、外資台指期淨口數長條、上市融資餘額走勢",
-   "所有新圖可點擊或滑動查看各日數值；配色經色盲與深淺色模式檢查；即時模式日線改抓約 60 日供 20 日均線計算，近一個月圖仍只畫最後 22 日",
-   "功能測試新增 33 項（按鈕位置、分析統計、四張圖有資料與點擊互動 × 三種情境），共 122 項全數通過；淺色與深色截圖確認正常"
-  ],
-  "reflection": "外資期貨淨口數長條以 0 為基準，日變化不明顯，之後可加一張「日增減」小圖；統計卡在快照模式只用 22 日資料。下次優先：補 11/20 融資融券、清理檔尾多餘的 </body></html>。"
- },
- {
-  "time": "台北時間 2026-11-20 18:56",
-  "version": "v1.4",
-  "items": [
-   "「重新整理」按鈕旁新增「上次檢查 HH:MM」與結果（即時／未連上／此環境不能連外），每次自動或手動更新後刷新，方便確認頁面是否還在更新",
-   "快照：11/20 收盤數值（加權 36,033.29、櫃買 263.31、三大法人合計賣超 522.46 億元、外資台指期淨空 97,863 口）沿用上次已核對的資料；本次搜尋未找到新的第二來源，未更動數字，只更新快照時間為 18:55",
-   "融資融券 11/20 尚未公布（約晚上 9 點後），保留 11/19 值（融資 4,843.68 億元、融券 209,819 張）",
-   "功能測試新增 3 項（上次檢查標示 × 三種情境），三種情境共 89 項全數通過；截圖確認即時與斷線畫面正常"
-  ],
-  "reflection": "融資融券 11/20 與成交金額 8,773.5 億元仍待第二來源核對，下次排程（晚上 9 點後）補上。下次優先：籌碼表在 390px 寬度時第一欄固定後的可讀性、檔尾多餘的 </body></html> 清理。"
- },
- {
-  "time": "台北時間 2026-11-20 16:58",
-  "version": "v1.3",
-  "items": [
-   "融資融券表上方新增提示：當融資融券比三大法人少一天時，標示「最新為 11/19；11/20 的融資融券約晚上 9 點後公布」，避免誤以為資料漏抓",
-   "指數卡片在快照模式改為「交易日 2026-11-20（收盤）｜快照時間 2026-11-20 16:55」，原本「資料時間 收盤」語意不清",
-   "深色模式加上對應的 theme-color（手機瀏覽器頂部列不再是淺色）",
-   "快照：核對中央社、Yahoo 新聞報導，11/20 加權收 36,033.29（−2,393.60）、三大法人合計賣超 522.46 億元，與快照一致，只更新快照時間為 16:55；融資融券 11/20 尚未公布，保留 11/19 值",
-   "功能測試新增 6 項（融資融券落後標示、指數卡片時間標示 × 三種情境），共 86 項全數通過"
-  ],
-  "reflection": "融資融券 11/20 數值需等晚上 9 點後的排程補上；成交金額 8,773.5 億元本次未再找到第二來源核對。下次優先：重新整理按鈕旁顯示「上次更新 HH:MM」、籌碼表在 390px 寬度時第一欄固定後的可讀性再檢查。"
- },
- {
-  "time": "2026-11-20 16:08",
-  "version": "v1.2",
-  "items": [
-   "問題：手機在 Claude App 打開時顯示「即時連線失敗」。查證：資料來源本身正常（從一般瀏覽器與本機檔案環境實測都能連），是 Claude App 的安全政策禁止網頁連外",
-   "改為自動偵測這種環境：不再顯示「連線失敗」，改說明「在 Claude App 裡不能連外，顯示排程快照」並附快照時間與距今多久",
-   "真的斷線時另外提示「暫時連不上，可按重新整理再試」",
-   "功能測試新增「模擬 Claude App 禁止連外」情境，三種情境共 80 項全數通過"
-  ],
-  "reflection": "Claude App 內只能看快照，最多落後 2 小時；iPhone 要即時，需要把網頁放到公開網址（例如 GitHub Pages）。"
- },
- {
-  "time": "2026-11-20 16:05",
-  "version": "v1.1",
-  "items": [
-   "近一個月收盤圖加上副座標：美元兌新台幣（右軸），附圖例",
-   "新增「籌碼（近 10 日）」：三大法人買賣超（外資／投信／自營商／合計）、上市融資融券餘額與單日增減、外資台指期（大台）未平倉淨口數與增減",
-   "籌碼與匯率在一般瀏覽器即時抓（FinMind、鉅亨網，已實測可直接連線）；抓不到時顯示快照",
-   "新增自動化功能測試（51 項）：重新整理、導覽列 6 個按鈕、下載（含下載後的檔案能否開啟執行）、複製原始碼、即時與斷線兩種情境、手機寬度不溢出，全部通過",
-   "快照補上 10/20 起的匯率與近 10 日籌碼資料"
-  ],
-  "reflection": "融資融券當日資料要晚上才公布，盤中會缺最新一天；FinMind 免費額度有限，籌碼只在開頁時抓、不跟著 30 秒更新。之後可評估加入 0050、00878 等個股報價。"
- },
- {
-  "time": "2026-11-20 15:55",
-  "version": "v1.0",
-  "items": [
-   "建立第一版：手機友善排版（沿用台股盤前分析的卡片、膠囊導覽列、紅漲綠跌、深色模式）",
-   "實測資料來源：證交所 MIS、Yahoo、證交所 OpenAPI 從瀏覽器直接抓都被擋（CORS），公開轉接服務也全數失敗；改用實測可直接抓的鉅亨網即時報價為主、FinMind 日收盤為備援",
-   "顯示加權指數、漲跌、開高低昨收、櫃買指數、盤中 1 分鐘走勢與近一個月收盤",
-   "盤中每 30 秒自動更新；切回此頁時立即更新",
-   "抓不到即時資料時改顯示排程快照，並標示快照時間",
-   "新增下載網頁檔與複製原始碼，讓手機不用開 Claude 也能看",
-   "新增本迭代紀錄區塊（每 2 小時排程檢查後追加）"
-  ],
-  "reflection": "Claude 的網頁預覽會擋住對外連線，所以分享連結裡看到的是排程快照；下載的網頁檔在一般瀏覽器開啟才會即時抓。iPhone 若要全程即時，可考慮放到 GitHub Pages 等公開靜態空間。"
- }
-]</script>
+<script id="iterlog" type="application/json" data-keep>[{"time": "台北時間 2026-11-21 13:45", "version": "v2.0", "items": ["迭代紀錄改成可收合：每筆以日期、版本、項目數為標題，點標題展開或收合；預設只展開最新一筆", "迭代紀錄標題旁新增「全部展開／全部收合」按鈕，按鈕文字會依目前狀態切換", "功能測試新增迭代紀錄收合 5 項（× 三種情境），共 164 項全數通過；手機 390px 截圖確認版面正常", "快照數值未變動（今天週六休市）"], "reflection": "之後每次排程新增的紀錄會自動套用收合樣式。待改：快照 recent 延長到約 40 日讓 20 日均線可算；國定假日休市說明。"},
+{"time": "台北時間 2026-11-21 10:55", "version": "v1.9", "items": ["指數卡片新增休市／盤前說明：週末顯示「今天週六休市，顯示最近交易日 11/20（週五）收盤」，平日 9:00 前顯示「今天尚未開盤」，避免把上一交易日數字誤看成今天", "快照：今天週六休市，加權 36,033.29（−2,393.60）、櫃買 263.31、三大法人合計賣超 522.46 億元、外資台指期淨空 97,863 口、上市融資餘額 4,352.27 億元等 11/20 數值沿用已核對資料，只更新快照時間為 2026-11-21 10:55", "11/20 融券餘額再搜尋（中央社、華視、知新聞、壹蘋、Yahoo 股市）仍無數值，維持「—」不編造", "功能測試新增：休市說明（× 三種情境），共 146 項全數通過；即時與斷線截圖確認正常"], "reflection": "11/20 融券餘額仍缺，下週一盤後若 FinMind 或新聞有數值再補；週日休市只更新快照時間。平日盤前分支這次只在週六測到週末分支，下次在平日執行時確認。待改：快照 recent 延長到約 40 日讓 20 日均線可算（需逐日核對收盤，不可編造）；國定假日（非週末）休市目前不會顯示說明。"},
+{"time": "台北時間 2026-11-21 05:55", "version": "v1.8", "items": ["盤中走勢標題加上日期：非交易時段顯示前一交易日分鐘線時標示「MM/DD（最近交易日，非今日）」，盤中標示「盤中」，避免週末或盤前誤以為是今天的走勢", "快照：今天週六休市，加權 36,033.29（−2,393.60）、櫃買 263.31、三大法人合計賣超 522.46 億元、外資台指期淨空 97,863 口、上市融資餘額 4,352.27 億元等 11/20 數值沿用已核對資料，只更新快照時間為 2026-11-21 05:55", "11/20 融資餘額 4,352.27 億元（減 491.41 億元）再以知新聞、CMoney 兩處核對一致；11/20 融券餘額再找鏡週刊、知新聞、豐雲學堂（中央社稿）、CMoney 仍查不到，維持「—」不編造", "功能測試新增：盤中走勢標題日期標示（即時情境），共 143 項全數通過；即時與斷線截圖確認正常"], "reflection": "11/20 融券餘額仍缺，下週一盤後若 FinMind 或證交所新聞有 11/20 數值再補；週日休市只更新快照時間。待改：分析圖表在快照模式只有 22 日資料（可把 recent 延長到約 40 日讓 20 日均線可算）；快照模式下週末可在指數卡片註明「週末休市」。"},
+{"time": "台北時間 2026-11-21 00:57", "version": "v1.7", "items": ["修正融資融券表：前後兩天有一天缺值時，增減改顯示「—」；原本缺值會被當成 0，例如融券未公布時會算出假的「−209,819 張」", "融資融券表上方新增提示：最新一天融券餘額還沒取得時標示「11/20 融券餘額尚未取得，暫顯示「—」」", "手機（420px 以下）籌碼表縮小字級與欄距，390px 寬度下三張表不用左右滑動就能看完所有欄位；移除已不需要的「表格可左右滑動」提示", "快照：補上 11/20 上市融資餘額 4,352.27 億元（較前日減 491.41 億元，單日減幅約 10.15%），中央社、區塊客、壹蘋三家報導一致；11/20 融券餘額本次查不到（證交所頁面無法讀取、新聞未提供），先留空不編造", "加權、櫃買、三大法人、外資台指期 11/20 數值沿用已核對資料；今天週六休市，只更新快照時間為 2026-11-21 00:57", "功能測試新增：融券缺值顯示「—」、三張籌碼表 390px 完整顯示（× 三種情境），共 142 項全數通過；即時與斷線截圖確認正常"], "reflection": "11/20 融券餘額仍缺，下次排程優先再找第二來源（鉅亨、聚財網盤後統計）補上。週末休市期間只更新快照時間。待改：盤中走勢在非交易時段仍顯示前一交易日分鐘線，標題可加上日期；分析圖表在快照模式只有 22 日資料。"},
+{"time": "台北時間 2026-11-20 20:56", "version": "v1.6", "items": ["分析圖表「外資台指期淨口數」改畫每日增減長條（紅＝淨口數增加、綠＝減少），原本以 0 為基準的淨口數長條日變化看不出來；點圖讀數同時顯示增減與當日淨口數", "清理原始檔：移除檔頭多包的一層外框（第二個 doctype 宣告）與檔尾多餘的 body／html 結束標籤，下載與複製的原始碼更乾淨", "快照：以中央社 11/20 13:45 收盤報導核對加權 36,033.29（−2,393.60，−6.23%）、開 37,646.13、高 37,646.13、低 35,738.68、成交金額 8,773.50 億元，與快照一致，未更動數字，只更新快照時間為 2026-11-20 20:56", "融資融券 11/20 搜尋時（20:55）尚未公布，保留 11/19 值（融資 4,843.68 億元，較前日減 236.59 億元，與自由財經報導的減 236.58 億元相符）", "功能測試新增：期貨增減長條紅漲綠跌、讀數內容（× 三種情境），以及原始檔無多餘外框 2 項，共 130 項全數通過；淺色、深色與斷線截圖確認正常"], "reflection": "11/20 融資融券仍缺，下一次排程（晚上 9 點後）優先補上；週末兩天休市只更新快照時間。待改：籌碼表 390px 寬度時第一欄固定後右側欄位需滑動，可考慮縮小字級或隱藏增減欄的單位。"},
+{"time": "台北時間 2026-11-20 19:58", "version": "v1.5", "items": ["依使用者要求：「重新整理」按鈕與「上次檢查」移到頁面最上方標題旁", "新增「分析圖表」區塊（導覽列加「分析」）：近一個月統計卡（區間漲跌、距高點、最大回檔、漲跌天數與日波動、外資與三大法人近 10 日累計及連續買賣超天數）", "新增收盤與均線圖（5 日＋20 日；快照只有約一個月資料時改用 10 日），並標示乖離率與短線多空", "新增三大法人每日買賣超堆疊長條（外資／投信／自營商＋合計圓點）、外資台指期淨口數長條、上市融資餘額走勢", "所有新圖可點擊或滑動查看各日數值；配色經色盲與深淺色模式檢查；即時模式日線改抓約 60 日供 20 日均線計算，近一個月圖仍只畫最後 22 日", "功能測試新增 33 項（按鈕位置、分析統計、四張圖有資料與點擊互動 × 三種情境），共 122 項全數通過；淺色與深色截圖確認正常"], "reflection": "外資期貨淨口數長條以 0 為基準，日變化不明顯，之後可加一張「日增減」小圖；統計卡在快照模式只用 22 日資料。下次優先：補 11/20 融資融券、清理檔尾多餘的 </body></html>。"},
+{"time": "台北時間 2026-11-20 18:56", "version": "v1.4", "items": ["「重新整理」按鈕旁新增「上次檢查 HH:MM」與結果（即時／未連上／此環境不能連外），每次自動或手動更新後刷新，方便確認頁面是否還在更新", "快照：11/20 收盤數值（加權 36,033.29、櫃買 263.31、三大法人合計賣超 522.46 億元、外資台指期淨空 97,863 口）沿用上次已核對的資料；本次搜尋未找到新的第二來源，未更動數字，只更新快照時間為 18:55", "融資融券 11/20 尚未公布（約晚上 9 點後），保留 11/19 值（融資 4,843.68 億元、融券 209,819 張）", "功能測試新增 3 項（上次檢查標示 × 三種情境），三種情境共 89 項全數通過；截圖確認即時與斷線畫面正常"], "reflection": "融資融券 11/20 與成交金額 8,773.5 億元仍待第二來源核對，下次排程（晚上 9 點後）補上。下次優先：籌碼表在 390px 寬度時第一欄固定後的可讀性、檔尾多餘的 </body></html> 清理。"},
+{"time": "台北時間 2026-11-20 16:58", "version": "v1.3", "items": ["融資融券表上方新增提示：當融資融券比三大法人少一天時，標示「最新為 11/19；11/20 的融資融券約晚上 9 點後公布」，避免誤以為資料漏抓", "指數卡片在快照模式改為「交易日 2026-11-20（收盤）｜快照時間 2026-11-20 16:55」，原本「資料時間 收盤」語意不清", "深色模式加上對應的 theme-color（手機瀏覽器頂部列不再是淺色）", "快照：核對中央社、Yahoo 新聞報導，11/20 加權收 36,033.29（−2,393.60）、三大法人合計賣超 522.46 億元，與快照一致，只更新快照時間為 16:55；融資融券 11/20 尚未公布，保留 11/19 值", "功能測試新增 6 項（融資融券落後標示、指數卡片時間標示 × 三種情境），共 86 項全數通過"], "reflection": "融資融券 11/20 數值需等晚上 9 點後的排程補上；成交金額 8,773.5 億元本次未再找到第二來源核對。下次優先：重新整理按鈕旁顯示「上次更新 HH:MM」、籌碼表在 390px 寬度時第一欄固定後的可讀性再檢查。"},
+{"time": "2026-11-20 16:08", "version": "v1.2", "items": ["問題：手機在 Claude App 打開時顯示「即時連線失敗」。查證：資料來源本身正常（從一般瀏覽器與本機檔案環境實測都能連），是 Claude App 的安全政策禁止網頁連外", "改為自動偵測這種環境：不再顯示「連線失敗」，改說明「在 Claude App 裡不能連外，顯示排程快照」並附快照時間與距今多久", "真的斷線時另外提示「暫時連不上，可按重新整理再試」", "功能測試新增「模擬 Claude App 禁止連外」情境，三種情境共 80 項全數通過"], "reflection": "Claude App 內只能看快照，最多落後 2 小時；iPhone 要即時，需要把網頁放到公開網址（例如 GitHub Pages）。"},
+{"time": "2026-11-20 16:05", "version": "v1.1", "items": ["近一個月收盤圖加上副座標：美元兌新台幣（右軸），附圖例", "新增「籌碼（近 10 日）」：三大法人買賣超（外資／投信／自營商／合計）、上市融資融券餘額與單日增減、外資台指期（大台）未平倉淨口數與增減", "籌碼與匯率在一般瀏覽器即時抓（FinMind、鉅亨網，已實測可直接連線）；抓不到時顯示快照", "新增自動化功能測試（51 項）：重新整理、導覽列 6 個按鈕、下載（含下載後的檔案能否開啟執行）、複製原始碼、即時與斷線兩種情境、手機寬度不溢出，全部通過", "快照補上 10/20 起的匯率與近 10 日籌碼資料"], "reflection": "融資融券當日資料要晚上才公布，盤中會缺最新一天；FinMind 免費額度有限，籌碼只在開頁時抓、不跟著 30 秒更新。之後可評估加入 0050、00878 等個股報價。"},
+{"time": "2026-11-20 15:55", "version": "v1.0", "items": ["建立第一版：手機友善排版（沿用台股盤前分析的卡片、膠囊導覽列、紅漲綠跌、深色模式）", "實測資料來源：證交所 MIS、Yahoo、證交所 OpenAPI 從瀏覽器直接抓都被擋（CORS），公開轉接服務也全數失敗；改用實測可直接抓的鉅亨網即時報價為主、FinMind 日收盤為備援", "顯示加權指數、漲跌、開高低昨收、櫃買指數、盤中 1 分鐘走勢與近一個月收盤", "盤中每 30 秒自動更新；切回此頁時立即更新", "抓不到即時資料時改顯示排程快照，並標示快照時間", "新增下載網頁檔與複製原始碼，讓手機不用開 Claude 也能看", "新增本迭代紀錄區塊（每 2 小時排程檢查後追加）"], "reflection": "Claude 的網頁預覽會擋住對外連線，所以分享連結裡看到的是排程快照；下載的網頁檔在一般瀏覽器開啟才會即時抓。iPhone 若要全程即時，可考慮放到 GitHub Pages 等公開靜態空間。"}]</script>
 
-<script data-keep="">
+<script data-keep>
 (function(){
   // 先擷取乾淨的原始碼（渲染前），供下載使用
   var SOURCE = (function(){
@@ -336,7 +284,7 @@
   function snapMsg(){
     var age=snapAge();
     return BLOCKED
-      ? '在 Claude App／預覽裡不能連外，顯示排程快照（'+SNAP.updated+(age?'，'+age:'')+'，每 2 小時自動更新）。要看即時數字請用下載的網頁檔。'
+      ? '在 Claude App／預覽裡不能連外，顯示排程快照（'+SNAP.updated+(age?'，'+age:'')+'，每 5 小時自動更新）。要看即時數字請用下載的網頁檔。'
       : '暫時連不上資料來源，先顯示排程快照（'+SNAP.updated+(age?'，'+age:'')+'）。';
   }
 
@@ -438,6 +386,8 @@
     // 融資融券晚上才公布：比三大法人少一天時明確標示
     var iLast=inst&&inst.length?inst[inst.length-1].d:'', mLast=margin&&margin.length?margin[margin.length-1].d:'';
     $('marginLag').textContent = (iLast && mLast && mLast<iLast) ? '最新為 '+md(mLast)+'；'+md(iLast)+' 的融資融券約晚上 9 點後公布' : '';
+    var mLastRow=margin&&margin.length?margin[margin.length-1]:null;
+    if(!$('marginLag').textContent && mLastRow && mLastRow.s==null) $('marginLag').textContent=md(mLastRow.d)+' 融券餘額尚未取得，暫顯示「—」';
     $('marginLag').hidden = !$('marginLag').textContent;
     function cell(v, dig, unit){ if(v==null||isNaN(v)) return '<td>—</td>'; var c=v>0?'cu':(v<0?'cd':''); return '<td class="'+c+'">'+(v>0?'+':v<0?'−':'')+fmt(Math.abs(v),dig)+(unit||'')+'</td>'; }
     // 三大法人：新到舊
@@ -448,7 +398,9 @@
       (ir.length?'<tr><td>合計</td>'+cell(sum.f,1)+cell(sum.t,1)+cell(sum.p,1)+cell(sum.s,1)+'</tr>':'');
     // 融資融券：需要前一日算增減
     var mr=(margin||[]);
-    var mrows=[]; for(var i=mr.length-1;i>=Math.max(0,mr.length-10);i--){ var p=mr[i-1]; mrows.push({d:mr[i].d,m:mr[i].m,dm:p?mr[i].m-p.m:null,s:mr[i].s,ds:p?mr[i].s-p.s:null}); }
+    // 只有兩天都有值才算增減（避免缺值被當成 0，算出假的大幅增減）
+    function df(a,b){ return (a!=null&&b!=null&&!isNaN(a)&&!isNaN(b))?a-b:null; }
+    var mrows=[]; for(var i=mr.length-1;i>=Math.max(0,mr.length-10);i--){ var p=mr[i-1]; mrows.push({d:mr[i].d,m:mr[i].m,dm:p?df(mr[i].m,p.m):null,s:mr[i].s,ds:p?df(mr[i].s,p.s):null}); }
     $('marginTbl').innerHTML='<tr><th>日期</th><th>融資餘額(億)</th><th>增減(億)</th><th>融券(張)</th><th>增減(張)</th></tr>'+
       mrows.map(function(r){ return '<tr><td>'+md(r.d)+'</td><td>'+fmt(r.m)+'</td>'+cell(r.dm,2)+'<td>'+fmt(r.s,0)+'</td>'+cell(r.ds,0)+'</tr>'; }).join('');
     var fr=(fut||[]);
@@ -484,6 +436,12 @@
     $('asof').textContent = live
       ? '交易日 '+data.tradeDate+(data.time?'　資料時間 '+data.time:'')+'　｜　抓取於 '+now.hm
       : '交易日 '+data.tradeDate+(data.time?'（'+data.time+'）':'')+'　｜　快照時間 '+SNAP.updated;
+    // 週末／盤前：明確說明今天沒有交易，畫面是最近交易日的收盤
+    var wdOf=function(d){ return '週'+'日一二三四五六'.charAt(new Date(d+'T12:00:00+08:00').getUTCDay()); };
+    var mk='', tdl=data.tradeDate?data.tradeDate.slice(5).replace('-','/')+'（'+wdOf(data.tradeDate)+'）':'';
+    if(['Sat','Sun'].indexOf(now.wd)>=0) mk='今天'+(now.wd==='Sat'?'週六':'週日')+'休市，顯示最近交易日 '+tdl+' 收盤';
+    else if(!isToday && now.mins<540) mk='今天尚未開盤（9:00 開盤），顯示最近交易日 '+tdl+' 收盤';
+    $('mktNote').textContent=mk; $('mktNote').hidden=!mk;
     var cells=[['開盤',t.open],['最高',t.high],['最低',t.low],['昨收',t.prev]];
     if(t.turnover) cells.push(['成交金額（億元）',t.turnover]);
     $('ohlc').innerHTML=cells.filter(function(c){return c[1]!=null;}).map(function(c){
@@ -493,7 +451,7 @@
       var oc=o.close-o.prev;
       $('otcBox').innerHTML='<div class="card stat" style="grid-column:1/-1"><div class="k">櫃買指數</div><div class="v">'+fmt(o.close)+'</div><div class="d '+cls(oc)+'">'+sign(oc)+fmt(Math.abs(oc))+'（'+sign(oc)+fmt(Math.abs(oc/o.prev*100))+'%）</div></div>';
     } else $('otcBox').innerHTML='';
-    $('autoHint').textContent = live && inSession() ? '盤中每 30 秒自動更新' : (live ? '非交易時段，顯示最近一次收盤' : (BLOCKED ? '快照每 2 小時由排程更新' : '目前為快照；按「重新整理」可再試即時連線'));
+    $('autoHint').textContent = live && inSession() ? '盤中每 30 秒自動更新' : (live ? '非交易時段，顯示最近一次收盤' : (BLOCKED ? '快照每 5 小時由排程更新' : '目前為快照；按「重新整理」可再試即時連線'));
     renderTries();
   }
 
@@ -530,6 +488,8 @@
     var day=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date(pts[0][0]*1000));
     var base=Date.parse(day+'T09:00:00+08:00')/1000, end=Date.parse(day+'T13:30:00+08:00')/1000;
     var labels=[[base,'09:00'],[base+3600*2,'11:00'],[end,'13:30']];
+    var isT=day===twNow().date;
+    $('intraTitle').textContent='盤中走勢（1 分鐘）｜'+day.slice(5).replace('-','/')+(isT?(inSession()?' 盤中':' 今日'):'（最近交易日，非今日）');
     $('intra').innerHTML=line(pts,{base:prev,xMin:base,xMax:end,xLabels:labels});
     $('intraWrap').hidden=false; checkEmpty();
   }
@@ -644,7 +604,7 @@
     var Y=function(v){return P.t+(sc.mx-v)/((sc.mx-sc.mn)||1)*(CH-P.t-P.b);};
     var marks='';
     if(opts.bar){
-      marks=vals.map(function(v,i){ var y=Math.min(Y(v),Y(0)), h=Math.abs(Y(v)-Y(0)); return '<rect x="'+(X(i)-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0.5).toFixed(1)+'" rx="3" fill="'+opts.color+'"/>'; }).join('')+
+      marks=vals.map(function(v,i){ var y=Math.min(Y(v),Y(0)), h=Math.abs(Y(v)-Y(0)); var fc=opts.signColor?(v>0?'var(--up)':(v<0?'var(--down)':'var(--sub)')):opts.color; return '<rect x="'+(X(i)-bw/2).toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,0.5).toFixed(1)+'" rx="3" fill="'+fc+'"/>'; }).join('')+
         '<line x1="'+P.l+'" x2="'+(CW-P.r)+'" y1="'+Y(0).toFixed(1)+'" y2="'+Y(0).toFixed(1)+'" stroke="var(--sub)"/>';
     } else {
       marks='<path d="'+vals.map(function(v,i){return (i?'L':'M')+X(i).toFixed(1)+' '+Y(v).toFixed(1);}).join(' ')+'" fill="none" stroke="'+opts.color+'" stroke-width="2.2" stroke-linejoin="round"/>'+
@@ -653,6 +613,7 @@
     $(boxId).innerHTML='<svg viewBox="0 0 '+CW+' '+CH+'" role="img" aria-label="'+opts.label+'">'+gridSvg(P,sc,Y,opts.dig)+xLabelsSvg(R.map(function(r){return r.d;}),X,P)+marks+
       '<line class="guide" y1="'+P.t+'" y2="'+(CH-P.b)+'" stroke="var(--sub)" stroke-dasharray="3 3" style="display:none"/></svg>';
     bindHover($(boxId), n, X, P, function(i){ var v=vals[i], pv=i?vals[i-1]:null;
+      if(opts.read){ $(readId).innerHTML=opts.read(R[i]); return; }
       $(readId).innerHTML='<b>'+md2(R[i].d)+'</b>　'+opts.label+' '+fmt(v,opts.dig)+(opts.unit||'')+(pv!=null?'　增減 <span class="'+cls(v-pv)+'">'+sgn(v-pv,opts.dig)+'</span>':'');
     });
   }
@@ -683,7 +644,9 @@
   function renderAnalysis(){
     try{
       renderStats(); renderMA(); renderInstChart();
-      simpleChart('futChart','futRead',ANA.fut,'n',{bar:true,color:'var(--c1)',dig:0,unit:' 口',label:'淨口數'});
+      var FD=[]; (ANA.fut||[]).forEach(function(r,i,a){ if(i) FD.push({d:r.d,n:r.n,dn:r.n-a[i-1].n}); });
+      simpleChart('futChart','futRead',FD.slice(-10),'dn',{bar:true,signColor:true,dig:0,unit:' 口',label:'增減',
+        read:function(r){ return '<b>'+md2(r.d)+'</b>　增減 <span class="'+cls(r.dn)+'">'+sgn(r.dn,0,' 口')+'</span>　當日淨口數 '+sgn(r.n,0,' 口'); }});
       simpleChart('mgChart','mgRead',ANA.margin,'m',{bar:false,color:'var(--c2)',dig:0,unit:' 億',label:'融資'});
       var dl=ANA.daily&&ANA.daily.length>=40, cl=ANA.chipsLive===3;
       $('anaMode').textContent='資料：'+(dl?'即時日線':'快照（'+SNAP.updated+'）')+'、籌碼'+(cl?'即時':'快照')+'｜點圖或在圖上滑動可看各日數值';
@@ -716,13 +679,25 @@
   }
 
   function renderLog(){
-    var html=LOG.map(function(e,i){
-      var body='<div class="when">'+e.time+'<span class="ver">'+(e.version||'')+'</span></div><ul>'+e.items.map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(e.reflection?'<div class="ref">反思：'+e.reflection+'</div>':'');
-      return '<div>'+body+'</div>';
-    });
-    var shown=html.slice(0,3).join('<hr style="border:none;border-top:1px solid var(--line);margin:0">');
-    if(html.length>3) shown+='<details><summary>顯示較早的 '+(html.length-3)+' 筆</summary>'+html.slice(3).join('<hr style="border:none;border-top:1px solid var(--line);margin:8px 0">')+'</details>';
-    $('logList').innerHTML=shown;
+    $('logList').innerHTML=LOG.map(function(e,i){
+      var n=(e.items||[]).length;
+      return '<details class="entry"'+(i===0?' open':'')+'><summary><span class="when">'+e.time.replace(/^台北時間\s*/,'')+'<span class="ver">'+(e.version||'')+'</span></span><span class="cnt">'+n+' 項'+(i===0?'・最新':'')+'</span></summary>'
+        +'<div class="body"><ul>'+(e.items||[]).map(function(x){return '<li>'+x+'</li>';}).join('')+'</ul>'+(e.reflection?'<div class="ref">反思：'+e.reflection+'</div>':'')+'</div></details>';
+    }).join('');
+    var tg=$('logToggle'), list=$('logList');
+    function sync(){
+      var ds=list.querySelectorAll('details.entry'), all=ds.length>0;
+      for(var k=0;k<ds.length;k++) if(!ds[k].open){ all=false; break; }
+      tg.textContent=all?'全部收合':'全部展開';
+      tg.setAttribute('aria-expanded', all?'true':'false');
+    }
+    tg.onclick=function(){
+      var ds=list.querySelectorAll('details.entry'), open=tg.textContent==='全部展開';
+      for(var k=0;k<ds.length;k++) ds[k].open=open;
+      sync();
+    };
+    list.addEventListener('toggle', sync, true);
+    sync();
     $('ver').textContent='版本 '+(LOG[0]&&LOG[0].version||'')+'｜最後迭代 '+(LOG[0]&&LOG[0].time||'').replace(/^台北時間\s*/,'')+'（台北時間）｜快照 '+SNAP.updated;
   }
 
@@ -757,4 +732,6 @@
   renderChips(null);
   load(false); loadChips();
 })();
-</script></body></html>
+</script>
+</body>
+</html>
