@@ -139,6 +139,8 @@ async def scenario(p, mode):
     check(tag + '一般交易日盤中不顯示休市說明', wn == '', wn or '（無）')
     pn = await pg.evaluate("window.__twMktNote({date:'2026-12-28',wd:'Mon',mins:480}, '2026-12-24')")
     check(tag + '假日後盤前顯示尚未開盤', '尚未開盤' in pn and '12/24' in pn, pn)
+    sn = await pg.evaluate("[window.__twMktNote({date:'2026-11-24',wd:'Tue',mins:600}, '2026-11-23'), window.__twMktNote({date:'2026-11-24',wd:'Tue',mins:900}, '2026-11-23')]")
+    check(tag + '交易日盤中畫面仍是前一交易日時標示非今日', all('非今日' in s and '11/23（週一）' in s and '休市' not in s for s in sn), ' / '.join(sn))
     yn = await pg.evaluate("window.__twMktNote({date:'2027-01-01',wd:'Fri',mins:600}, '2026-12-31')")
     check(tag + '2027 元旦顯示休市說明', '休市' in yn and '元旦' in yn and '12/31（週四）' in yn, yn)
     dv = await pg.evaluate("[window.__twDiff(-97863,-99219), window.__twDiff(null,-99219), window.__twDiff(-97863,null)]")
