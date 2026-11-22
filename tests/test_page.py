@@ -181,6 +181,27 @@ async def scenario(p, mode):
         r1 = await pg.inner_text('#' + rid)
         gd = await pg.eval_on_selector(f'#{cid} .guide', 'e=>e.style.display')
         check(tag + f'分析：點 {cid} 會切換日期數值', r1 != r0 and re.match(r'\d{2}/\d{2}', r1) and gd != 'none', f'{r0[:12]} → {r1[:12]}')
+    # 分析圖遇到缺值：線圖斷開、不畫點；長條圖不畫該根；讀數顯示「—」
+    nul = await pg.evaluate("""()=>{
+      var R=[{d:'2026-11-17',m:5087.21},{d:'2026-11-18',m:null},{d:'2026-11-19',m:4843.68},{d:'2026-11-20',m:4352.27}];
+      window.__twChart('mgChart','mgRead',R,'m',{bar:false,color:'var(--c2)',dig:0,unit:' 億',label:'融資'});
+      var c=document.querySelectorAll('#mgChart svg circle').length, d=document.querySelector('#mgChart svg path[stroke-linejoin]').getAttribute('d');
+      var B=[{d:'2026-11-18',dn:120},{d:'2026-11-19',dn:null},{d:'2026-11-20',dn:-80}];
+      window.__twChart('futChart','futRead',B,'dn',{bar:true,signColor:true,dig:0,unit:' 口',label:'增減'});
+      var r=document.querySelectorAll('#futChart svg rect[rx]').length;
+      var bx=document.querySelector('#mgChart svg').getBoundingClientRect();
+      return {c:c,d:d,r:r,bx:[bx.x,bx.y,bx.width,bx.height]};
+    }""")
+    check(tag + '分析：融資缺值時不畫點、線段斷開', nul['c'] == 3 and nul['d'].count('M') == 2 and 'NaN' not in nul['d'], f"{nul['c']} 點、{nul['d'].count('M')} 段")
+    check(tag + '分析：期貨增減缺值時不畫長條', nul['r'] == 2, f"{nul['r']} 根")
+    bx = nul['bx']
+    await pg.mouse.click(bx[0] + bx[2] * 0.38, bx[1] + bx[3] * 0.5)
+    await pg.wait_for_timeout(100)
+    mrd = await pg.inner_text('#mgRead')
+    check(tag + '分析：缺值那天讀數顯示「—」且不算增減', '11/18' in mrd and '—' in mrd and '增減' not in mrd, mrd)
+    await pg.evaluate('window.__twReAna()')
+    mg2 = await pg.eval_on_selector_all('#mgChart svg circle', 'es=>es.length')
+    check(tag + '分析：重畫後恢復正常資料', mg2 == mg, f'{mg2} 點')
     await pg.evaluate('window.scrollTo(0,0)')
 
     # 重新整理按鈕
