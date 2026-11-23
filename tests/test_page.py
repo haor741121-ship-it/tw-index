@@ -188,7 +188,19 @@ async def scenario(p, mode):
     check(tag + '分析：期貨讀數同時顯示增減與當日淨口數', '增減' in frd and '當日淨口數' in frd and '口' in frd, frd)
     mg = await pg.eval_on_selector_all('#mgChart svg circle', 'es=>es.length')
     check(tag + '分析：融資餘額圖有資料', mg >= 4, f'{mg} 點')
-    for cid, rid in (('maChart', 'maRead'), ('instChart', 'instRead'), ('futChart', 'futRead'), ('mgChart', 'mgRead')):
+    mt_ = ch.get('maint', [])[-10:]
+    mtn = await pg.eval_on_selector_all('#maintChart svg circle', 'es=>es.length')
+    check(tag + '分析：融資維持率圖有資料', mtn == len(mt_) and mtn >= 4, f'{mtn} 點')
+    refy = await pg.eval_on_selector_all('#maintChart svg line.ref', 'es=>es.length')
+    check(tag + '分析：融資維持率圖有 130% 追繳參考線', refy == 1, f'{refy} 條')
+    mtr = await pg.inner_text('#maintRead')
+    lastm = mt_[-1]
+    check(tag + '分析：融資維持率讀數顯示最新日期、百分比與增減', lastm['d'][5:].replace('-', '/') in mtr and f"{lastm['r']:.2f}%" in mtr and '個百分點' in mtr, mtr)
+    mtnote = await pg.inner_text('#maintNote')
+    check(tag + '分析：融資維持率標示資料來源與日期', '快照' in mtnote and lastm['d'][5:].replace('-', '/') in mtnote, mtnote)
+    mw = await pg.eval_on_selector('#maintChart svg', 'e=>e.getBoundingClientRect().right')
+    check(tag + '分析：融資維持率圖在 390px 內', mw <= 390, f'right={mw:.0f}')
+    for cid, rid in (('maChart', 'maRead'), ('instChart', 'instRead'), ('futChart', 'futRead'), ('mgChart', 'mgRead'), ('maintChart', 'maintRead')):
         r0 = await pg.inner_text('#' + rid)
         await pg.locator(f'#{cid} svg').scroll_into_view_if_needed()
         box = await pg.locator(f'#{cid} svg').bounding_box()
