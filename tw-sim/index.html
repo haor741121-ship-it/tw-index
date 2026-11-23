@@ -126,7 +126,6 @@
     <div class="card mt" id="winRate"></div>
     <div class="card mt" id="margin"></div>
     <div class="card mt" id="liquidity"></div>
-    <div class="card mt" id="settle"></div>
     <div class="card mt"><ol class="sum" id="sumList"></ol></div>
   </section>
 
@@ -214,7 +213,7 @@
 <script id="data" type="application/json" data-keep>
 {
   "round": 2,
-  "updated": "2026/11/23（週一）16:57（台北）",
+  "updated": "2026/11/23（週一）17:10（台北）",
   "basis": "資料基準：台股 11/23 收盤",
   "lead": "暴跌後政策護盤，高波動築底",
   "outlook": "高波動區間震盪",
@@ -795,18 +794,6 @@
       "u": "https://money.udn.com/money/story/5613/9840119"
     },
     {
-      "t": "新頭殼：11 月違約交割案例與累計",
-      "u": "https://newtalk.tw/news/view/2026-11-20/1072171"
-    },
-    {
-      "t": "聯合報：違約交割與券商承擔",
-      "u": "https://udn.com/news/story/7251/9895244"
-    },
-    {
-      "t": "經濟日報：當沖比重創新高",
-      "u": "https://money.udn.com/money/story/5607/9890074"
-    },
-    {
       "t": "中央社：10 月證券市場統計",
       "u": "https://www.cna.com.tw/news/afe/202611090223.aspx"
     }
@@ -968,43 +955,6 @@
     ],
     "impact": "整體成交維持在兆元上下、散戶資金仍流入 ETF，市場沒有出現全面性流動性枯竭；但限空、暫停認售權證讓避險管道變少，急跌時中小型與櫃買股容易跌停賣不掉，是悲觀情境中跌幅放大的來源。",
     "note": "評級為依上列數字的定性判斷（非官方指標）；11/20 成交金額各家報導略有差異（8,773.5 億～8,788 億）。"
-  },
-  "settle": {
-    "title": "違約交割風險分析",
-    "level": "風險：中偏高（個別分點，非系統性）",
-    "rows": [
-      {
-        "k": "2026 年違約揭露",
-        "v": "上市櫃至 11/20 共 46 起；集中市場違約累計 131.29 億（至 11/18）"
-      },
-      {
-        "k": "11 月案例",
-        "v": "11/16 交易 9 檔約 4.27 億（創意 9,453 萬等）；11/17 交易約 1.29 億；11/20 金居約 2,000 萬"
-      },
-      {
-        "k": "占成交比重",
-        "v": "1–9 月違約金額約占集中市場成交值 0.018%，證交所稱可控"
-      },
-      {
-        "k": "當沖比重",
-        "v": "10 月 38.38%；11/18 買、賣均逾 52% 創新高；11/19 仍逾四成"
-      },
-      {
-        "k": "券商端",
-        "v": "違約部位由券商處理並承擔虧損；業者稱維持率降至 120% 使券商風控壓力變大"
-      },
-      {
-        "k": "制度",
-        "v": "違約交割新制（預收款券 10／30 日、追蹤 5 年）2027/4/1 才上路"
-      }
-    ],
-    "calc": [
-      "11/20 暴跌 6.23%、跌停 365 家的交割日為 11/24（T+2），11/24–11/25 可能出現新一波違約揭露（推算）",
-      "高當沖比重遇到跳空跌停，當沖客無法反向沖銷，是本輪違約的主要來源"
-    ],
-    "calcTitle": "接下來要注意",
-    "impact": "違約金額相對成交值很小，對大盤是情緒面衝擊；若 11/24 後揭露件數或金額明顯擴大、或出現券商自有資本受損消息，偏向悲觀情境。",
-    "note": "評級為定性判斷；11/20 之後交易的違約資料尚未公布。"
   }
 }
 </script>
@@ -1041,7 +991,7 @@
       (M.calc&&M.calc.length?'<h3 style="margin-top:10px">'+esc(M.calcTitle||'推算')+'</h3><ul class="list">'+M.calc.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul>':'')+
       (M.impact?'<p style="margin:8px 0 0;font-size:14px"><b>對下個月的影響：</b>'+esc(M.impact)+'</p>':'')+
       (M.note?'<div class="hint" style="margin:8px 0 0">'+esc(M.note)+'</div>':''); }
-  panel('margin',D.margin); panel('liquidity',D.liquidity); panel('settle',D.settle);
+  panel('margin',D.margin); panel('liquidity',D.liquidity);
   (function(){ var W=D.winRate, el=$('winRate'); if(!el) return;
     if(!W||!W.items||!W.items.length){ el.style.display='none'; return; }
     el.innerHTML='<h3>'+esc(W.title||'此時買進的勝率')+'</h3>'+W.items.map(function(w){
