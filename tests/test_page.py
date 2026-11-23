@@ -25,7 +25,7 @@ last = recent[-1]
 QUOTE = {"statusCode": 200, "data": [
     {"0": "TWS:TSE01:INDEX", "6": SNAP['taiex']['close'], "21": SNAP['taiex']['prev'], "19": SNAP['taiex'].get('open'),
      "12": SNAP['taiex'].get('high'), "13": SNAP['taiex'].get('low'), "200007": ts(last['d']) + 13 * 3600 + 33 * 60},
-    {"0": "TWS:OTC01:INDEX", "6": 263.31, "21": 285.33, "200007": ts(last['d']) + 13 * 3600 + 33 * 60}]}
+    {"0": "TWS:OTC01:INDEX", "6": SNAP['otc']['close'], "21": SNAP['otc']['prev'], "200007": ts(last['d']) + 13 * 3600 + 33 * 60}]}
 start = ts(last['d']) + 9 * 3600
 MIN = {"data": {"t": [start + 60 * i for i in range(271)][::-1],
                 "c": [round(SNAP['taiex']['prev'] - 1500 * i / 270 + 100 * math.sin(i / 9), 2) for i in range(271)][::-1]}}
@@ -95,6 +95,12 @@ async def scenario(p, mode):
     check(tag + '近一個月走勢圖有顯示', not await pg.eval_on_selector('#dailyWrap', 'e=>e.hidden'))
     paths = await pg.eval_on_selector_all('#daily svg path', 'es=>es.length')
     check(tag + '走勢圖有加權與匯率兩條線', paths >= 2, f'{paths} 條')
+    fxl = await pg.inner_text('#fxLag') if not await pg.eval_on_selector('#fxLag', 'e=>e.hidden') else ''
+    lfx = [r for r in recent if r.get('fx') is not None]
+    if recent[-1].get('fx') is None and lfx:
+        check(tag + '最新一天匯率缺值時有標示', '匯率尚未取得' in fxl and recent[-1]['d'][5:].replace('-', '/') in fxl and lfx[-1]['d'][5:].replace('-', '/') in fxl, fxl or '（無標示）')
+    else:
+        check(tag + '匯率齊全時不顯示缺值標示', fxl == '', fxl or '（無）')
     if mode == 'live':
         check(tag + '盤中走勢有顯示', not await pg.eval_on_selector('#intraWrap', 'e=>e.hidden'))
         it = await pg.inner_text('#intraTitle')
