@@ -125,6 +125,8 @@
     <div class="card mood"><span class="tag" id="outlook"></span><div class="hz" id="horizon"></div><p id="outlookWhy"></p></div>
     <div class="card mt" id="winRate"></div>
     <div class="card mt" id="margin"></div>
+    <div class="card mt" id="liquidity"></div>
+    <div class="card mt" id="settle"></div>
     <div class="card mt"><ol class="sum" id="sumList"></ol></div>
   </section>
 
@@ -212,7 +214,7 @@
 <script id="data" type="application/json" data-keep>
 {
   "round": 2,
-  "updated": "2026/11/23（週一）16:50（台北）",
+  "updated": "2026/11/23（週一）16:57（台北）",
   "basis": "資料基準：台股 11/23 收盤",
   "lead": "暴跌後政策護盤，高波動築底",
   "outlook": "高波動區間震盪",
@@ -771,6 +773,42 @@
     {
       "t": "風傳媒：維持率降至 120% 的隱憂",
       "u": "https://www.storm.mg/article/11184272"
+    },
+    {
+      "t": "工商時報：前十月日均成交與周轉率",
+      "u": "https://www.ctee.com.tw/news/20261030701751-430201"
+    },
+    {
+      "t": "新頭殼：11/20 跌停家數與成交",
+      "u": "https://newtalk.tw/news/view/2026-11-20/1072278"
+    },
+    {
+      "t": "經濟日報：限空對借券賣出的影響",
+      "u": "https://udn.com/news/story/7251/9892249"
+    },
+    {
+      "t": "中時：0050 受益人數 403 萬",
+      "u": "https://www.chinatimes.com/realtimenews/20261123002424-260410"
+    },
+    {
+      "t": "經濟日報：9 月 M1B／M2",
+      "u": "https://money.udn.com/money/story/5613/9840119"
+    },
+    {
+      "t": "新頭殼：11 月違約交割案例與累計",
+      "u": "https://newtalk.tw/news/view/2026-11-20/1072171"
+    },
+    {
+      "t": "聯合報：違約交割與券商承擔",
+      "u": "https://udn.com/news/story/7251/9895244"
+    },
+    {
+      "t": "經濟日報：當沖比重創新高",
+      "u": "https://money.udn.com/money/story/5607/9890074"
+    },
+    {
+      "t": "中央社：10 月證券市場統計",
+      "u": "https://www.cna.com.tw/news/afe/202611090223.aspx"
     }
   ],
   "today": "11/23",
@@ -849,7 +887,7 @@
     "note": "勝率＝一個月後（12/18）價格高於 11/23 收盤的機率（推算）。方法：以加權三情境機率 30/45/25 為大盤分布，依近 21 個交易日 β 與個股自有波動模擬 40 萬次。三檔勝率都約 52%，接近五五波，差別在漲跌幅度：8086 的波動約 0050 的兩倍、00878 約六成。未含交易成本與稅；僅供參考，不構成投資建議。"
   },
   "margin": {
-    "title": "融資維持率分析",
+    "title": "大盤融資維持率分析（全市場，非個股）",
     "rows": [
       {
         "k": "全市場擔保維持率",
@@ -891,7 +929,82 @@
       "以個人帳戶試算（自備 4 成、融資 6 成）：130% 時股價跌約 22% 被追繳，120% 時跌約 28% 才追繳，多出約 6 個百分點緩衝（鏡週刊試算）"
     ],
     "impact": "融資已減三成、門檻降到 120%，短線斷頭賣壓明顯緩和，是基準情境不再急跌的依據之一；但高盛口徑的 120% 門檻約在 33,500 點，落在悲觀情境 31,500–34,500 內，若跌破可能引發第二波追繳與斷頭，使跌勢加速。",
-    "note": "不同來源的維持率口徑不同（全市場 vs 上市櫃 vs 高盛整體），數字不可直接相比；β≈1.3 取自 11/16–11/20 櫃買週跌 23.1% 對加權週跌 17.5%，未計新增融資買進與還款，僅為粗估。調降門檻只延後追繳，借款本金與利息不變。"
+    "note": "不同來源的維持率口徑不同（全市場 vs 上市櫃 vs 高盛整體），數字不可直接相比；β≈1.3 取自 11/16–11/20 櫃買週跌 23.1% 對加權週跌 17.5%，未計新增融資買進與還款，僅為粗估。調降門檻只延後追繳，借款本金與利息不變。",
+    "calcTitle": "加權指數跌到哪裡會再觸發大量追繳（推算）",
+    "level": "風險：中（11/24 起門檻降至 120%）"
+  },
+  "liquidity": {
+    "title": "股市流動性分析",
+    "level": "整體：中｜中小型股：偏高",
+    "rows": [
+      {
+        "k": "上市成交金額",
+        "v": "11/23 1 兆 791 億；11/20 約 8,788 億；11/18 1 兆 306.85 億"
+      },
+      {
+        "k": "對照",
+        "v": "2026 前十月日均 9,992.68 億（周轉率 155.74%）"
+      },
+      {
+        "k": "跌停家數",
+        "v": "11/20 上市 179、上櫃 186 家；11/19 128 檔"
+      },
+      {
+        "k": "借券賣出占成交",
+        "v": "管制前 2.97% → 11/9–11/19 約 1.1%–2%"
+      },
+      {
+        "k": "限空與避險工具",
+        "v": "11/23 起全面禁平盤下放空、融券保證金 150%、暫停認售權證發行、鼓勵召回借券"
+      },
+      {
+        "k": "外資資金",
+        "v": "11 月至 11/19 累計賣超約 8,303 億；新台幣 11/20 盤中最弱 33.04"
+      },
+      {
+        "k": "國內資金",
+        "v": "9 月 M1B 年增 7.20%、M2 7.24%（10 月未公布）；0050 受益人數 403 萬（11/20，單週 +8.1 萬）"
+      }
+    ],
+    "impact": "整體成交維持在兆元上下、散戶資金仍流入 ETF，市場沒有出現全面性流動性枯竭；但限空、暫停認售權證讓避險管道變少，急跌時中小型與櫃買股容易跌停賣不掉，是悲觀情境中跌幅放大的來源。",
+    "note": "評級為依上列數字的定性判斷（非官方指標）；11/20 成交金額各家報導略有差異（8,773.5 億～8,788 億）。"
+  },
+  "settle": {
+    "title": "違約交割風險分析",
+    "level": "風險：中偏高（個別分點，非系統性）",
+    "rows": [
+      {
+        "k": "2026 年違約揭露",
+        "v": "上市櫃至 11/20 共 46 起；集中市場違約累計 131.29 億（至 11/18）"
+      },
+      {
+        "k": "11 月案例",
+        "v": "11/16 交易 9 檔約 4.27 億（創意 9,453 萬等）；11/17 交易約 1.29 億；11/20 金居約 2,000 萬"
+      },
+      {
+        "k": "占成交比重",
+        "v": "1–9 月違約金額約占集中市場成交值 0.018%，證交所稱可控"
+      },
+      {
+        "k": "當沖比重",
+        "v": "10 月 38.38%；11/18 買、賣均逾 52% 創新高；11/19 仍逾四成"
+      },
+      {
+        "k": "券商端",
+        "v": "違約部位由券商處理並承擔虧損；業者稱維持率降至 120% 使券商風控壓力變大"
+      },
+      {
+        "k": "制度",
+        "v": "違約交割新制（預收款券 10／30 日、追蹤 5 年）2027/4/1 才上路"
+      }
+    ],
+    "calc": [
+      "11/20 暴跌 6.23%、跌停 365 家的交割日為 11/24（T+2），11/24–11/25 可能出現新一波違約揭露（推算）",
+      "高當沖比重遇到跳空跌停，當沖客無法反向沖銷，是本輪違約的主要來源"
+    ],
+    "calcTitle": "接下來要注意",
+    "impact": "違約金額相對成交值很小，對大盤是情緒面衝擊；若 11/24 後揭露件數或金額明顯擴大、或出現券商自有資本受損消息，偏向悲觀情境。",
+    "note": "評級為定性判斷；11/20 之後交易的違約資料尚未公布。"
   }
 }
 </script>
@@ -921,13 +1034,14 @@
   $('outlook').textContent = '下月傾向：' + D.outlook;
   $('horizon').textContent = D.horizon;
   $('outlookWhy').textContent = D.outlookWhy;
-  (function(){ var M=D.margin, el=$('margin'); if(!el) return;
+  function panel(id,M){ var el=$(id); if(!el) return;
     if(!M||!M.rows||!M.rows.length){ el.style.display='none'; return; }
-    el.innerHTML='<h3>'+esc(M.title||'融資維持率分析')+'</h3>'+M.rows.map(function(r){
+    el.innerHTML='<h3>'+esc(M.title||'')+(M.level?' <span class="pill" style="margin-left:6px">'+esc(M.level)+'</span>':'')+'</h3>'+M.rows.map(function(r){
       return '<div class="kv"><span class="k">'+esc(r.k)+'</span><span class="v">'+esc(r.v)+'</span></div>'; }).join('')+
-      (M.calc&&M.calc.length?'<h3 style="margin-top:10px">指數跌到哪裡會再觸發追繳（推算）</h3><ul class="list">'+M.calc.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul>':'')+
+      (M.calc&&M.calc.length?'<h3 style="margin-top:10px">'+esc(M.calcTitle||'推算')+'</h3><ul class="list">'+M.calc.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul>':'')+
       (M.impact?'<p style="margin:8px 0 0;font-size:14px"><b>對下個月的影響：</b>'+esc(M.impact)+'</p>':'')+
-      (M.note?'<div class="hint" style="margin:8px 0 0">'+esc(M.note)+'</div>':''); })();
+      (M.note?'<div class="hint" style="margin:8px 0 0">'+esc(M.note)+'</div>':''); }
+  panel('margin',D.margin); panel('liquidity',D.liquidity); panel('settle',D.settle);
   (function(){ var W=D.winRate, el=$('winRate'); if(!el) return;
     if(!W||!W.items||!W.items.length){ el.style.display='none'; return; }
     el.innerHTML='<h3>'+esc(W.title||'此時買進的勝率')+'</h3>'+W.items.map(function(w){
