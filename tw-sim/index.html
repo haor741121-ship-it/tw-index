@@ -123,6 +123,8 @@
   <section id="sum">
     <h2>下個月預判</h2>
     <div class="card mood"><span class="tag" id="outlook"></span><div class="hz" id="horizon"></div><p id="outlookWhy"></p></div>
+    <div class="card mt" id="winRate"></div>
+    <div class="card mt" id="margin"></div>
     <div class="card mt"><ol class="sum" id="sumList"></ol></div>
   </section>
 
@@ -210,7 +212,7 @@
 <script id="data" type="application/json" data-keep>
 {
   "round": 2,
-  "updated": "2026/11/23（週一）16:43（台北）",
+  "updated": "2026/11/23（週一）16:50（台北）",
   "basis": "資料基準：台股 11/23 收盤",
   "lead": "暴跌後政策護盤，高波動築底",
   "outlook": "高波動區間震盪",
@@ -729,6 +731,46 @@
     {
       "t": "自由財經：外資台指期淨空 103,432 口",
       "u": "https://ec.ltn.com.tw/article/breakingnews/5650657"
+    },
+    {
+      "t": "Yahoo Finance：0050 歷史資料",
+      "u": "https://finance.yahoo.com/quote/0050.TW/history/"
+    },
+    {
+      "t": "Yahoo Finance：00878 歷史資料",
+      "u": "https://finance.yahoo.com/quote/00878.TW/history/"
+    },
+    {
+      "t": "Yahoo Finance：8086 歷史資料",
+      "u": "https://finance.yahoo.com/quote/8086.TWO/history/"
+    },
+    {
+      "t": "旺得富：00878 除息 1.25 元",
+      "u": "https://wantrich.chinatimes.com/news/20261117900210-420101"
+    },
+    {
+      "t": "鉅亨網：宏捷科目標價（FactSet）",
+      "u": "https://news.cnyes.com/news/id/6657960"
+    },
+    {
+      "t": "壹蘋：融資維持率與追繳戶數（11/20）",
+      "u": "https://news.nextapple.com/finance/20261120/38901D84CD9518A08BFB3181CE81917F"
+    },
+    {
+      "t": "ETtoday：高盛示警 53% 個股維持率跌破 130%",
+      "u": "https://finance.ettoday.net/news/3276937"
+    },
+    {
+      "t": "聯合報：融資擔保維持率 11/24 起降至 120%",
+      "u": "https://udn.com/news/story/7251/9896524"
+    },
+    {
+      "t": "鏡週刊：維持率 120% 試算",
+      "u": "https://www.mirrormedia.mg/story/20261123-14mon-153822"
+    },
+    {
+      "t": "風傳媒：維持率降至 120% 的隱憂",
+      "u": "https://www.storm.mg/article/11184272"
     }
   ],
   "today": "11/23",
@@ -778,6 +820,78 @@
     "rule": "近 6 輪中 ≥4 輪無新收盤且機率變動都 ≤5 個百分點就降一級；單日漲跌 ≥2% 或台指VIX ≥30 且重大會議前可升一級（上限每 5 小時、下限每交易日 1 次）",
     "next": "累積 6 輪含 newData 紀錄後評估（約第 6 輪）",
     "changed": "—"
+  },
+  "winRate": {
+    "title": "此時買進的勝率（持有到 12/18，推算）",
+    "items": [
+      {
+        "k": "0050 元大台灣50",
+        "p": 52,
+        "now": "87.00（11/23，+3.02%）",
+        "range": "一個月後 80% 區間約 77.1–96.7（−11.4%～+11.2%，推算）",
+        "why": "β≈1.00（近 21 日對加權，相關 0.99），幾乎等同大盤；近一月 −18.6%，距 10/6 高點 116.50 −25.3%"
+      },
+      {
+        "k": "00878 國泰永續高股息",
+        "p": 52,
+        "now": "28.05（11/23，+0.07%）",
+        "range": "一個月後 80% 區間約 25.9–30.2（−7.7%～+7.8%，推算）",
+        "why": "β≈0.60，波動約大盤六成；11/17 已除息 1.25 元（12/11 發放），下次除息推估 2027 年 2 月，模擬期間無配息；近一月含息約 −16.9%"
+      },
+      {
+        "k": "8086 宏捷科",
+        "p": 52,
+        "now": "80.70（11/23，+7.31%）",
+        "range": "一個月後 80% 區間約 63.5–98.2（−21.3%～+21.7%，推算）",
+        "why": "β≈1.71 且個股自有波動大（月約 8%）；10 月營收年增 3.2%、Q3 EPS 0.97 元低於預期，FactSet 目標價中位數下修至 136 元；近一月 −33.0%，距 5/26 高點 179 −54.9%"
+      }
+    ],
+    "note": "勝率＝一個月後（12/18）價格高於 11/23 收盤的機率（推算）。方法：以加權三情境機率 30/45/25 為大盤分布，依近 21 個交易日 β 與個股自有波動模擬 40 萬次。三檔勝率都約 52%，接近五五波，差別在漲跌幅度：8086 的波動約 0050 的兩倍、00878 約六成。未含交易成本與稅；僅供參考，不構成投資建議。"
+  },
+  "margin": {
+    "title": "融資維持率分析",
+    "rows": [
+      {
+        "k": "全市場擔保維持率",
+        "v": "151.78%（11/20，前日 156.18%）"
+      },
+      {
+        "k": "上市櫃融資維持率",
+        "v": "138.42%（11/20，單日 −7.54 個百分點）"
+      },
+      {
+        "k": "高盛估算（11/21 報告）",
+        "v": "整體約 132%，53% 個股低於 130%"
+      },
+      {
+        "k": "追繳（低於 130%）",
+        "v": "6,462 戶、64.64 億元（11/20；11/19 為 2,947 戶）"
+      },
+      {
+        "k": "強制處分（斷頭）",
+        "v": "632 戶、14.95 億元（11/20）"
+      },
+      {
+        "k": "上市融資餘額",
+        "v": "4,352.27 億元（11/20），較 10/6 高峰減 31.7%"
+      },
+      {
+        "k": "新制",
+        "v": "11/24 起追繳門檻由 130% 降至 120%，先前追繳紀錄取消、不處分擔保品；補繳期限 2 個營業日"
+      },
+      {
+        "k": "11/23 維持率",
+        "v": "—（尚未公布）"
+      }
+    ],
+    "calc": [
+      "11/23 加權 +2.16%、櫃買 +2.88%，維持率估計回升：全市場口徑約 156%、高盛口徑約 136%（推算，以櫃買漲幅換算）",
+      "高盛口徑（約 136%）跌到 120%：融資股市值需再跌約 12%，以融資股對加權 β≈1.3 換算，加權約 33,500 點（推算）",
+      "全市場口徑（約 156%）跌到 120%：融資股需再跌約 23%，加權約 30,300 點（推算）",
+      "以個人帳戶試算（自備 4 成、融資 6 成）：130% 時股價跌約 22% 被追繳，120% 時跌約 28% 才追繳，多出約 6 個百分點緩衝（鏡週刊試算）"
+    ],
+    "impact": "融資已減三成、門檻降到 120%，短線斷頭賣壓明顯緩和，是基準情境不再急跌的依據之一；但高盛口徑的 120% 門檻約在 33,500 點，落在悲觀情境 31,500–34,500 內，若跌破可能引發第二波追繳與斷頭，使跌勢加速。",
+    "note": "不同來源的維持率口徑不同（全市場 vs 上市櫃 vs 高盛整體），數字不可直接相比；β≈1.3 取自 11/16–11/20 櫃買週跌 23.1% 對加權週跌 17.5%，未計新增融資買進與還款，僅為粗估。調降門檻只延後追繳，借款本金與利息不變。"
   }
 }
 </script>
@@ -807,6 +921,20 @@
   $('outlook').textContent = '下月傾向：' + D.outlook;
   $('horizon').textContent = D.horizon;
   $('outlookWhy').textContent = D.outlookWhy;
+  (function(){ var M=D.margin, el=$('margin'); if(!el) return;
+    if(!M||!M.rows||!M.rows.length){ el.style.display='none'; return; }
+    el.innerHTML='<h3>'+esc(M.title||'融資維持率分析')+'</h3>'+M.rows.map(function(r){
+      return '<div class="kv"><span class="k">'+esc(r.k)+'</span><span class="v">'+esc(r.v)+'</span></div>'; }).join('')+
+      (M.calc&&M.calc.length?'<h3 style="margin-top:10px">指數跌到哪裡會再觸發追繳（推算）</h3><ul class="list">'+M.calc.map(function(c){return '<li>'+esc(c)+'</li>';}).join('')+'</ul>':'')+
+      (M.impact?'<p style="margin:8px 0 0;font-size:14px"><b>對下個月的影響：</b>'+esc(M.impact)+'</p>':'')+
+      (M.note?'<div class="hint" style="margin:8px 0 0">'+esc(M.note)+'</div>':''); })();
+  (function(){ var W=D.winRate, el=$('winRate'); if(!el) return;
+    if(!W||!W.items||!W.items.length){ el.style.display='none'; return; }
+    el.innerHTML='<h3>'+esc(W.title||'此時買進的勝率')+'</h3>'+W.items.map(function(w){
+      return '<div class="kv" style="display:block"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><b>'+esc(w.k)+'</b><span style="font-weight:700;font-size:18px">勝率 '+esc(w.p)+'%</span></div>'+
+        '<div class="bar"><i style="width:'+Math.max(0,Math.min(100,num(w.p)))+'%;background:var(--accent)"></i></div>'+
+        '<div style="font-size:14px">現價 '+esc(w.now)+'｜'+esc(w.range)+'</div><div class="hint" style="margin:2px 0 0">'+esc(w.why)+'</div></div>'; }).join('')+
+      (W.note?'<div class="hint" style="margin:8px 0 0">'+esc(W.note)+'</div>':''); })();
   if(D.summary.length) $('sumList').innerHTML = D.summary.map(function(s){return '<li>'+s+'</li>';}).join('');
   else emptyMsg($('sumList').parentNode,'首輪分析完成後顯示 5 點總結');
 
