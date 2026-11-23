@@ -14,6 +14,7 @@ CHROME = os.environ.get('CHROME', '/usr/bin/google-chrome')
 
 src = open(HTML, encoding='utf-8').read()
 SNAP = json.loads(re.search(r'<script id="snapshot"[^>]*>(.*?)</script>', src, re.S).group(1))
+LOG = json.loads(re.search(r'<script id="iterlog"[^>]*>(.*?)</script>', src, re.S).group(1))
 
 
 def ts(d):
@@ -321,6 +322,12 @@ async def scenario(p, mode):
     exp = '（即時）' if mode == 'live' else ('不能連外' if mode == 'csp' else '未連上')
     check(tag + '重新整理：旁邊顯示「上次檢查 HH:MM」與結果', re.search(r'上次檢查 \d{2}:\d{2}', lc) and exp in lc, lc)
 
+    # 迭代紀錄只保留最新兩天，舊紀錄在 Notion 備查
+    LOGD = sorted({re.search(r'\d{4}-\d{2}-\d{2}', e['time']).group(0) for e in LOG}, reverse=True)
+    check(tag + '迭代紀錄：只保留最新兩天', len(LOGD) <= 2, ','.join(LOGD))
+    arh = await pg.eval_on_selector('#logArchive a', 'e=>e.href')
+    art = await pg.inner_text('#logArchive')
+    check(tag + '迭代紀錄：有 Notion 備查連結與說明', 'notion' in arh and '最新兩天' in art, arh)
     # 導覽列
     for href in ('#outlook', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
         await pg.click(f'nav a[href="{href}"]')
