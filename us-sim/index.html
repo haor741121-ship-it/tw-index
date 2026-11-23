@@ -104,6 +104,9 @@
   code{font-size:13px;background:var(--grbg);border-radius:4px;padding:0 4px}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--ink);color:var(--bg);font-size:14px;border-radius:999px;padding:8px 16px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:20}
   .toast.on{opacity:1}
+  .ust-exp p{margin:0 0 8px;font-size:14px} .ust-exp p:last-child{margin:0}
+  .ust-exp b{color:var(--ink)}
+  .ust-list{margin:0;padding-left:18px;font-size:14px} .ust-list li{margin:4px 0}
 </style>
 </head>
 <body>
@@ -116,7 +119,7 @@
   </header>
 
   <nav>
-    <a href="#sum">總結</a><a href="#sc">情境</a><a href="#trend">走勢＋準確度</a><a href="#idx">指數</a>
+    <a href="#sum">總結</a><a href="#sc">情境</a><a href="#trend">走勢＋準確度</a><a href="#idx">指數</a><a href="#ust">美債</a>
     <a href="#drv">驅動因子</a><a href="#lv">點位</a><a href="#cal">日程</a><a href="#rev">校準</a><a href="#iter">迭代</a><a href="#install">存到手機</a>
   </nav>
 
@@ -152,6 +155,36 @@
   <section id="idx">
     <h2>四大指數（近一個月）</h2>
     <div class="grid" id="indices"></div>
+  </section>
+
+  <section id="ust">
+    <h2>美債殖利率</h2>
+    <div class="hint" id="ustAsof" style="margin:-4px 2px 8px"></div>
+    <div class="grid" id="ustCards" style="grid-template-columns:1fr 1fr 1fr"></div>
+    <div class="card chart mt">
+      <div id="ustChart"></div>
+      <div class="legend">
+        <span><i style="background:var(--blue)"></i>10 年期</span>
+        <span><i style="background:var(--accent)"></i>2 年期</span>
+        <span><i style="background:var(--sub);height:8px;opacity:.5"></i>下方長條：利差（10 年 − 2 年）</span>
+      </div>
+    </div>
+    <div class="card mt"><h3>現況重點</h3><ul class="ust-list" id="ustNow"></ul></div>
+    <div class="card mt"><h3>對下個月美股可能的影響</h3><ul class="ust-list" id="ustImpact"></ul></div>
+    <div class="card mt ust-exp">
+      <h3>10 年期和 2 年期差在哪？</h3>
+      <p><b>2 年期</b>：主要反映市場對 Fed 未來一兩年政策利率的預期，對升息、降息消息最敏感，常是第一個反應的。</p>
+      <p><b>10 年期</b>：反映長期經濟成長與通膨預期，再加上長期持有的風險補償（期限溢價），也會受財政赤字、公債發行量影響。它是房貸、企業借款和股票估值的參考利率。</p>
+      <p><b>利差（10 年 − 2 年）</b>：正常是正的（借越久利率越高）。變成負的叫「倒掛」，常被當作經濟衰退的前兆；倒掛後重新轉正，有時發生在衰退前夕或 Fed 開始降息的時候。</p>
+      <h3 style="margin-top:10px">可能影響的問題</h3>
+      <ul class="ust-list">
+        <li><b>股票估值</b>：10 年期上升代表折現率提高，本益比高的科技、成長股（那斯達克、費半）受壓最大。</li>
+        <li><b>升息預期</b>：2 年期急升通常代表市場加碼押注 Fed 升息，短線常伴隨股市下跌、美元走強。</li>
+        <li><b>曲線怎麼變陡</b>：10 年期漲得比 2 年期快（熊市陡峭化）多半是擔心通膨、財政赤字或公債供給，對股市不利；2 年期跌得比 10 年期快（牛市陡峭化）多半是降息預期升溫。</li>
+        <li><b>借貸成本</b>：房貸、企業融資、信用卡利率跟著變動，影響消費、投資與企業獲利。</li>
+        <li><b>對台灣</b>：美債殖利率高、美元強時，外資較容易匯出、新台幣偏貶，台股常承壓；壽險業持有大量美債，殖利率上升會帶來評價損失。</li>
+      </ul>
+    </div>
   </section>
 
   <section id="drv">
@@ -209,44 +242,44 @@
 
 <script id="data" type="application/json" data-keep>
 {
-  "round": 8,
-  "updated": "2026/11/23（週一）15:37（台北）",
-  "basis": "資料基準：美東 11/20 收盤（另參考 11/23 亞洲時段期貨）",
-  "lead": "期指反彈逾2%，CTA賣壓待消化",
+  "round": 10,
+  "updated": "2026/11/23（週一）20:49（台北）",
+  "basis": "資料基準：美東 11/20 收盤（另參考美東 11/23 06:47 盤前期貨）",
+  "lead": "期指漲近3%，1月續升機率約六成",
   "outlook": "震盪偏多（高波動）",
   "horizon": "模擬區間：2026/11/23–2026/12/18",
-  "outlookWhy": "11/23 亞洲時段 S&P 期貨 +2.2%、那指期貨約 +3%，12 月升息機率降至 88.6%、高盛統計 22 次修正後 3 個月平均 +4%，偏多；但高盛估 CTA 本週仍可能賣出 286–806 億美元、Kolovos 警告可能再跌 5%，故機率僅小幅調為 31/43/26。",
+  "outlookWhy": "美東 11/23 盤前 S&P 期貨 +2.6～2.9%（約 7,121–7,136）、VIX 盤前約 30（較 35.89 回落），12 月升 2 碼機率歸零，偏多；但 CME 顯示 1 月前累計升 2 碼約 60%（高於 Polymarket 47%），CTA 賣壓與中東攻擊未解，期貨不等於收盤，機率維持 33/43/24。",
   "summary": [
     "<b>過去一個月</b>：S&P 500 自 10/20 的 7,712.57 跌至 6,910.39（−10.4%），那指 −14.4%、費半 −25.5%",
-    "<b>利率與美債</b>：11/20 10 年債 4.91–4.93%、2 年債單日 −12bp；12 月升息機率 88.6%（CME，11/22）",
-    "<b>能源與國際</b>：WTI 11/20 $83.98、布蘭特 $92.57；伊朗經卡達非正式接觸，要求解除封鎖",
+    "<b>利率與美債</b>：11/20 10 年債 4.91–4.93%；CME 11/23 12 月升 1 碼 93.2%、1 月前累計升 2 碼 59.9%",
+    "<b>能源與國際</b>：11/23 盤前布蘭特 $88.4–91.8（三源）、WTI $82–83；胡塞宣稱攻擊沙國煉油廠",
     "<b>政策與政治</b>：Bessent 警告 Fed 過度緊縮；Yardeni 年底目標下修至 7,500；撥款 12/11 到期",
     "<b>下月關鍵</b>：11/25 PCE、11/29 OPEC+、12/4 非農、12/9 FOMC、12/10 CPI、12/11 撥款到期"
   ],
   "scenarios": [
     {
       "name": "樂觀",
-      "p": 31,
+      "p": 33,
       "spx": "7,300–7,550",
-      "nas": "那指約 +7.8%～+12.8%（約 24,380–25,520，依 β≈1.38 推算；11/23 期貨比值約 1.3–1.4 支持此估計）",
-      "why": "極度恐懼後技術反彈、11/23 期貨已漲逾 2%；PCE 溫和、升息預期鬆動、Fed 只升 1 碼且不暗示 1 月續升；前瞻本益比約 16 倍，高盛統計 22 次修正後 3 個月平均 +4%",
-      "trigger": "10 年債跌破 4.8%、VIX 回到 22 以下、費半連續止跌並站回 9,000、CTA 賣壓未擴大"
+      "nas": "那指約 +7.8%～+12.8%（約 24,380–25,520，依 β≈1.38 推算；11/23 盤前期貨比值約 1.25–1.3）",
+      "why": "極度恐懼後技術反彈、11/23 盤前期貨漲近 3% 且輝達盤前約 +9～10%；PCE 溫和、升息預期鬆動、Fed 只升 1 碼且不暗示 1 月續升；前瞻本益比約 16 倍，高盛統計 22 次修正後 3 個月平均 +4%",
+      "trigger": "11/23 收盤站上 7,100 並延續、10 年債跌破 4.8%、VIX 回到 22 以下、費半站回 9,000、CTA 賣壓未擴大"
     },
     {
       "name": "基準",
       "p": 43,
-      "spx": "6,750–7,200",
-      "nas": "那指約 −3.2%～+5.8%（約 21,890–23,930，推算），難回 11/13 水準",
+      "spx": "6,800–7,250",
+      "nas": "那指約 −2.2%～+6.8%（約 22,120–24,160，推算），難回 11/13 水準",
       "why": "超賣反彈與 CTA 持續賣壓、Fed 升息、AI 獲利與輝達調查疑慮互相拉扯，指數在修正區內來回整理；上檔受 7,350–7,415 壓力",
-      "trigger": "核心 PCE 月增約 0.3%（預估）、CPI 符合預期、Fed 升 1 碼、撥款順利延長"
+      "trigger": "核心 PCE 月增約 0.3%（預估）、CPI 符合預期、Fed 升 1 碼、1 月是否續升維持五五波、撥款順利延長"
     },
     {
       "name": "悲觀",
-      "p": 26,
+      "p": 24,
       "spx": "6,250–6,700",
       "nas": "那指約 −13.2%～−4.2%（約 19,630–21,660，推算），跌破距高點 −20% 熊市門檻（約 22,090）",
-      "why": "反彈失敗引發 CTA 最多約 806 億美元賣壓（高盛）、Kolovos 所說再跌 5%；Fed 升 2 碼或確認 1 月續升；荷莫茲衝突擴大使布蘭特重回 $100 以上",
-      "trigger": "核心 PCE／CPI 月增 ≥0.4%、10 年債重回 5.1% 以上、美伊海上衝突擴大、VIX 升破 40 或收盤跌破 6,732"
+      "why": "開盤跳空反彈失敗、CTA 最多約 806 億美元賣壓（高盛）、Kolovos 所說再跌 5%；Fed 升 2 碼或確認 1 月續升；伊朗與胡塞攻擊擴及沙國產能使布蘭特重回 $100 以上",
+      "trigger": "核心 PCE／CPI 月增 ≥0.4%、10 年債重回 5.1% 以上、沙國或荷莫茲供給實際中斷、VIX 升破 40 或收盤跌破 6,732"
     }
   ],
   "hist": [
@@ -347,25 +380,25 @@
       "12/18"
     ],
     "bull": [
-      7170,
-      7280,
-      7370,
-      7460
+      7200,
+      7300,
+      7390,
+      7480
     ],
     "base": [
-      7020,
-      6950,
-      6900,
-      6980
+      7060,
+      6980,
+      6920,
+      7000
     ],
     "bear": [
-      6730,
-      6590,
-      6450,
+      6760,
+      6600,
+      6460,
       6400
     ]
   },
-  "projNote": "起點 11/20 收盤 6,910.39；VIX 35.89 換算一個月約 ±10.4%（35.89/√12），12/18 選擇權隱含約 6,732–7,665（11/19）；高盛 11/22 情境區間 5,800–8,100。第 1 週節點參考 11/23 亞洲時段 S&P 期貨 +2.2%（約 7,060，推算，非收盤）並扣除 CTA 賣壓；悲觀終點參考 Kolovos 再跌 5%（約 6,565，推算）。那指以 β≈1.38 換算（推算）。",
+  "projNote": "起點 11/20 收盤 6,910.39；VIX 35.89 換算一個月約 ±10.4%（35.89/√12），12/18 選擇權隱含約 6,732–7,665（11/19）；高盛 11/22 情境區間 5,800–8,100。第 1 週節點參考美東 11/23 05:40 盤前 S&P 期貨 +2.7%（約 7,097，推算，非收盤；期貨報價 7,121.25 含基差）並扣除 CTA 賣壓；悲觀終點參考 Kolovos 再跌 5%（約 6,565，推算）。那指以 β≈1.38 換算（推算）。",
   "weekly": [
     {
       "d": "10/23 週",
@@ -447,9 +480,9 @@
   "drivers": [
     {
       "cat": "指數與技術面",
-      "now": "S&P 500 11/20 收 6,910.39，七連跌、單週 −8.6%（2025/4 以來最差），距 10/6 高點 −11.6%；11/23 亞洲時段 S&P 期貨 +2.2%、那指 100 期貨 +2.9～3.1%（Al Jazeera、FinancialJuice）；費半 11/20 收 8,408.59（Nasdaq 官方）",
-      "dir": "中性",
-      "impact": "期貨反彈符合極度恐懼後的技術回升；但 Macro Risk Advisors 的 Kolovos 認為可能再跌 5%、較穩固低點較可能在第一季，反彈能否延續到收盤是本週第一個檢驗"
+      "now": "S&P 500 11/20 收 6,910.39，七連跌、單週 −8.6%，距 10/6 高點 −11.6%；美東 11/23 盤前 S&P 期貨 +2.24%（02:29，Reuters）→ +2.90%（04:25）→ +2.82%（05:19，CNBC）→ +2.70%（05:40，TipRanks），報價約 7,121（Upstox）；那指 100 期貨 +3.0～3.6%，輝達盤前約 +9～10%",
+      "dir": "利多",
+      "impact": "期貨漲勢經亞洲與歐洲時段未消退，跳空開高機率高；但 Kolovos 認為可能再跌 5%、較穩固低點較可能在第一季，收盤能否守住 7,000 以上是本週第一個檢驗"
     },
     {
       "cat": "美債",
@@ -459,27 +492,27 @@
     },
     {
       "cat": "能源",
-      "now": "WTI 11/20 結算 $83.98、布蘭特 $92.57（連三週跌）；11/23 亞洲時段布蘭特先震盪後走低（FinancialJuice）；OPEC+ 11/29 開會決定 2027 年配額",
+      "now": "11/23 盤前布蘭特 $91.82–91.84（TipRanks、Upstox）→ $88.36（JournalArta 11:46 GMT，−4.6%），WTI $83.01→$82.02，三源時點不同、跌幅擴大；11/20 結算 WTI $83.98、布蘭特 $92.57（連三週跌）；OPEC+ 11/29 開會決定 2027 年配額",
       "dir": "利空",
-      "impact": "供給過剩壓低油價有助通膨降溫；荷莫茲航道事件與伊朗威脅仍是油價急漲風險"
+      "impact": "週末中東攻擊未推升油價，顯示市場聚焦供給過剩、有助通膨降溫；若沙國煉油或出口實際受損，油價急漲風險仍在"
     },
     {
       "cat": "國際新聞",
-      "now": "11/20 卡達代表團赴德黑蘭會談約 2 小時，伊朗副外長 11/21 稱仍非正式談判、封鎖視同戰爭行為；外長 Araghchi 要求停戰、解凍資產、解除石油制裁與封鎖；川普 11/21 稱要「永久」防止伊朗擁核（Al Jazeera）",
+      "now": "週末衝突延續：胡塞 11/22 宣稱攻擊沙國 Rabigh 煉油廠（TipRanks、Morning Brief，損害未獲證實）、巴林稱 11/21 遭伊朗攻擊民用工業設施、革命衛隊稱打擊美軍據點（Morning Brief 整理，單一來源）；卡達斡旋仍屬非正式接觸，伊朗要求解除封鎖與制裁；川普稱明年可能恢復打擊",
       "dir": "利空",
       "impact": "雙方條件差距仍大，地緣風險溢價延續；若卡達斡旋轉為正式談判則屬重大利多"
     },
     {
       "cat": "金融",
-      "now": "VIX 11/20 收 35.89（盤中觸及 40）；高盛估 CTA 過去一個月賣出 570 億美元、目前淨空 190 億，本週若續跌最多再賣 806 億、即使反彈也可能賣 286 億，恐慌指數 9/10（Bloomberg 經 Stocktwits，11/22）；高盛 Snider：前瞻本益比降至約 16 倍；Yardeni 年底目標 7,900→7,500",
+      "now": "VIX 11/20 收 35.89（盤中觸及 40），11/23 盤前報導約 30.06（JournalArta，性質未標明，非收盤）；高盛估 CTA 過去一個月賣出 570 億美元、目前淨空 190 億，本週若續跌最多再賣 806 億、即使反彈也可能賣 286 億，恐慌指數 9/10（Bloomberg 經 Stocktwits，11/22）；高盛 Snider：前瞻本益比降至約 16 倍；Yardeni 年底目標 7,900→7,500",
       "dir": "利空",
       "impact": "程式交易賣壓可能壓抑反彈力道；估值回落與「修正 22 次中 3 個月後上漲居多」的歷史統計構成中期支撐"
     },
     {
       "cat": "政策",
-      "now": "Fed 利率 3.75–4.00%；CME FedWatch 12/9 升 1 碼機率 88.6%（Stocktwits 11/22 引述，較崩跌前約 93% 下降）；Bloomberg 11/22：交換市場已不再完全反映 12 月升息；財長 Bessent 警告 Fed 過度緊縮",
+      "now": "Fed 利率 3.75–4.00%；CME FedWatch 11/23：12 月升 1 碼 93.2%、不變 6.8%、升 2 碼 0%（KuCoin 轉引）；1 月會議前累計升 2 碼 59.9%、累計升 1 碼 37.6%（同源），CoinDesk 11/23 亦稱 1 月再升約 60%；Polymarket 1 月升息 47%（11/21）；Bessent 警告 Fed 過度緊縮",
       "dir": "中性",
-      "impact": "升息預期由「確定」轉為「高機率」，若 PCE 溫和可能進一步降溫；1 月續升機率仍待確認，關鍵在 12/9 點陣圖"
+      "impact": "12 月升 1 碼幾成定局；1 月續升 CME 約六成、Polymarket 約五成，市場分歧，11/25 PCE（RBC 預估核心月增 0.3%）與 12/9 點陣圖是關鍵"
     },
     {
       "cat": "政治角力",
@@ -511,10 +544,10 @@
     }
   ],
   "watch": [
-    "若 11/23 期貨反彈延續至收盤（S&P 收在 7,000 以上）且 VIX 回落至 30 以下，則由基準偏向樂觀",
-    "若反彈在 7,100 前失敗、CTA 賣壓擴大使指數收破 6,845（2025 年底收盤），則偏向悲觀情境",
-    "若 11/25 核心 PCE 月增 ≤0.2% 且 FedWatch 12 月升息機率跌破 70%，則偏向樂觀情境",
-    "若荷莫茲衝突擴大、布蘭特重回 $100，或 12/9 Fed 升 2 碼，則偏向悲觀情境"
+    "若今晚（美東 11/23）盤前約 +2.7% 漲勢延續、S&P 收在 7,100 以上且 VIX 回落至 30 以下，則由基準偏向樂觀",
+    "若跳空開高後回落、收盤跌回 7,000 以下，或 CTA 賣壓擴大使指數收破 6,845，則偏向悲觀情境",
+    "若 11/25 核心 PCE 月增 ≤0.2% 且 CME 1 月前累計升 2 碼機率跌破 30%（目前 59.9%），則偏向樂觀情境",
+    "若胡塞或伊朗攻擊造成沙國產能實際中斷、布蘭特重回 $100，或 12/9 Fed 升 2 碼，則偏向悲觀情境"
   ],
   "calendar": [
     {
@@ -551,29 +584,65 @@
     }
   ],
   "review": {
-    "prev": "第 7 輪（11/23 10:38）基準：一個月後 6,750–7,200（43%），11/27 節點 7,000；11/21 第 3 輪同起點 11/20 6,910.39",
-    "actual": "之後仍無新收盤（美東 11/23 尚未開盤），最新收盤仍為 11/20 的 6,910.39；11/23 亞洲時段 S&P 期貨 +2.2%（約 7,060，推算，非收盤）",
+    "prev": "第 9 輪（11/23 20:36）基準：一個月後 6,800–7,250（43%），11/27 節點 7,060；11/21 第 3 輪同起點 11/20 6,910.39，11/27 節點 7,000",
+    "actual": "之後仍無新收盤（本輪為美東 11/23 08:00 開盤前），最新收盤仍為 11/20 的 6,910.39；盤前 S&P 期貨 7,121–7,136（+2.7～2.9%，Upstox、JournalArta，推算非收盤）",
     "verdict": "尚無法判定（時間太短）",
-    "note": "11/21 存檔模擬起點即最新收盤，同期偏差 0%，不觸發偏差修正；期貨若照此收盤將略高於基準第 1 週節點、低於樂觀節點。本輪依期貨反彈與升息預期降溫將樂觀 29→31%、悲觀 28→26%，第 1 週基準 7,000→7,020（推算），但因 CTA 賣壓未調高後段路徑。美東 11/23 收盤（台北 11/24 05:00 後）做首次實質校準。"
+    "note": "11/21 存檔起點即最新收盤，同期偏差 0%，不觸發修正。期貨水準（扣基差約 7,100，推算）高於 11/21 存檔 11/27 基準 7,000、略高於本日 7,060，若收盤確認則為第一次『偏向樂觀』；依規則需連續 2 次同向才調整路徑，本輪不改 proj 與機率（pchg 0）。美東 11/23 收盤後（台北 11/24 05:00 後）做首次實質校準。"
   },
   "iter": {
     "fixed": [
-      "部分改進：補上 11/19–20 崩跌後的部位資料——高盛估 CTA 過去一月賣 570 億美元、淨空 190 億、本週可能再賣 286–806 億（11/22）；LSEG Lipper 新週報（11/25 當週）尚未公布，下輪公布後補",
-      "已改（12 月）：取得崩跌後 CME FedWatch 12 月升息 88.6%（11/22），並以 Bloomberg「交換市場不再完全反映 12 月升息、2 年債 −12bp」交叉核對；1 月續升機率仍無崩跌後數字",
-      "已改：以 11/23 期貨（S&P +2.2%／那指 +2.9～3.1%，比值約 1.3–1.4）與 11/20 單日（−5.3%／−3.7%≈1.43）、單週（−10.0%／−8.6%≈1.16）交叉檢查 β，1.38 落在區間內，維持"
+      "仍未完成（第二次延後，違反『不可連續兩輪未改』，原因：本輪為使用者手動補跑、執行於美東 11/23 08:00 開盤前，收盤尚不存在）：改以三源盤前期貨（Yahoo/AOL +2.6%、Upstox 7,121、JournalArta 7,136）估計偏差方向；台北 11/24 06:40 該輪必須完成",
+      "部分改進：取得 11/23 盤前 VIX 約 30.06（JournalArta，性質未標明）與 10 年債 11/20 收 4.912% 兩源；因非 CBOE 收盤，VIX/√12 區間仍以 35.89 計算（±10.4%），以 30 換算約 ±8.7% 僅供參考",
+      "已改：取得 CME FedWatch 1 月數字——11/23 1 月會議前累計升 2 碼 59.9%（KuCoin 轉引），CoinDesk 11/23『1 月再升近 60%』兩源一致，與 Polymarket 47% 並列；巴林遭攻擊仍僅單一來源，延下輪"
     ],
     "pros": [
-      "納入台北盤中最新期貨與亞股（台股 +2.2～2.5%、韓股 −2.6～−3.2%），週一方向有兩源數字",
-      "升息預期改用崩跌後 CME 88.6% 與 Bloomberg 交換市場雙來源，政策因子由利空調為中性",
-      "加入高盛 CTA 賣壓金額作為悲觀情境與反彈力道的量化依據"
+      "Fed 路徑三源並列（CME 12 月 93.2%、1 月 59.9%、Polymarket 47%），點出市場對 1 月分歧",
+      "油價以三個帶時點的報價呈現盤前跌幅擴大（布蘭特 $91.8→$88.4），不擇一假裝精確",
+      "誠實標示校準缺口與違規原因，並依『連續 2 次同向才調整』規則不為期貨訊號過度修改路徑"
     ],
     "cons": [
-      "期貨僅為盤前訊號，hist 與校準仍停在 11/20；下輪須用美東 11/23 實際收盤做首次實質校準並檢查偏差方向",
-      "Fed 1 月續升機率仍缺崩跌後數字，CME 88.6% 也是經 Stocktwits 轉引的單一來源",
-      "美伊消息只到 11/21 卡達斡旋，週末（11/22）航運事件與油價週一實際報價未取得具體數字"
+      "首次實質校準仍未做：台北 11/24 06:40 輪必須以美東 11/23 收盤補 hist、指數卡、週表並計算偏差",
+      "巴林遭伊朗攻擊與胡塞攻擊沙國煉油廠的損害仍缺第二來源（Reuters／AP）核實",
+      "LSEG Lipper 涵蓋 11/19–20 崩跌的新週資金流向尚未取得，崩跌後是否轉為淨流出未知"
     ]
   },
   "log": [
+    {
+      "round": 10,
+      "time": "11/23 20:49",
+      "outlook": "震盪偏多（高波動）",
+      "base": "S&P 500 一個月後 6,800–7,250（43%），機率維持 33/43/24",
+      "newData": false,
+      "pchg": 0,
+      "pros": [
+        "Fed 路徑三源並列（CME 12 月 93.2%、1 月 59.9%、Polymarket 47%），點出市場對 1 月分歧",
+        "油價以三個帶時點的報價呈現盤前跌幅擴大（布蘭特 $91.8→$88.4），不擇一假裝精確",
+        "誠實標示校準缺口與違規原因，並依『連續 2 次同向才調整』規則不為期貨訊號過度修改路徑"
+      ],
+      "cons": [
+        "首次實質校準仍未做：台北 11/24 06:40 輪必須以美東 11/23 收盤補 hist、指數卡、週表並計算偏差",
+        "巴林遭伊朗攻擊與胡塞攻擊沙國煉油廠的損害仍缺第二來源（Reuters／AP）核實",
+        "LSEG Lipper 涵蓋 11/19–20 崩跌的新週資金流向尚未取得，崩跌後是否轉為淨流出未知"
+      ]
+    },
+    {
+      "round": 9,
+      "time": "11/23 20:36",
+      "outlook": "震盪偏多（高波動）",
+      "base": "S&P 500 一個月後 6,800–7,250（43%），機率 33/43/24，第 1 週節點依盤前期貨上調至 7,060",
+      "newData": false,
+      "pchg": 2,
+      "pros": [
+        "盤前期貨有四個帶時間戳的數字（Reuters、CNBC、TipRanks 等），可看出漲勢在亞洲與歐洲時段未消退",
+        "Fed 12 月與 1 月升息預期都有崩跌後數字（CME 兩次讀數＋Polymarket），政策因子判讀有依據",
+        "同時呈現「週末中東攻擊升溫」與「油價反而下跌」，能源因子對股市的影響描述更貼近實際"
+      ],
+      "cons": [
+        "仍未取得美東 11/23 實際收盤與 22:45 PMI 初值，hist、指數卡與校準停在 11/20（下輪必改）",
+        "VIX 與 10 年債只有 11/20 收盤值，缺週一盤前 VIX 期貨與殖利率，預期波動仍以 35.89 換算",
+        "1 月升息機率只來自 Polymarket（CME 1 月數字未取得），巴林遭攻擊消息也僅單一來源"
+      ]
+    },
     {
       "round": 8,
       "time": "11/23 15:37",
@@ -720,6 +789,42 @@
   ],
   "notion": "https://app.notion.com/p/41e1fdff98eb81879a4fd47c2be693a9",
   "sources": [
+    {
+      "t": "KuCoin 轉引 CME FedWatch：12 月 93.2%、1 月累計（11/23）",
+      "u": "https://www.kucoin.com/news/flash/fed-s-december-25-basis-point-rate-hike-probability-drops-to-93-2"
+    },
+    {
+      "t": "CoinDesk：Market rout kills 50bp December hike bets（11/23）",
+      "u": "https://www.coindesk.com/markets/2026/11/23/market-rout-kills-50-basis-points-december-fed-rate-hike-bets"
+    },
+    {
+      "t": "JournalArta：Futures surge as oil slides（11/23）",
+      "u": "https://journalarta.com/en/2026/11/23/stock-market-today-dow-sp-500-futures-surge-after-tech-rout-as-oil-slides/"
+    },
+    {
+      "t": "Yahoo Finance／AOL：Futures surge amid relief rally（11/23）",
+      "u": "https://www.aol.com/articles/stock-market-today-dow-p-091118000.html"
+    },
+    {
+      "t": "TipRanks：Stock Market Today, Nov. 23（盤前期貨、油價）",
+      "u": "https://www.tipranks.com/news/stock-market-today-nov-23-markets-see-a-boost-after-last-weeks-ai-selloff"
+    },
+    {
+      "t": "Upstox：Futures signal gap-up open on Nov 23",
+      "u": "https://upstox.com/news/market-news/us-stocks/dow-s-and-p-500-nasdaq-futures-signal-gap-up-open-on-nov-23-nvidia-intel-broadcom-other-stocks-to-watch/article-203885/"
+    },
+    {
+      "t": "The Morning Brief（11/23，Reuters/CNBC 期貨與週末中東事件整理）",
+      "u": "https://specterworks.substack.com/p/the-morning-brief-2026-11-23"
+    },
+    {
+      "t": "Bloomingbit：US stock futures jump, Nasdaq up 3%（11/23 04:25 ET）",
+      "u": "https://en.bloomingbit.io/feed/news/125037"
+    },
+    {
+      "t": "Rio Times：Fed January hike odds fall to 47%（Polymarket，11/21）",
+      "u": "https://www.riotimesonline.com/fed-january-hike-odds-fall-to-47-percent-2026/"
+    },
     {
       "t": "Yahoo Finance：A battered stock market looks for the bottom（11/22）",
       "u": "https://finance.yahoo.com/markets/article/a-battered-stock-market-looks-for-the-bottom-what-to-watch-this-week-100000117.html"
@@ -1057,8 +1162,8 @@
   "archive": [
     {
       "day": "11/23",
-      "made": "11/23 15:37",
-      "round": 8,
+      "made": "11/23 20:49",
+      "round": 10,
       "start": {
         "d": "11/20",
         "v": 6910.39
@@ -1070,27 +1175,27 @@
         "12/18"
       ],
       "bull": [
-        7170,
-        7280,
-        7370,
-        7460
+        7200,
+        7300,
+        7390,
+        7480
       ],
       "base": [
-        7020,
-        6950,
-        6900,
-        6980
+        7060,
+        6980,
+        6920,
+        7000
       ],
       "bear": [
-        6730,
-        6590,
-        6450,
+        6760,
+        6600,
+        6460,
         6400
       ],
       "p": [
-        31,
+        33,
         43,
-        26
+        24
       ]
     },
     {
@@ -1134,10 +1239,22 @@
   ],
   "freq": {
     "now": "每 5 小時（A 級，已是上限）",
-    "why": "近 6 輪（第 3–8 輪）全部無新收盤、機率變動皆 ≤5 個百分點，符合降級條件；但最新交易日 11/20 S&P 500 單日 −3.7%（≥2%）仍符合升級條件，兩者同時成立依規則維持 A 級。",
+    "why": "近 6 輪（第 5–10 輪）全部無新收盤、機率變動皆 ≤5 個百分點，符合降級條件；但最新交易日仍為 11/20（S&P 500 單日 −3.7%，≥2%），升級條件同時成立，依規則維持 A 級。",
     "rule": "累積滿 6 筆 newData 紀錄且距上次調整 ≥6 輪時評估：近 6 輪中 ≥4 輪無新收盤且機率變動都 ≤5 個百分點 → 降一級；VIX ≥30 且距 FOMC／CPI／非農不到 1 個交易日，或最新交易日 S&P 500 單日漲跌 ≥2% → 可升一級（兩者同時成立時維持）。級別：A 每 5 小時 → B 每交易日 2 次（台北 06:40、21:40）→ C 每交易日 1 次（台北 06:40）。",
-    "next": "美東 11/23 收盤後（台北 11/24 06:40 後）再評估：若 11/23 單日漲跌 <2%，升級條件消失即降為 B 級",
+    "next": "美東 11/23 收盤後（台北 11/24 06:40 後）再評估：若 11/23 單日漲跌 <2%，升級條件消失即降為 B 級；若 11/23 單日漲幅 ≥2%（盤前約 +2.7%）則維持 A 級",
     "changed": "—"
+  },
+  "ust": {
+    "asof": "",
+    "y10": "—",
+    "y10d": "",
+    "y2": "—",
+    "y2d": "",
+    "spread": "—",
+    "spreadNote": "",
+    "hist": [],
+    "now": [],
+    "impact": []
   }
 }
 </script>
@@ -1314,6 +1431,46 @@
 
   if(D.sources.length) $('src').innerHTML = D.sources.map(function(s){return '<li><a href="'+esc(s.u)+'">'+esc(s.t)+'</a></li>';}).join('');
   else $('src').innerHTML='<li>—</li>';
+
+  // 美債殖利率
+  (function(){
+    var U=D.ust||{}, H=U.hist||[];
+    $('ustAsof').textContent = U.asof ? '資料日期：'+U.asof : '';
+    var cards=[['10 年期',U.y10,U.y10d],['2 年期',U.y2,U.y2d],['利差 10−2',U.spread,U.spreadNote]];
+    $('ustCards').innerHTML = cards.map(function(c,i){
+      return '<div class="card stat"><div class="k">'+esc(c[0])+'</div><div class="v" style="font-size:19px">'+esc(c[1]||'—')+'</div>'+
+        (i<2?'<div class="d '+sign(c[2])+'">'+esc(c[2]||'')+'</div>':'<div class="n">'+esc(c[2]||'')+'</div>')+'</div>'; }).join('');
+    function li(el,arr,msg){ if(arr&&arr.length) el.innerHTML=arr.map(function(a){return '<li>'+esc(a)+'</li>';}).join(''); else el.innerHTML='<li class="empty">'+esc(msg)+'</li>'; }
+    li($('ustNow'),U.now,'下一輪排程更新後顯示'); li($('ustImpact'),U.impact,'下一輪排程更新後顯示');
+    if(H.length<2){ $('ustChart').innerHTML='<div class="empty">下一輪排程更新後顯示近一個月殖利率走勢</div>'; return; }
+    var y10=H.map(function(r){return num(r.y10);}), y2=H.map(function(r){return num(r.y2);});
+    var sp=H.map(function(r,i){return (isNaN(y10[i])||isNaN(y2[i]))?null:Math.round((y10[i]-y2[i])*100);});
+    var all=y10.concat(y2).filter(function(v){return !isNaN(v);});
+    var lo=Math.min.apply(null,all), hi=Math.max.apply(null,all), pd=Math.max(0.05,(hi-lo)*0.12);
+    var mn=Math.floor((lo-pd)*20)/20, mx=Math.ceil((hi+pd)*20)/20;
+    var W=340,L=34,R=10,T=14,CH=150,G=12,SH=44,Hh=T+CH+G+SH+20,n=H.length;
+    function x(i){return L+i*(W-L-R)/Math.max(1,n-1);} function y(v){return T+(mx-v)/(mx-mn)*CH;}
+    var cs=getComputedStyle(document.documentElement); function c(k){return cs.getPropertyValue(k).trim();}
+    var bl=c('--blue'),ac=c('--accent'),sub=c('--sub'),line=c('--line'),up=c('--up'),dn=c('--down');
+    var s='<svg viewBox="0 0 '+W+' '+Hh+'" role="img" aria-label="美債 10 年期與 2 年期殖利率近一個月走勢與利差">';
+    var steps=4; for(var k=0;k<=steps;k++){ var g=mn+(mx-mn)*k/steps, gy=y(g);
+      s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+gy+'" y2="'+gy+'" stroke="'+line+'"/>';
+      s+='<text x="'+(L-4)+'" y="'+(gy+3)+'" font-size="9" fill="'+sub+'" text-anchor="end">'+g.toFixed(2)+'%</text>'; }
+    [[y10,bl],[y2,ac]].forEach(function(p){ var pts=[]; p[0].forEach(function(v,i){ if(!isNaN(v)) pts.push(x(i).toFixed(1)+','+y(v).toFixed(1)); });
+      s+='<polyline points="'+pts.join(' ')+'" fill="none" stroke="'+p[1]+'" stroke-width="2.2" stroke-linejoin="round"/>';
+      var li2=p[0].length-1; if(!isNaN(p[0][li2])){ s+='<circle cx="'+x(li2)+'" cy="'+y(p[0][li2])+'" r="3" fill="'+p[1]+'"/>';
+        s+='<text x="'+(x(li2)-5)+'" y="'+(y(p[0][li2])-6)+'" font-size="10" font-weight="700" fill="'+p[1]+'" text-anchor="end">'+p[0][li2].toFixed(2)+'%</text>'; } });
+    var sv=sp.filter(function(v){return v!==null;}), smax=Math.max(10,Math.max.apply(null,sv.map(Math.abs)));
+    var base=T+CH+G+SH/2, bw=Math.max(3,(W-L-R)/n*0.6);
+    s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+base+'" y2="'+base+'" stroke="'+line+'"/>';
+    s+='<text x="'+(L-4)+'" y="'+(base+3)+'" font-size="9" fill="'+sub+'" text-anchor="end">0bp</text>';
+    sp.forEach(function(v,i){ if(v===null) return; var hgt=Math.abs(v)/smax*(SH/2-2);
+      s+='<rect x="'+(x(i)-bw/2)+'" y="'+(v>=0?base-hgt:base)+'" width="'+bw+'" height="'+Math.max(0.5,hgt)+'" fill="'+(v>=0?sub:dn)+'" opacity=".55"/>'; });
+    var lv=sp[n-1]; if(lv!==null) s+='<text x="'+(W-R)+'" y="'+(T+CH+G+8)+'" font-size="9" font-weight="700" fill="'+sub+'" text-anchor="end">利差 '+(lv>=0?'+':'−')+Math.abs(lv)+'bp</text>';
+    var every=Math.max(1,Math.round(n/6));
+    H.forEach(function(r,i){ if((i%every===0&&n-1-i>=every/2)||i===n-1) s+='<text x="'+x(i)+'" y="'+(Hh-6)+'" font-size="9" fill="'+sub+'" text-anchor="middle">'+esc(r.d)+'</text>'; });
+    $('ustChart').innerHTML=s+'</svg>';
+  })();
 })();
 </script>
 <script data-keep>
@@ -1365,3 +1522,5 @@
 </script>
 </body>
 </html>
+
+</body></html>
