@@ -150,20 +150,40 @@ async def scenario(p, mode):
     yn = await pg.evaluate("window.__twMktNote({date:'2027-01-01',wd:'Fri',mins:600}, '2026-12-31')")
     check(tag + '2027 元旦顯示休市說明', '休市' in yn and '元旦' in yn and '12/31（週四）' in yn, yn)
 
-    # 最上方：台股目前走勢分析
-    otag = await pg.inner_text('#olkTag')
-    check(tag + '走勢分析：顯示綜合判斷', otag in ('偏多', '震盪偏多', '區間震盪', '震盪偏空', '偏空'), otag)
+    # 最上方：台股未來走勢預估（短線 1 週、波段 1 個月，只給方向）
+    LABS = ('偏多', '震盪偏多', '區間震盪', '震盪偏空', '偏空')
+    h2 = await pg.inner_text('#outlook h2')
+    check(tag + '走勢預估：標題為「台股未來走勢預估」', h2 == '台股未來走勢預估', h2)
+    navt = await pg.inner_text('nav a[href="#outlook"]')
+    check(tag + '走勢預估：導覽列名稱為「走勢預估」', navt == '走勢預估', navt)
+    fs = await pg.inner_text('#fcShort'); fm = await pg.inner_text('#fcMid')
+    check(tag + '走勢預估：顯示短線（未來 1 週）與波段（未來 1 個月）兩段方向', fs in LABS and fm in LABS, f'{fs}／{fm}')
+    fh = await pg.eval_on_selector_all('#olkFc .fcrow .h', 'es=>es.map(e=>e.textContent)')
+    check(tag + '走勢預估：兩段標示期間', fh == ['短線未來 1 週', '波段未來 1 個月'], str(fh))
     olis = await pg.eval_on_selector_all('#olkList li', 'es=>es.map(e=>e.querySelector(".k").textContent+"|"+e.querySelector(".s").textContent)')
     ks = [x.split('|')[0] for x in olis]
-    check(tag + '走勢分析：列出今日、均線、近一個月、外資現貨、外資期貨、融資維持率 6 項', ks == ['今日', '均線位置', '近一個月', '外資現貨', '外資期貨', '融資維持率'], ','.join(ks))
-    check(tag + '走勢分析：每項都有偏多／偏空／中性標示', all(x.split('|')[1] in ('偏多', '偏空', '中性') for x in olis), str(len(olis)))
+    check(tag + '走勢預估：依據列出今日、均線、近一個月、外資現貨、外資期貨、融資維持率 6 項', ks == ['今日', '均線位置', '近一個月', '外資現貨', '外資期貨', '融資維持率'], ','.join(ks))
+    check(tag + '走勢預估：每項依據都有偏多／偏空／中性標示', all(x.split('|')[1] in ('偏多', '偏空', '中性') for x in olis), str(len(olis)))
     osc = await pg.inner_text('#olkScore')
     np_ = sum(1 for x in olis if x.endswith('偏多')); nn_ = sum(1 for x in olis if x.endswith('偏空'))
-    sc_ = np_ - nn_
-    exp_ = ('偏多' if sc_ >= 3 else '震盪偏多') if sc_ > 0 else (('偏空' if sc_ <= -3 else '震盪偏空') if sc_ < 0 else '區間震盪')
-    check(tag + '走勢分析：偏多／偏空項數與判斷一致', f'{np_} 項偏多、{nn_} 項偏空' in osc and otag == exp_, f'{osc}｜{otag}')
+    check(tag + '走勢預估：依據的偏多／偏空項數正確', f'{np_} 項偏多、{nn_} 項偏空' in osc, osc)
+    sd = {x.split('|')[0]: (1 if x.endswith('偏多') else -1 if x.endswith('偏空') else 0) for x in olis}
+    fsw = await pg.inner_text('#fcShortWhy'); fmw = await pg.inner_text('#fcMidWhy')
+    # 波段：均線項以外的 4 項來自依據清單，均線訊號另算；檢查方向與加總一致、理由文字含項數
+    def lab(sc): return '偏多' if sc >= 3 else '震盪偏多' if sc >= 1 else '偏空' if sc <= -3 else '震盪偏空' if sc <= -1 else '區間震盪'
+    m = re.search(r'依 (\d) 項：(\d) 偏多、(\d) 偏空', fmw)
+    check(tag + '走勢預估：波段理由列出項數且與方向一致', bool(m) and m.group(1) == '5' and fm == lab(int(m.group(2)) - int(m.group(3))), fmw)
+    m2 = re.search(r'依 (\d) 項：(\d) 偏多、(\d) 偏空', fsw)
+    check(tag + '走勢預估：短線理由列出項數且與方向一致', bool(m2) and m2.group(1) == '5' and fs == lab(int(m2.group(2)) - int(m2.group(3))), fsw)
+    check(tag + '走勢預估：短線包含今日與外資因子', ('今日' in fsw or sd['今日'] == 0) and ('外資現貨' in fsw or sd['外資現貨'] == 0), fsw)
+    fx = await pg.evaluate("""()=>{ var I=[{k:'今日',s:1},{k:'均線位置',s:0},{k:'近一個月',s:1},{k:'外資現貨',s:1},{k:'外資期貨',s:1},{k:'融資維持率',s:0}];
+      var a=window.__twForecast(I,{ma5:1,maL:-1,nL:20}), b=window.__twForecast([{k:'今日',s:-1},{k:'外資現貨',s:-1}],{});
+      return [a.short.lab,a.short.sc,a.mid.lab,a.mid.sc,b.short.lab,b.short.n,b.mid.lab,b.mid.n].join(','); }""")
+    check(tag + '走勢預估：推估規則計算正確（含資料不足）', fx == '偏多,4,震盪偏多,2,震盪偏空,2,震盪偏空,1', fx)
+    nwt = await pg.inner_text('#olkNote')
+    check(tag + '走勢預估：註明只給方向、不預測點位與不構成投資建議', '不預測點位' in nwt and '不構成投資建議' in nwt, nwt[-30:])
     ov = await pg.inner_text('#olkView')
-    check(tag + '走勢分析：顯示排程觀察與時間', ('排程觀察' in ov and SNAP['view']['asof'] in ov) if SNAP.get('view') else True, ov[:40])
+    check(tag + '走勢預估：顯示排程研判與時間', ('排程研判' in ov and SNAP['view']['asof'] in ov) if SNAP.get('view') else True, ov[:40])
     nws = SNAP.get('news', {}).get('items', [])
     nli = await pg.eval_on_selector_all('#olkNews li', 'es=>es.map(e=>e.querySelector(".s").textContent+"|"+e.querySelector("small").textContent)')
     check(tag + '消息面：國內外新聞、政策、能源逐項顯示', len(nli) == len(nws) and len(nws) >= 3, f'{len(nli)} 則')
@@ -184,9 +204,9 @@ async def scenario(p, mode):
     check(tag + '消息面：不列入 6 項自動判斷', '依 6 項指標' in otag2, otag2)
     otop = await pg.eval_on_selector('#outlook', 'e=>e.getBoundingClientRect().top')
     itop = await pg.eval_on_selector('#idx', 'e=>e.getBoundingClientRect().top')
-    check(tag + '走勢分析：位在加權指數上方（頁面最上面）', otop < itop, f'{otop:.0f} < {itop:.0f}')
+    check(tag + '走勢預估：位在加權指數上方（頁面最上面）', otop < itop, f'{otop:.0f} < {itop:.0f}')
     ow = await pg.eval_on_selector('#olkCard', 'e=>e.getBoundingClientRect().right')
-    check(tag + '走勢分析：390px 內完整顯示', ow <= 390, f'right={ow:.0f}')
+    check(tag + '走勢預估：390px 內完整顯示', ow <= 390, f'right={ow:.0f}')
     # 加權指數上方的更新頻率說明
     fq = await pg.inner_text('#freqNote')
     check(tag + '更新頻率：加權指數上方說明每 5 小時與盤中 30 秒', '每 5 小時' in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
