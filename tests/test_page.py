@@ -192,7 +192,10 @@ async def scenario(p, mode):
     mtn = await pg.eval_on_selector_all('#maintChart svg circle', 'es=>es.length')
     check(tag + '分析：融資維持率圖有資料', mtn == len(mt_) and mtn >= 4, f'{mtn} 點')
     refy = await pg.eval_on_selector_all('#maintChart svg line.ref', 'es=>es.length')
-    check(tag + '分析：融資維持率圖有 130% 追繳參考線', refy == 1, f'{refy} 條')
+    check(tag + '分析：融資維持率圖有 120% 追繳參考線', refy == 1, f'{refy} 條')
+    rlbl = await pg.eval_on_selector_all('#maintChart svg text.reflbl', 'es=>es.map(e=>e.textContent)')
+    msub = await pg.inner_text('#maintSub')
+    check(tag + '分析：追繳參考線標示 120% 且說明文字一致', rlbl == ['追繳 120%'] and '120%' in msub and '130%' in msub, f'{rlbl}｜{msub[-40:]}')
     mtr = await pg.inner_text('#maintRead')
     lastm = mt_[-1]
     check(tag + '分析：融資維持率讀數顯示最新日期、百分比與增減', lastm['d'][5:].replace('-', '/') in mtr and f"{lastm['r']:.2f}%" in mtr and '個百分點' in mtr, mtr)
