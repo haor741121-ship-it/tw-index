@@ -149,6 +149,35 @@ async def scenario(p, mode):
     check(tag + '交易日盤中畫面仍是前一交易日時標示非今日', all('非今日' in s and '11/23（週一）' in s and '休市' not in s for s in sn), ' / '.join(sn))
     yn = await pg.evaluate("window.__twMktNote({date:'2027-01-01',wd:'Fri',mins:600}, '2026-12-31')")
     check(tag + '2027 元旦顯示休市說明', '休市' in yn and '元旦' in yn and '12/31（週四）' in yn, yn)
+
+    # 最上方：台股目前走勢分析
+    otag = await pg.inner_text('#olkTag')
+    check(tag + '走勢分析：顯示綜合判斷', otag in ('偏多', '震盪偏多', '區間震盪', '震盪偏空', '偏空'), otag)
+    olis = await pg.eval_on_selector_all('#olkList li', 'es=>es.map(e=>e.querySelector(".k").textContent+"|"+e.querySelector(".s").textContent)')
+    ks = [x.split('|')[0] for x in olis]
+    check(tag + '走勢分析：列出今日、均線、近一個月、外資現貨、外資期貨、融資維持率 6 項', ks == ['今日', '均線位置', '近一個月', '外資現貨', '外資期貨', '融資維持率'], ','.join(ks))
+    check(tag + '走勢分析：每項都有偏多／偏空／中性標示', all(x.split('|')[1] in ('偏多', '偏空', '中性') for x in olis), str(len(olis)))
+    osc = await pg.inner_text('#olkScore')
+    np_ = sum(1 for x in olis if x.endswith('偏多')); nn_ = sum(1 for x in olis if x.endswith('偏空'))
+    sc_ = np_ - nn_
+    exp_ = ('偏多' if sc_ >= 3 else '震盪偏多') if sc_ > 0 else (('偏空' if sc_ <= -3 else '震盪偏空') if sc_ < 0 else '區間震盪')
+    check(tag + '走勢分析：偏多／偏空項數與判斷一致', f'{np_} 項偏多、{nn_} 項偏空' in osc and otag == exp_, f'{osc}｜{otag}')
+    ov = await pg.inner_text('#olkView')
+    check(tag + '走勢分析：顯示排程觀察與時間', ('排程觀察' in ov and SNAP['view']['asof'] in ov) if SNAP.get('view') else True, ov[:40])
+    otop = await pg.eval_on_selector('#outlook', 'e=>e.getBoundingClientRect().top')
+    itop = await pg.eval_on_selector('#idx', 'e=>e.getBoundingClientRect().top')
+    check(tag + '走勢分析：位在加權指數上方（頁面最上面）', otop < itop, f'{otop:.0f} < {itop:.0f}')
+    ow = await pg.eval_on_selector('#olkCard', 'e=>e.getBoundingClientRect().right')
+    check(tag + '走勢分析：390px 內完整顯示', ow <= 390, f'right={ow:.0f}')
+    # 加權指數上方的更新頻率說明
+    fq = await pg.inner_text('#freqNote')
+    check(tag + '更新頻率：加權指數上方說明每 5 小時與盤中 30 秒', '每 5 小時' in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
+    ftop = await pg.eval_on_selector('#freqNote', 'e=>e.getBoundingClientRect().top')
+    htop = await pg.eval_on_selector('#hero', 'e=>e.getBoundingClientRect().top')
+    check(tag + '更新頻率：說明在加權指數卡片上方', ftop < htop, f'{ftop:.0f} < {htop:.0f}')
+    ns = await pg.evaluate("""[window.__twNextSnap({date:'2026-11-23',mins:1341}), window.__twNextSnap({date:'2026-11-27',mins:1300}), window.__twNextSnap({date:'2026-12-24',mins:1300}), window.__twNextSnap({date:'2026-11-24',mins:600})]""")
+    got = [(x['d'], x['hm']) for x in ns]
+    check(tag + '更新頻率：下次快照時間正確（跨日、跨週末、跳過 12/25）', got == [('2026-11-24', '00:54'), ('2026-11-30', '00:54'), ('2026-12-28', '00:54'), ('2026-11-24', '10:54')], str(got))
     dv = await pg.evaluate("[window.__twDiff(-97863,-99219), window.__twDiff(null,-99219), window.__twDiff(-97863,null)]")
     check(tag + '籌碼增減缺值時回傳空值（台指期／融資融券共用）', dv[0] == 1356 and dv[1] is None and dv[2] is None, str(dv))
     nd = await pg.evaluate("[window.__twNextDelay(true,false,true), window.__twNextDelay(false,false,true), window.__twNextDelay(false,true,true), window.__twNextDelay(true,false,false), window.__twNextDelay(false,false,false)]")
@@ -249,7 +278,7 @@ async def scenario(p, mode):
     check(tag + '重新整理：旁邊顯示「上次檢查 HH:MM」與結果', re.search(r'上次檢查 \d{2}:\d{2}', lc) and exp in lc, lc)
 
     # 導覽列
-    for href in ('#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
+    for href in ('#outlook', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
         await pg.click(f'nav a[href="{href}"]')
         await pg.wait_for_timeout(250)
         top = await pg.eval_on_selector(href, 'e=>e.getBoundingClientRect().top')
