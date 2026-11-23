@@ -248,6 +248,9 @@ async def scenario(p, mode):
     check(tag + '分析：融資維持率讀數顯示最新日期、百分比與增減', lastm['d'][5:].replace('-', '/') in mtr and f"{lastm['r']:.2f}%" in mtr and '個百分點' in mtr, mtr)
     mtnote = await pg.inner_text('#maintNote')
     check(tag + '分析：融資維持率標示資料來源與日期', '快照' in mtnote and lastm['d'][5:].replace('-', '/') in mtnote, mtnote)
+    mgl = await pg.eval_on_selector('#maintNote', 'e=>e.dataset.mg||""')
+    lag_ok = (('融資餘額已更新到 ' + mgl[5:].replace('-', '/') in mtnote and '尚未取得' in mtnote) if (mgl and mgl > lastm['d']) else ('尚未取得' not in mtnote))
+    check(tag + '分析：融資餘額比維持率新時標示維持率尚未取得', lag_ok, f'融資 {mgl}／維持率 {lastm["d"]}')
     mw = await pg.eval_on_selector('#maintChart svg', 'e=>e.getBoundingClientRect().right')
     check(tag + '分析：融資維持率圖在 390px 內', mw <= 390, f'right={mw:.0f}')
     for cid, rid in (('maChart', 'maRead'), ('instChart', 'instRead'), ('futChart', 'futRead'), ('mgChart', 'mgRead'), ('maintChart', 'maintRead')):
