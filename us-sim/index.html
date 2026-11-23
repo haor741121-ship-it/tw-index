@@ -107,6 +107,16 @@
   .ust-exp p{margin:0 0 8px;font-size:14px} .ust-exp p:last-child{margin:0}
   .ust-exp b{color:var(--ink)}
   .ust-list{margin:0;padding-left:18px;font-size:14px} .ust-list li{margin:4px 0}
+  .ld{border-bottom:1px solid var(--line);padding:10px 0}
+  .ld:first-child{padding-top:0} .ld:last-child{border-bottom:none;padding-bottom:0}
+  .ld .top{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+  .ld .sym{font-weight:700;font-size:16px} .ld .nm{color:var(--sub);font-size:13px}
+  .ld .px{margin-left:auto;font-weight:600;font-variant-numeric:tabular-nums}
+  .ld .wt{font-size:12px;color:var(--sub)}
+  .ld ul{margin:6px 0 0;padding-left:0;list-style:none}
+  .ld li{font-size:14px;margin:6px 0;display:flex;gap:8px}
+  .ld li .b{flex:0 0 auto;font-size:11px;font-weight:700;border-radius:6px;padding:1px 6px;height:fit-content;margin-top:2px}
+  .ld .nx{font-size:13px;color:var(--sub);margin-top:4px}
 </style>
 </head>
 <body>
@@ -119,7 +129,7 @@
   </header>
 
   <nav>
-    <a href="#sum">總結</a><a href="#sc">情境</a><a href="#trend">走勢＋準確度</a><a href="#idx">指數</a><a href="#ust">美債</a>
+    <a href="#sum">總結</a><a href="#sc">情境</a><a href="#trend">走勢＋準確度</a><a href="#idx">指數</a><a href="#ust">美債</a><a href="#leaders">龍頭股</a>
     <a href="#drv">驅動因子</a><a href="#lv">點位</a><a href="#cal">日程</a><a href="#rev">校準</a><a href="#iter">迭代</a><a href="#install">存到手機</a>
   </nav>
 
@@ -185,6 +195,14 @@
         <li><b>對台灣</b>：美債殖利率高、美元強時，外資較容易匯出、新台幣偏貶，台股常承壓；壽險業持有大量美債，殖利率上升會帶來評價損失。</li>
       </ul>
     </div>
+  </section>
+
+  <section id="leaders">
+    <h2>龍頭股消息面</h2>
+    <div class="hint" id="ldAsof" style="margin:-4px 2px 8px"></div>
+    <div class="card mood" id="ldSum" style="background:var(--grbg)"></div>
+    <div class="card mt" id="ldList"></div>
+    <div class="hint">權重為占 S&amp;P 500 比重約略值；標籤是對大盤的可能影響（利多／利空／中性），不是個股買賣建議。</div>
   </section>
 
   <section id="drv">
@@ -1350,6 +1368,11 @@
       "若 11/25 核心 PCE 溫和、2 年期跌破 4.6%，代表 1 月續升預期降溫，有利樂觀情境",
       "若 2 年期標售得標利率明顯高於市場（尾差擴大）且 2 年期回到 4.8% 以上，基準情境上緣 7,450 難突破"
     ]
+  },
+  "leaders": {
+    "asof": "",
+    "summary": "",
+    "items": []
   }
 }
 </script>
@@ -1565,6 +1588,24 @@
     var every=Math.max(1,Math.round(n/6));
     H.forEach(function(r,i){ if((i%every===0&&n-1-i>=every/2)||i===n-1) s+='<text x="'+x(i)+'" y="'+(Hh-6)+'" font-size="9" fill="'+sub+'" text-anchor="middle">'+esc(r.d)+'</text>'; });
     $('ustChart').innerHTML=s+'</svg>';
+  })();
+
+  // 龍頭股消息面
+  (function(){
+    var Lg=D.leaders||{}, it=Lg.items||[];
+    $('ldAsof').textContent = Lg.asof ? '資料日期：'+Lg.asof : '';
+    if(Lg.summary) $('ldSum').innerHTML='<b>對大盤的整體影響</b><p style="margin:4px 0 0">'+esc(Lg.summary)+'</p>';
+    else $('ldSum').style.display='none';
+    var cls={'利多':'pos','利空':'neg','中性':'neu'};
+    if(!it.length){ $('ldList').innerHTML='<div class="empty">下一輪排程更新後顯示龍頭股重大消息</div>'; return; }
+    $('ldList').innerHTML = it.map(function(x){
+      var news=(x.news||[]).map(function(n){
+        return '<li><span class="b '+(cls[n.dir]||'neu')+'">'+esc(n.dir||'中性')+'</span><span>'+
+          (n.date?'<b>'+esc(n.date)+'</b> ':'')+esc(n.t)+(n.why?'<span class="wt">｜'+esc(n.why)+'</span>':'')+'</span></li>'; }).join('');
+      return '<div class="ld"><div class="top"><span class="sym">'+esc(x.sym)+'</span><span class="nm">'+esc(x.name||'')+
+        (x.w?'・權重約 '+esc(x.w):'')+'</span><span class="px">'+esc(x.px||'')+' <span class="'+sign(x.d)+'">'+esc(x.d||'')+'</span></span></div>'+
+        (news?'<ul>'+news+'</ul>':'')+(x.next?'<div class="nx">⏭ 下一個關鍵事件：'+esc(x.next)+'</div>':'')+'</div>';
+    }).join('');
   })();
 })();
 </script>

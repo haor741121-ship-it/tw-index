@@ -35,6 +35,9 @@ async def main():
         ok('美債區塊與說明', await p.locator('#ust').count()==1 and '10 年期和 2 年期差在哪' in (await p.text_content('#ust')))
         ok('美債卡片 3 張', await p.locator('#ustCards .stat').count()==3)
         ok('美債走勢圖', (await p.locator('#ustChart svg').count()==1) if len(U.get('hist',[]))>=2 else (await p.locator('#ustChart .empty').count()==1))
+        LG=(D.get('leaders') or {}).get('items',[])
+        ok('龍頭股區塊', await p.locator('#leaders').count()==1)
+        ok('龍頭股清單', (await p.locator('#ldList .ld').count()==len(LG)) if LG else (await p.locator('#ldList .empty').count()==1))
         ok('同版顯示已是最新', '已是最新版' in (await p.text_content('#updState')))
         ok('無水平溢出', await p.evaluate('document.documentElement.scrollWidth<=window.innerWidth+1'))
         for a in await p.locator('nav a').all():
