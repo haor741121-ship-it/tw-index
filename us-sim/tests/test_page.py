@@ -21,6 +21,7 @@ async def page_with(b, remote, name):
     await p.goto('https://local.test/index.html'); await p.wait_for_timeout(1500)
     await p.screenshot(path=f'{OUT}/shot_{name}.png',full_page=True)
     return ctx,p,errs
+window_h=844
 async def main():
     async with async_playwright() as pw:
         b=await pw.chromium.launch(executable_path=os.environ.get('CHROME','/usr/bin/google-chrome'),args=['--no-sandbox'])
@@ -35,7 +36,8 @@ async def main():
         for a in await p.locator('nav a').all():
             href=await a.get_attribute('href'); await a.click(); await p.wait_for_timeout(250)
             top=await p.evaluate(f'document.querySelector("{href}").getBoundingClientRect().top')
-            ok(f'導覽 {href} 可跳轉', abs(top)<120)
+            atb=await p.evaluate('window.scrollY+window.innerHeight>=document.documentElement.scrollHeight-2')
+            ok(f'導覽 {href} 可跳轉', abs(top)<120 or (atb and 0<=top<window_h))
         async with p.expect_download() as di: await p.click('#dlBtn')
         dl=await di.value; path=f'{OUT}/{dl.suggested_filename}'; await dl.save_as(path); txt=open(path,encoding='utf-8').read()
         ok('下載檔名 us-sim.html', dl.suggested_filename=='us-sim.html')
