@@ -145,6 +145,14 @@ async def scenario(p, mode):
     check(tag + '2027 元旦顯示休市說明', '休市' in yn and '元旦' in yn and '12/31（週四）' in yn, yn)
     dv = await pg.evaluate("[window.__twDiff(-97863,-99219), window.__twDiff(null,-99219), window.__twDiff(-97863,null)]")
     check(tag + '籌碼增減缺值時回傳空值（台指期／融資融券共用）', dv[0] == 1356 and dv[1] is None and dv[2] is None, str(dv))
+    nd = await pg.evaluate("[window.__twNextDelay(true,false,true), window.__twNextDelay(false,false,true), window.__twNextDelay(false,true,true), window.__twNextDelay(true,false,false), window.__twNextDelay(false,false,false)]")
+    check(tag + '盤中自動更新排程（即時 30 秒、暫時斷線 60 秒重試、禁止連外與盤後不排程）', nd == [30000, 60000, 0, 0, 0], str(nd))
+    if mode == 'fail':
+        hol_ = set(re.findall(r"'(\d{4}-\d{2}-\d{2})':", re.search(r'var HOLIDAYS=\{(.*?)\};', src).group(1)))
+        nw_ = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+        sess_ = nw_.weekday() < 5 and nw_.strftime('%Y-%m-%d') not in hol_ and 540 <= nw_.hour * 60 + nw_.minute <= 810
+        mt0 = await pg.inner_text('#modeText')
+        check(tag + '暫時斷線時說明重試方式（盤中每分鐘自動重試／盤後按重新整理）', ('每分鐘會自動重試' in mt0) if sess_ else ('可按「重新整理」再試' in mt0), mt0)
     mt = await pg.inner_text('#modeText')
     if mode == 'csp':
         check(tag + '在 Claude App 環境說明「不能連外」而不是「連線失敗」', '不能連外' in mt and '失敗' not in mt, mt)
