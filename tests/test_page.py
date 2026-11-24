@@ -123,6 +123,10 @@ async def scenario(p, mode):
         check(tag + '融券缺值時餘額與增減都顯示「—」', len(r1) == 6 and r1[4] == '—' and r1[5] == '—', ' | '.join(r1))
     else:
         check(tag + '融券增減有數值', len(r1) == 6 and r1[5] != '—', ' | '.join(r1))
+    # 手機字體縮小後，三張籌碼表的自然寬度要留至少 16px 餘裕（之後加欄位前先看這項）
+    for tid in ('instTbl', 'marginTbl', 'futTbl'):
+        nw = await pg.eval_on_selector(f'#{tid}', 'e=>{e.style.width="max-content"; var w=e.getBoundingClientRect().width; e.style.width=""; return [Math.round(w), e.parentNode.clientWidth];}')
+        check(tag + f'{tid} 在 390px 仍有 16px 以上餘裕', nw[0] <= nw[1] - 16, f'{nw[0]}/{nw[1]}px')
     # 融資融券、外資台指期表格：日期右邊加上同一日期的加權收盤
     for tid in ('marginTbl', 'futTbl'):
         hd = await pg.eval_on_selector_all(f'#{tid} tr:first-child th', 'es=>es.map(e=>e.textContent)')
