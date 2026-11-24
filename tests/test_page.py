@@ -120,9 +120,25 @@ async def scenario(p, mode):
     # 融券缺值時不可算出假的增減（缺值不能被當成 0）
     r1 = await pg.eval_on_selector_all('#marginTbl tr:nth-child(2) td', 'es=>es.map(e=>e.textContent)')
     if ms_missing:
-        check(tag + '融券缺值時餘額與增減都顯示「—」', len(r1) == 5 and r1[3] == '—' and r1[4] == '—', ' | '.join(r1))
+        check(tag + '融券缺值時餘額與增減都顯示「—」', len(r1) == 6 and r1[4] == '—' and r1[5] == '—', ' | '.join(r1))
     else:
-        check(tag + '融券增減有數值', len(r1) == 5 and r1[4] != '—', ' | '.join(r1))
+        check(tag + '融券增減有數值', len(r1) == 6 and r1[5] != '—', ' | '.join(r1))
+    # 融資融券、外資台指期表格：日期右邊加上同一日期的加權收盤
+    for tid in ('marginTbl', 'futTbl'):
+        hd = await pg.eval_on_selector_all(f'#{tid} tr:first-child th', 'es=>es.map(e=>e.textContent)')
+        rows_ = await pg.eval_on_selector_all(f'#{tid} tr', 'rs=>rs.slice(1).map(r=>[r.cells[0].textContent, r.cells[1].textContent])')
+        exp_ = await pg.evaluate("rs=>rs.map(r=>{ var d=(window.__twMD||'')+r[0]; return r; })", rows_)
+        okc = []
+        for d_, v_ in rows_:
+            full = await pg.evaluate("md=>{ var y=new Date().getFullYear(); var c=null; [y, y-1].forEach(function(yy){ var x=window.__twCloseOf(yy+'-'+md.replace('/','-')); if(c==null&&x!=null) c=x; }); return c; }", d_)
+            okc.append((v_ == '—') if full is None else (v_ == f'{round(full):,}'))
+        check(tag + f'{tid}：日期右邊有同一日期的加權收盤', len(hd) > 1 and hd[1] == '加權收盤' and rows_ and all(okc) and any(v != '—' for _, v in rows_), ' / '.join(f'{d}:{v}' for d, v in rows_[:3]))
+    # 融資餘額、融資維持率圖：副座標（右軸）加上加權收盤
+    for cid, rid in (('mgChart', 'mgRead'), ('maintChart', 'maintRead')):
+        y2 = await pg.eval_on_selector_all(f'#{cid} .y2t', 'es=>es.length')
+        ln = await pg.eval_on_selector_all(f'#{cid} .y2line', 'es=>es.length')
+        rd = await pg.inner_text('#' + rid)
+        check(tag + f'{cid}：副座標有加權收盤線與刻度、讀數含收盤', y2 >= 2 and ln == 1 and '收盤' in rd, f'刻度 {y2}、{rd[-20:]}')
     # 390px 寬度：三張籌碼表不需左右滑動就能看完所有欄位
     for tid in ('instTbl', 'marginTbl', 'futTbl'):
         sw_ = await pg.eval_on_selector(f'#{tid}', 'e=>[e.scrollWidth, e.parentNode.clientWidth]')
