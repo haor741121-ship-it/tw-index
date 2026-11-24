@@ -216,13 +216,13 @@ async def scenario(p, mode):
     check(tag + '走勢分析：390px 內完整顯示', ow <= 390, f'right={ow:.0f}')
     # 加權指數上方的更新頻率說明
     fq = await pg.inner_text('#freqNote')
-    check(tag + '更新頻率：加權指數上方說明每 5 小時與盤中 30 秒', '每 5 小時' in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
+    check(tag + '更新頻率：加權指數上方說明每交易日 21:54 與盤中 30 秒', '每交易日 21:54' in fq and '5 小時' not in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
     ftop = await pg.eval_on_selector('#freqNote', 'e=>e.getBoundingClientRect().top')
     htop = await pg.eval_on_selector('#hero', 'e=>e.getBoundingClientRect().top')
     check(tag + '更新頻率：說明在加權指數卡片上方', ftop < htop, f'{ftop:.0f} < {htop:.0f}')
-    ns = await pg.evaluate("""[window.__twNextSnap({date:'2026-11-23',mins:1341}), window.__twNextSnap({date:'2026-11-27',mins:1300}), window.__twNextSnap({date:'2026-12-24',mins:1300}), window.__twNextSnap({date:'2026-11-24',mins:600})]""")
+    ns = await pg.evaluate("""[window.__twNextSnap({date:'2026-11-23',mins:1341}), window.__twNextSnap({date:'2026-11-27',mins:1341}), window.__twNextSnap({date:'2026-12-24',mins:1341}), window.__twNextSnap({date:'2026-11-24',mins:600})]""")
     got = [(x['d'], x['hm']) for x in ns]
-    check(tag + '更新頻率：下次快照時間正確（跨日、跨週末、跳過 12/25）', got == [('2026-11-24', '00:54'), ('2026-11-30', '00:54'), ('2026-12-28', '00:54'), ('2026-11-24', '10:54')], str(got))
+    check(tag + '更新頻率：下次快照時間正確（跨日、跨週末、跳過 12/25）', got == [('2026-11-24', '21:54'), ('2026-11-30', '21:54'), ('2026-12-28', '21:54'), ('2026-11-24', '21:54')], str(got))
     dv = await pg.evaluate("[window.__twDiff(-97863,-99219), window.__twDiff(null,-99219), window.__twDiff(-97863,null)]")
     check(tag + '籌碼增減缺值時回傳空值（台指期／融資融券共用）', dv[0] == 1356 and dv[1] is None and dv[2] is None, str(dv))
     nd = await pg.evaluate("[window.__twNextDelay(true,false,true), window.__twNextDelay(false,false,true), window.__twNextDelay(false,true,true), window.__twNextDelay(true,false,false), window.__twNextDelay(false,false,false)]")
