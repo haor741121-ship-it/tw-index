@@ -385,6 +385,24 @@ async def scenario(p, mode):
         check(tag + '勝率：390px 內完整顯示', ww <= 390, f'right={ww:.0f}')
         hid = await pg.evaluate("()=>{ window.__twWin(null); var h=document.getElementById('win').hidden; window.__twWin({ver:'盤前版',asof:'2026-11-25 07:30',hold:'12/19',items:[{k:'0050 元大台灣50',p:60,now:'1',range:'2'}],note:'x',prev:{ver:'盤後版',asof:'2026-11-24 16:30',p:{'0050':67}}}); var r=[h, document.getElementById('winPrev').textContent, document.getElementById('winNote').textContent]; window.__twWin(%s); return r; }" % json.dumps(W, ensure_ascii=False))
         check(tag + '勝率：缺資料時隱藏、有前一版時顯示比較、說明自動補免責', hid[0] is True and '前一版（盤後版 2026-11-24 16:30）：0050 67%' in hid[1] and '不構成投資建議' in hid[2], str(hid))
+    # 美股收盤卡（依使用者要求加入；資料來自快照 us 欄位）
+    if SNAP.get('us'):
+        US = SNAP['us']
+        ui = await pg.eval_on_selector_all('#usGrid .u', 'es=>es.map(e=>e.querySelector(".k").textContent)')
+        ua = await pg.inner_text('#usAsof')
+        check(tag + '美股卡：顯示 7 項與資料日期', not await pg.eval_on_selector('#usBox', 'e=>e.hidden') and len(ui) == len(US['items']) == 7 and US['asof'] in ua, ' / '.join(ui) + '｜' + ua)
+        pos = await pg.evaluate("()=>{var o=document.getElementById('otcBox').getBoundingClientRect().bottom,u=document.getElementById('usBox').getBoundingClientRect(),t=document.getElementById('trend').getBoundingClientRect().top;return [o<=u.top+1,u.bottom<=t];}")
+        check(tag + '美股卡：位於櫃買之後、走勢之前', all(pos), str(pos))
+        cc = await pg.eval_on_selector_all('#usGrid .u .d', 'es=>es.map(e=>e.className)')
+        exp = [('up' if isinstance(x['d'], (int, float)) and x['d'] > 0 else 'down' if isinstance(x['d'], (int, float)) and x['d'] < 0 else None) for x in US['items']]
+        check(tag + '美股卡：紅漲綠跌', all(e is None or e in c for e, c in zip(exp, cc)), str(cc))
+        uw = await pg.evaluate("()=>{var b=document.getElementById('usBox'),r=b.getBoundingClientRect();return [r.right,b.scrollWidth,b.clientWidth,document.documentElement.scrollWidth];}")
+        check(tag + '美股卡：390px 不溢出', uw[0] <= 390 and uw[1] <= uw[2] + 1 and uw[3] <= 390, str(uw))
+        if US.get('night'):
+            nt = await pg.inner_text('#usNight')
+            check(tag + '美股卡：顯示台指期夜盤', '夜盤' in nt and len(nt) > 6, nt[:30])
+        uh = await pg.evaluate("()=>{ window.__twUS(null); var a=document.getElementById('usBox').hidden; window.__twUS({asof:'x'}); var b=document.getElementById('usBox').hidden; window.__twUS(%s); return [a,b,document.getElementById('usBox').hidden]; }" % json.dumps(US, ensure_ascii=False))
+        check(tag + '美股卡：缺欄位時隱藏、恢復後顯示', uh == [True, True, False], str(uh))
     for href in ('#outlook', '#win', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
         await pg.click(f'nav a[href="{href}"]')
         await pg.wait_for_timeout(250)
