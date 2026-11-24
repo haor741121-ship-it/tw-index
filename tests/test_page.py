@@ -1,4 +1,4 @@
-"""台股指數｜盤前盤後 網頁：自動化功能測試（按鈕、下載、複製、導覽、即時／快照兩種情境）
+"""台股指數｜盤前 網頁：自動化功能測試（按鈕、下載、複製、導覽、即時／快照兩種情境）
 
 用法：python3 test_page.py index.html [輸出資料夾]
 需要：Python Playwright；Chrome 位於 /usr/bin/google-chrome（或設定 CHROME 環境變數）
@@ -89,7 +89,7 @@ async def scenario(p, mode):
     await pg.wait_for_timeout(1500)
     tag = f'[{mode}] '
 
-    check(tag + '標題為「台股指數｜盤前盤後」', await pg.title() == '台股指數｜盤前盤後' and await pg.inner_text('h1') == '台股指數｜盤前盤後', await pg.title())
+    check(tag + '標題為「台股指數｜盤前」', await pg.title() == '台股指數｜盤前' and await pg.inner_text('h1') == '台股指數｜盤前', await pg.title())
     price = await pg.inner_text('#price')
     check(tag + '指數數字有顯示', re.search(r'\d', price), price)
     pill = await pg.inner_text('#modePill')
@@ -237,13 +237,13 @@ async def scenario(p, mode):
     check(tag + '走勢分析：390px 內完整顯示', ow <= 390, f'right={ow:.0f}')
     # 加權指數上方的更新頻率說明
     fq = await pg.inner_text('#freqNote')
-    check(tag + '更新頻率：加權指數上方說明每交易日 07:30、16:30 與盤中 30 秒', '每交易日 07:30、16:30' in fq and '5 小時' not in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
+    check(tag + '更新頻率：加權指數上方說明每交易日 07:30 與盤中 30 秒', '每交易日 07:30' in fq and '16:30' not in fq and '5 小時' not in fq and '30 秒' in fq and re.search(r'下次約 \d{2}/\d{2}（週.）\d{2}:\d{2}', fq), fq[-40:])
     ftop = await pg.eval_on_selector('#freqNote', 'e=>e.getBoundingClientRect().top')
     htop = await pg.eval_on_selector('#hero', 'e=>e.getBoundingClientRect().top')
     check(tag + '更新頻率：說明在加權指數卡片上方', ftop < htop, f'{ftop:.0f} < {htop:.0f}')
     ns = await pg.evaluate("""[window.__twNextSnap({date:'2026-11-23',mins:1341}), window.__twNextSnap({date:'2026-11-27',mins:1341}), window.__twNextSnap({date:'2026-12-24',mins:1341}), window.__twNextSnap({date:'2026-11-24',mins:600})]""")
     got = [(x['d'], x['hm']) for x in ns]
-    check(tag + '更新頻率：下次快照時間正確（跨日、跨週末、跳過 12/25）', got == [('2026-11-24', '07:30'), ('2026-11-30', '07:30'), ('2026-12-28', '07:30'), ('2026-11-24', '16:30')], str(got))
+    check(tag + '更新頻率：下次快照時間正確（跨日、跨週末、跳過 12/25）', got == [('2026-11-24', '07:30'), ('2026-11-30', '07:30'), ('2026-12-28', '07:30'), ('2026-11-25', '07:30')], str(got))
     dv = await pg.evaluate("[window.__twDiff(-97863,-99219), window.__twDiff(null,-99219), window.__twDiff(-97863,null)]")
     check(tag + '籌碼增減缺值時回傳空值（台指期／融資融券共用）', dv[0] == 1356 and dv[1] is None and dv[2] is None, str(dv))
     nd = await pg.evaluate("[window.__twNextDelay(true,false,true), window.__twNextDelay(false,false,true), window.__twNextDelay(false,true,true), window.__twNextDelay(true,false,false), window.__twNextDelay(false,false,false)]")
@@ -371,7 +371,7 @@ async def scenario(p, mode):
     art = await pg.inner_text('#logArchive')
     check(tag + '迭代紀錄：有 Notion 備查連結與說明', 'notion' in arh and '最新兩天' in art, arh)
     # 導覽列
-    # 勝率區塊（從台股走勢模擬搬來；盤前 07:30、盤後 16:30 各一版）
+    # 勝率區塊（從台股走勢模擬搬來；每交易日 07:30 盤前一版）
     if SNAP.get('win'):
         W = SNAP['win']
         check(tag + '勝率：區塊顯示且導覽列排在「走勢分析」後面', not await pg.eval_on_selector('#win', 'e=>e.hidden') and navs.index('#win') == navs.index('#outlook') + 1, ','.join(navs))
@@ -464,7 +464,7 @@ async def update_scenario(p, newer):
     tag = '[更新-' + ('有新版' if newer else '同版') + '] '
     remote = src
     if newer:
-        remote = re.sub(r'("version":\s*")v[\d.]+', r'\1v99.0', remote, count=1).replace('<h1>台股指數｜盤前盤後</h1>', '<h1>台股指數｜盤前盤後<span id="newMark">NEW</span></h1>', 1)
+        remote = re.sub(r'("version":\s*")v[\d.]+', r'\1v99.0', remote, count=1).replace('<h1>台股指數｜盤前</h1>', '<h1>台股指數｜盤前<span id="newMark">NEW</span></h1>', 1)
     b = await p.chromium.launch(executable_path=CHROME)
     ctx = await b.new_context(viewport={'width': 390, 'height': 844})
     pg = await ctx.new_page()
