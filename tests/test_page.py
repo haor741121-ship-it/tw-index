@@ -350,7 +350,21 @@ async def scenario(p, mode):
     art = await pg.inner_text('#logArchive')
     check(tag + '迭代紀錄：有 Notion 備查連結與說明', 'notion' in arh and '最新兩天' in art, arh)
     # 導覽列
-    for href in ('#outlook', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
+    # 勝率區塊（從台股走勢模擬搬來；盤前 07:30、盤後 16:30 各一版）
+    if SNAP.get('win'):
+        W = SNAP['win']
+        check(tag + '勝率：區塊顯示且導覽列排在「走勢分析」後面', not await pg.eval_on_selector('#win', 'e=>e.hidden') and navs.index('#win') == navs.index('#outlook') + 1, ','.join(navs))
+        wl = await pg.eval_on_selector_all('#winList .it', 'es=>es.map(e=>e.querySelector("b").textContent+"|"+e.querySelector(".pct").textContent)')
+        check(tag + '勝率：列出 0050、00878、8086 三檔與百分比', len(wl) == len(W['items']) == 3 and all(re.match(r'\d{1,3}%$', x.split('|')[1]) for x in wl) and [x.split()[0] for x in wl] == ['0050', '00878', '8086'], ' / '.join(wl))
+        wv = await pg.inner_text('#winVer')
+        check(tag + '勝率：標示盤前或盤後版本與時間', ('盤前' in wv or '盤後' in wv) and W['asof'] in wv, wv)
+        wn = await pg.inner_text('#winNote')
+        check(tag + '勝率：說明含「推算」定義與不構成投資建議', '不構成投資建議' in wn and '勝率' in wn, wn[:30])
+        ww = await pg.eval_on_selector('#winCard', 'e=>e.getBoundingClientRect().right')
+        check(tag + '勝率：390px 內完整顯示', ww <= 390, f'right={ww:.0f}')
+        hid = await pg.evaluate("()=>{ window.__twWin(null); var h=document.getElementById('win').hidden; window.__twWin({ver:'盤前版',asof:'2026-11-25 07:30',hold:'12/19',items:[{k:'0050 元大台灣50',p:60,now:'1',range:'2'}],note:'x',prev:{ver:'盤後版',asof:'2026-11-24 16:30',p:{'0050':67}}}); var r=[h, document.getElementById('winPrev').textContent, document.getElementById('winNote').textContent]; window.__twWin(%s); return r; }" % json.dumps(W, ensure_ascii=False))
+        check(tag + '勝率：缺資料時隱藏、有前一版時顯示比較、說明自動補免責', hid[0] is True and '前一版（盤後版 2026-11-24 16:30）：0050 67%' in hid[1] and '不構成投資建議' in hid[2], str(hid))
+    for href in ('#outlook', '#win', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
         await pg.click(f'nav a[href="{href}"]')
         await pg.wait_for_timeout(250)
         top = await pg.eval_on_selector(href, 'e=>e.getBoundingClientRect().top')
