@@ -1,4 +1,4 @@
-"""台股即時指數網頁：自動化功能測試（按鈕、下載、複製、導覽、即時／快照兩種情境）
+"""台股指數｜盤前盤後 網頁：自動化功能測試（按鈕、下載、複製、導覽、即時／快照兩種情境）
 
 用法：python3 test_page.py index.html [輸出資料夾]
 需要：Python Playwright；Chrome 位於 /usr/bin/google-chrome（或設定 CHROME 環境變數）
@@ -89,6 +89,7 @@ async def scenario(p, mode):
     await pg.wait_for_timeout(1500)
     tag = f'[{mode}] '
 
+    check(tag + '標題為「台股指數｜盤前盤後」', await pg.title() == '台股指數｜盤前盤後' and await pg.inner_text('h1') == '台股指數｜盤前盤後', await pg.title())
     price = await pg.inner_text('#price')
     check(tag + '指數數字有顯示', re.search(r'\d', price), price)
     pill = await pg.inner_text('#modePill')
@@ -463,7 +464,7 @@ async def update_scenario(p, newer):
     tag = '[更新-' + ('有新版' if newer else '同版') + '] '
     remote = src
     if newer:
-        remote = re.sub(r'("version":\s*")v[\d.]+', r'\1v99.0', remote, count=1).replace('<h1>台股即時指數</h1>', '<h1>台股即時指數<span id="newMark">NEW</span></h1>', 1)
+        remote = re.sub(r'("version":\s*")v[\d.]+', r'\1v99.0', remote, count=1).replace('<h1>台股指數｜盤前盤後</h1>', '<h1>台股指數｜盤前盤後<span id="newMark">NEW</span></h1>', 1)
     b = await p.chromium.launch(executable_path=CHROME)
     ctx = await b.new_context(viewport={'width': 390, 'height': 844})
     pg = await ctx.new_page()
