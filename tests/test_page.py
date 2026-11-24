@@ -157,6 +157,9 @@ async def scenario(p, mode):
     olis = await pg.eval_on_selector_all('#olkList li', 'es=>es.map(e=>e.querySelector(".k").textContent+"|"+e.querySelector(".s").textContent)')
     ks = [x.split('|')[0] for x in olis]
     check(tag + '走勢分析：列出今日、均線、近一個月、外資現貨、外資期貨、融資維持率 6 項', ks == ['今日', '均線位置', '近一個月', '外資現貨', '外資期貨', '融資維持率'], ','.join(ks))
+    if mode != 'live':
+        tday = next((x for x in await pg.eval_on_selector_all('#olkList li .t', 'es=>es.map(e=>e.textContent)')), '')
+        check(tag + '走勢分析：盤中快照標「盤中暫報」、收盤快照標「收」', ('盤中暫報' in tday) if '盤中' in str(SNAP.get('status', '')) else (' 收 ' in tday and '暫報' not in tday), tday)
     check(tag + '走勢分析：每項都有偏多／偏空／中性標示', all(x.split('|')[1] in ('偏多', '偏空', '中性') for x in olis), str(len(olis)))
     osc = await pg.inner_text('#olkScore')
     np_ = sum(1 for x in olis if x.endswith('偏多')); nn_ = sum(1 for x in olis if x.endswith('偏空'))
