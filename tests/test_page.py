@@ -280,6 +280,24 @@ async def scenario(p, mode):
     check(tag + '分析：融資餘額比維持率新時標示維持率尚未取得', lag_ok, f'融資 {mgl}／維持率 {lastm["d"]}')
     mw = await pg.eval_on_selector('#maintChart svg', 'e=>e.getBoundingClientRect().right')
     check(tag + '分析：融資維持率圖在 390px 內', mw <= 390, f'right={mw:.0f}')
+    # 走勢圖：點圖或滑動可查不同日期／時間的數值
+    for cid, rid, pat in ((('intra', 'intraRead', r'\d{2}:\d{2}'),) if mode == 'live' else ()) + (('daily', 'dailyRead', r'\d{2}/\d{2}'),):
+        r0 = await pg.inner_text('#' + rid)
+        await pg.locator(f'#{cid} svg').scroll_into_view_if_needed()
+        box = await pg.locator(f'#{cid} svg').bounding_box()
+        await pg.mouse.click(box['x'] + box['width'] * 0.25, box['y'] + box['height'] * 0.5)
+        await pg.wait_for_timeout(100)
+        r1 = await pg.inner_text('#' + rid)
+        gd = await pg.eval_on_selector(f'#{cid} .guide', 'e=>e.style.display')
+        dd = await pg.eval_on_selector(f'#{cid} .gdot', 'e=>e.style.display')
+        check(tag + f'走勢：{cid} 預設顯示最新一點數值', re.match(pat, r0) and ('收盤' in r0 or '加權' in r0), r0[:40])
+        check(tag + f'走勢：點 {cid} 會切換{"時間" if cid == "intra" else "日期"}數值並顯示參考線', r1 != r0 and re.match(pat, r1) and gd != 'none' and dd != 'none', f'{r0[:14]} → {r1[:14]}')
+        if cid == 'daily':
+            check(tag + '走勢：近一個月讀數含漲跌與匯率', re.search(r'[+−][\d,]+\.\d{2}（[+−]', r1) and ('美元兌台幣' in r1), r1[:60])
+        await pg.mouse.move(5, 5); await pg.wait_for_timeout(100)
+        r2 = await pg.inner_text('#' + rid)
+        gd2 = await pg.eval_on_selector(f'#{cid} .guide', 'e=>e.style.display')
+        check(tag + f'走勢：離開 {cid} 回到最新一點並隱藏參考線', r2 == r0 and gd2 == 'none', r2[:14])
     for cid, rid in (('maChart', 'maRead'), ('instChart', 'instRead'), ('futChart', 'futRead'), ('mgChart', 'mgRead'), ('maintChart', 'maintRead')):
         r0 = await pg.inner_text('#' + rid)
         await pg.locator(f'#{cid} svg').scroll_into_view_if_needed()
