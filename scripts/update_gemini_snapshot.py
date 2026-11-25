@@ -47,36 +47,33 @@ DEFAULT_MARGIN = {
 DEFAULT_WIN_ITEMS = [
     {
         "code": "0050 元大台灣50",
-        "winRate": None,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.22,
-        "annualDrift": 0.08,
-        "horizonDays": 22,
+        "winRate": 53.8,
+        "range": "20日可能區間：-7.9% ~ +9.7%",
+        "annualVol": 0.24,
+        "annualDrift": 0.09,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "追蹤台灣50指數，與大盤高度連動，受權值電子與費半波動影響大。",
+        "desc": "與大盤高度連動，波動與預期報酬適中。",
     },
     {
         "code": "00878 國泰永續高股息",
-        "winRate": None,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.14,
-        "annualDrift": 0.06,
-        "horizonDays": 22,
+        "winRate": 55.1,
+        "range": "20日可能區間：-4.1% ~ +5.4%",
+        "annualVol": 0.13,
+        "annualDrift": 0.065,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "高股息成分股含金融與傳產，波動通常低於純市值型標的（需納入除息調整）。",
+        "desc": "波動最小、短線較抗震，三檔中勝率最高。",
     },
     {
         "code": "8086 宏捷科",
-        "winRate": None,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.42,
-        "annualDrift": 0.05,
-        "horizonDays": 22,
+        "winRate": 50.2,
+        "range": "20日可能區間：-15.4% ~ +17.9%",
+        "annualVol": 0.45,
+        "annualDrift": 0.07,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "砷化鎵晶圓代工族群，個股 Beta 與自有波動較高，受手機 PA 需求與美股半導體氣氛影響。",
+        "desc": "個股振幅大，20 日賺賠接近五五波，上下波動最劇烈。",
     },
 ]
 
@@ -197,11 +194,11 @@ def fetch_twse_margin(existing_margin: dict) -> dict:
 
 
 def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
-    """依標的年化波動率、漂移率、持有日數與目標漲幅計算勝率與預期區間"""
+    """依標的年化波動率、漂移率、持有日數與目標漲幅計算勝率與可能漲跌區間"""
     updated_item = dict(item)
-    vol = float(updated_item.get("annualVol") or 0.25)
-    drift = float(updated_item.get("annualDrift") or 0.06)
-    days = int(updated_item.get("horizonDays") or 22)
+    vol = float(updated_item.get("annualVol") or 0.24)
+    drift = float(updated_item.get("annualDrift") or 0.07)
+    days = int(updated_item.get("horizonDays") or 20)
     target_pct = float(updated_item.get("targetPct") or 0.0)
 
     dt = days / 252.0
@@ -227,7 +224,7 @@ def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
     updated_item["winRate"] = win_rate
     s10 = "+" if p10 >= 0 else ""
     s90 = "+" if p90 >= 0 else ""
-    updated_item["range"] = f"{days}日P10~P90：{s10}{p10:.1f}% ~ {s90}{p90:.1f}%"
+    updated_item["range"] = f"{days}日可能區間：{s10}{p10:.1f}% ~ {s90}{p90:.1f}%"
     return updated_item
 
 
@@ -280,12 +277,24 @@ def main() -> None:
     existing_margin = snap.get("margin") if isinstance(snap.get("margin"), dict) else {}
     snap["margin"] = fetch_twse_margin(existing_margin)
 
+    default_map = {item["code"]: item for item in DEFAULT_WIN_ITEMS}
     win_items = snap.get("win")
     if not isinstance(win_items, list) or len(win_items) == 0:
         win_items = [dict(item) for item in DEFAULT_WIN_ITEMS]
+    else:
+        merged_win = []
+        for w in win_items:
+            base = dict(default_map.get(w.get("code"), {}))
+            base.update({
+                k: v for k, v in w.items()
+                if k not in {"annualVol", "annualDrift", "horizonDays", "targetPct"}
+            })
+            merged_win.append(base)
+        win_items = merged_win
+
     salt = int(NOW.strftime("%Y%m%d"))
     snap["win"] = [compute_win_stats(w, seed_salt=salt) for w in win_items]
-    snap["winMeta"] = f"排程同步時間：{TIME_STR}｜22 日模擬勝率與 P10~P90 區間"
+    snap["winMeta"] = f"排程同步：{TIME_STR}｜現在買進、持有 20 個交易日勝率"
     snap["updated"] = TIME_STR
 
     new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
