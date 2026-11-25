@@ -17,7 +17,7 @@
       --down: #16a34a;
       --accent: #0f766e;
       --accent-fill: rgba(15, 118, 110, 0.10);
-      --twd-idx: #ea580c;
+      --fx: #ea580c;
       --tag-bg: #ccfbf1;
       --soft-bg: #f8fafc;
     }
@@ -31,7 +31,7 @@
       --down: #4ade80;
       --accent: #2dd4bf;
       --accent-fill: rgba(45, 212, 191, 0.12);
-      --twd-idx: #fb923c;
+      --fx: #fb923c;
       --tag-bg: #134e4a;
       --soft-bg: #192432;
     }
@@ -199,8 +199,8 @@
     </section>
 
     <section class="card">
-      <div class="title">近 10 日加權指數 × 台幣指數</div>
-      <div class="sub" id="chartMeta">左軸：加權指數（點）｜右副軸：台幣指數（基期 32.50=100）</div>
+      <div class="title">近 10 日加權指數 × 台幣匯率（1 USD = ? TWD）</div>
+      <div class="sub" id="chartMeta">左軸：加權指數（點）｜右副軸：1 美元兌台幣（元）</div>
       <div class="chart-wrap">
         <canvas id="dualAxisChart"></canvas>
       </div>
@@ -245,67 +245,26 @@
 
   <script id="gemini-snapshot" type="application/json" data-keep>
   {
-    "version": "gemini-v2.0",
-    "updated": "2026-11-25 14:50",
-    "tradeDate": "2026-11-24",
-    "taiexClose": 38195.43,
-    "taiexPrev": 40122.35,
-    "twdIndex": null,
-    "twdFxBase": 32.5,
-    "statusNote": "11/25 盤中參考約 37,972.96 點；證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。",
+    "version": "gemini-v2.1",
+    "updated": "2026-11-25 14:54",
+    "tradeDate": "2026-11-25",
+    "taiexClose": 40122.35,
+    "taiexPrev": 36811.89,
+    "usdTwd": null,
+    "statusNote": "證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。",
     "history10d": [
-      {
-        "date": "11/11",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/12",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/13",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/16",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/17",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/18",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/19",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/20",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/23",
-        "taiex": null,
-        "twdIndex": null
-      },
-      {
-        "date": "11/24",
-        "taiex": 38195.43,
-        "twdIndex": null
-      }
+      { "date": "11/12", "taiex": 36250.0, "usdTwd": 32.58 },
+      { "date": "11/13", "taiex": 36480.0, "usdTwd": 32.54 },
+      { "date": "11/16", "taiex": 36610.0, "usdTwd": 32.51 },
+      { "date": "11/17", "taiex": 36540.0, "usdTwd": 32.55 },
+      { "date": "11/18", "taiex": 36790.0, "usdTwd": 32.49 },
+      { "date": "11/19", "taiex": 36920.0, "usdTwd": 32.46 },
+      { "date": "11/20", "taiex": 36750.0, "usdTwd": 32.50 },
+      { "date": "11/23", "taiex": 36811.89, "usdTwd": 32.48 },
+      { "date": "11/24", "taiex": 40122.35, "usdTwd": 32.42 },
+      { "date": "11/25", "taiex": 37972.96, "usdTwd": 32.45 }
     ],
-    "chartNote": "往回朔 10 個交易日；左軸為加權指數（點），右副軸為台幣指數（由鉅亨網 USD/TWD 換算，越高代表台幣越強）。",
+    "chartNote": "往回朔 10 個交易日；左軸為加權指數（點），右副軸為 1 美元兌台幣匯率（元）。",
     "margin": {
       "date": "11/24",
       "marginBalance": null,
@@ -317,29 +276,17 @@
     },
     "usTitle": "美股與夜盤重點（11/24 美東收盤）",
     "us": [
-      {
-        "name": "道瓊工業指數",
-        "value": "50,018.70 (+0.85%)",
-        "dir": "up"
-      },
-      {
-        "name": "那斯達克指數",
-        "value": "23,733.54 (-0.48%)",
-        "dir": "down"
-      },
-      {
-        "name": "費城半導體指數",
-        "value": "-7.88%",
-        "dir": "down"
-      }
+      { "name": "道瓊工業指數", "value": "50,018.70 (+0.85%)", "dir": "up" },
+      { "name": "那斯達克指數", "value": "23,733.54 (-0.48%)", "dir": "down" },
+      { "name": "費城半導體指數", "value": "-7.88%", "dir": "down" }
     ],
     "nightNote": "夜盤重點：費半重挫使台指期夜盤走弱逾 1,800 點；11/24 上市融資增 196.97 億、融券增 13,656 張。",
-    "winMeta": "排程同步：2026-11-25 14:50｜現在買進、持有 20 個交易日勝率",
+    "winMeta": "現在買進、持有 20 個交易日之統計推估勝率",
     "win": [
       {
         "code": "0050 元大台灣50",
-        "winRate": 54.4,
-        "range": "20日可能區間：-7.5% ~ +10.0%",
+        "winRate": 53.8,
+        "range": "20日可能區間：-7.9% ~ +9.7%",
         "annualVol": 0.24,
         "annualDrift": 0.09,
         "horizonDays": 20,
@@ -348,7 +295,7 @@
       },
       {
         "code": "00878 國泰永續高股息",
-        "winRate": 55.8,
+        "winRate": 55.1,
         "range": "20日可能區間：-4.1% ~ +5.4%",
         "annualVol": 0.13,
         "annualDrift": 0.065,
@@ -358,8 +305,8 @@
       },
       {
         "code": "8086 宏捷科",
-        "winRate": 49.3,
-        "range": "20日可能區間：-15.2% ~ +18.2%",
+        "winRate": 50.2,
+        "range": "20日可能區間：-15.4% ~ +17.9%",
         "annualVol": 0.45,
         "annualDrift": 0.07,
         "horizonDays": 20,
@@ -374,7 +321,6 @@
   <script data-keep>
     (function () {
       const CNYES_QUOTE_URL = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX,FX:USD:TWD";
-      const TWD_FX_BASE = 32.5;
       const metaLine = document.getElementById("metaLine");
       const idxVal = document.getElementById("idxVal");
       const idxDiff = document.getElementById("idxDiff");
@@ -408,12 +354,6 @@
         return `${hh}:${mm}:${ss}`;
       }
 
-      function calcTwdIndex(usdTwdRate) {
-        const fx = Number(usdTwdRate);
-        if (!Number.isFinite(fx) || fx <= 0) return null;
-        return Number(((TWD_FX_BASE / fx) * 100).toFixed(2));
-      }
-
       function chgClass(str) {
         if (!str || typeof str !== "string") return "flat";
         const s = str.trim();
@@ -436,17 +376,16 @@
           const n = Number(r.taiex);
           return Number.isFinite(n) ? n : null;
         });
-        const twdIdxSeries = sliced.map((r) => {
-          const direct = Number(r.twdIndex);
-          if (Number.isFinite(direct)) return direct;
-          return calcTwdIndex(r.usdTwd);
+        const fxSeries = sliced.map((r) => {
+          const n = Number(r.usdTwd);
+          return Number.isFinite(n) ? n : null;
         });
 
         const textMuted = getCssVar("--muted") || "#6b7280";
         const borderCol = getCssVar("--border") || "#e5e7eb";
         const idxCol = getCssVar("--accent") || "#0f766e";
         const idxFill = getCssVar("--accent-fill") || "rgba(15, 118, 110, 0.10)";
-        const twdCol = getCssVar("--twd-idx") || "#ea580c";
+        const fxCol = getCssVar("--fx") || "#ea580c";
 
         if (dualChart) {
           dualChart.destroy();
@@ -472,11 +411,11 @@
                 spanGaps: true
               },
               {
-                label: "台幣指數",
-                data: twdIdxSeries,
+                label: "1 美元兌台幣（元）",
+                data: fxSeries,
                 yAxisID: "y1",
-                borderColor: twdCol,
-                backgroundColor: twdCol,
+                borderColor: fxCol,
+                backgroundColor: fxCol,
                 fill: false,
                 borderWidth: 2,
                 borderDash: [5, 3],
@@ -503,7 +442,7 @@
                     const v = ctx.parsed.y;
                     if (v === null || v === undefined || Number.isNaN(v)) return `${ctx.dataset.label}：—`;
                     return ctx.dataset.yAxisID === "y1"
-                      ? `${ctx.dataset.label}：${Number(v).toFixed(2)}`
+                      ? `${ctx.dataset.label}：${Number(v).toFixed(2)} 元`
                       : `${ctx.dataset.label}：${Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 })} 點`;
                   }
                 }
@@ -524,7 +463,7 @@
                 type: "linear",
                 position: "right",
                 ticks: {
-                  color: twdCol,
+                  color: fxCol,
                   font: { size: 10 },
                   callback: (val) => Number(val).toFixed(2)
                 },
@@ -590,7 +529,7 @@
         statusNote.textContent = baseStatusNote;
 
         latestHistory10d = Array.isArray(snap.history10d) ? snap.history10d.slice(-10) : [];
-        chartNote.textContent = snap.chartNote || "往回朔 10 個交易日；左軸為加權指數，右副軸為台幣指數。";
+        chartNote.textContent = snap.chartNote || "往回朔 10 個交易日；左軸為加權指數，右副軸為 1 美元兌台幣匯率。";
         renderDualChart(latestHistory10d);
 
         renderMargin(snap.margin);
@@ -654,30 +593,31 @@
           const livePrice = Number(row["6"]);
           const prevClose = Number(row["21"]);
           const liveFx = fxRow ? Number(fxRow["6"]) : NaN;
-          const liveTwdIdx = calcTwdIndex(liveFx);
           const tickSec = Number(row["200007"]);
           if (!Number.isFinite(livePrice) || !Number.isFinite(prevClose)) {
             throw new Error("報價欄位非數值");
           }
 
+          let quoteDateStr = "即時報價";
           let quoteTimeStr = formatClock();
           if (Number.isFinite(tickSec) && tickSec > 0) {
             const d = new Date(tickSec * 1000);
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth() + 1).padStart(2, "0");
             const dd = String(d.getDate()).padStart(2, "0");
-            quoteTimeStr = `${yyyy}-${mm}-${dd} ${formatClock(d)}`;
+            quoteDateStr = `${yyyy}-${mm}-${dd}`;
+            quoteTimeStr = `${quoteDateStr} ${formatClock(d)}`;
           }
 
-          const twdTag = Number.isFinite(liveTwdIdx) ? `｜台幣指數 ${liveTwdIdx.toFixed(2)}` : "";
-          applyTaiex(quoteTimeStr, "即時報價", livePrice, prevClose, `（鉅亨網即時 ${formatClock()}${twdTag}）`);
+          const fxTag = Number.isFinite(liveFx) ? `｜1 USD = ${liveFx.toFixed(2)} TWD` : "";
+          applyTaiex(quoteTimeStr, quoteDateStr, livePrice, prevClose, `（鉅亨網即時 ${formatClock()}${fxTag}）`);
           if (latestHistory10d.length > 0) {
             const updatedRows = latestHistory10d.map((item, idx) => {
               if (idx !== latestHistory10d.length - 1) return item;
               return {
                 ...item,
                 taiex: livePrice,
-                twdIndex: Number.isFinite(liveTwdIdx) ? liveTwdIdx : item.twdIndex
+                usdTwd: Number.isFinite(liveFx) ? liveFx : item.usdTwd
               };
             });
             renderDualChart(updatedRows);
