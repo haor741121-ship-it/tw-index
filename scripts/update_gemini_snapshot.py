@@ -19,18 +19,18 @@ HOLIDAYS = {
     "2027-01-01",
 }
 
-DEFAULT_HISTORY_10D = [
-    {"date": "11/11", "taiex": None, "usdTwd": None, "marginBal": 5411.58, "marginChg": 44.79, "shortBal": 209019, "shortChg": -2112, "maintenanceRatio": 174.15, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/12", "taiex": None, "usdTwd": None, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/13", "taiex": None, "usdTwd": None, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/16", "taiex": 41040.08, "usdTwd": None, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/17", "taiex": 40092.11, "usdTwd": None, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/18", "taiex": 40194.91, "usdTwd": None, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/19", "taiex": 38426.89, "usdTwd": None, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/20", "taiex": 36033.29, "usdTwd": None, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/24", "taiex": 40122.35, "usdTwd": None, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": None, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11},
-    {"date": "11/25", "taiex": 38195.43, "usdTwd": None, "marginBal": None, "marginChg": None, "shortBal": None, "shortChg": None, "maintenanceRatio": None, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-]
+DEFAULT_history10d": [
+      { "date": "11/12", "taiex": null, "usdTwd": 32.94, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/13", "taiex": null, "usdTwd": 32.88, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/16", "taiex": 41040.08, "usdTwd": 32.96, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/17", "taiex": 40092.11, "usdTwd": 32.91, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/18", "taiex": 40194.91, "usdTwd": 32.93, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/19", "taiex": 38426.89, "usdTwd": 33.03, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/20", "taiex": 36033.29, "usdTwd": 32.95, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/23", "taiex": 36811.89, "usdTwd": 32.85, "marginBal": 4338.08, "marginChg": -14.20, "shortBal": 172957, "shortChg": -26834, "maintenanceRatio": 148.46, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/24", "taiex": 40122.35, "usdTwd": 32.94, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": null, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11 },
+      { "date": "11/25", "taiex": 38195.43, "usdTwd": 33.13, "marginBal": null, "marginChg": null, "shortBal": null, "shortChg": null, "maintenanceRatio": null, "foreign": null, "trust": null, "dealer": null, "instTotal": null }
+    ],
 
 DEFAULT_NEWS = {
     "bullish": [
