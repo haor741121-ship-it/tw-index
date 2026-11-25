@@ -1,0 +1,43 @@
+name: Gemini TW Index Daily Snapshot
+
+on:
+  schedule:
+    # 台北時間 07:30 = UTC 23:30（週日至週四對應台北週一至週五開盤前）
+    - cron: '30 23 * * 0-4'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update-gemini-snapshot:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install requests
+
+      - name: Update gemini-tw-index.html snapshot
+        run: |
+          python scripts/update_gemini_snapshot.py
+
+      - name: Commit and push gemini-tw-index.html
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet gemini-tw-index.html; then
+            TS=$(TZ=Asia/Taipei date +"%Y-%m-%d %H:%M")
+            git add gemini-tw-index.html
+            git commit -m "gemini-tw-index 快照更新 ${TS}"
+            git push
+          else
+            echo "休市或無變更，略過推送"
+          fi
