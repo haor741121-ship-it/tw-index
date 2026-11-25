@@ -17,6 +17,16 @@ HOLIDAYS = {
     "2027-01-01",
 }
 
+DEFAULT_MARGIN = {
+    "date": "11/24",
+    "marginBalance": None,
+    "marginBalanceChg": "+196.97億",
+    "shortBalance": None,
+    "shortBalanceChg": "+13,656張",
+    "maintenanceRatio": None,
+    "thresholdNote": "追繳門檻 120%",
+}
+
 DEFAULT_WIN_ITEMS = [
     {
         "code": "0050 元大台灣50",
@@ -99,6 +109,10 @@ def main() -> None:
         snap["taiexPrev"] = prev_val
     else:
         print("[INFO] 保留既有 taiexClose 與 taiexPrev")
+
+    existing_margin = snap.get("margin") if isinstance(snap.get("margin"), dict) else {}
+    merged_margin = {**DEFAULT_MARGIN, **existing_margin}
+    snap["margin"] = merged_margin
 
     if not isinstance(snap.get("win"), list) or len(snap["win"]) == 0:
         snap["win"] = DEFAULT_WIN_ITEMS
