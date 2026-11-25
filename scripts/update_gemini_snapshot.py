@@ -20,28 +20,29 @@ HOLIDAYS = {
 }
 
 DEFAULT_HISTORY_10D = [
-    {"date": "11/11", "taiex": None, "marginBal": 5411.58, "marginChg": 44.79, "shortBal": 209019, "shortChg": -2112, "maintenanceRatio": 174.15, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/12", "taiex": None, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/13", "taiex": None, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/16", "taiex": 41040.08, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/17", "taiex": 40092.11, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/18", "taiex": 40194.91, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/19", "taiex": 38426.89, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/20", "taiex": 36033.29, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/23", "taiex": 36811.89, "marginBal": 4338.08, "marginChg": -14.20, "shortBal": 172957, "shortChg": -26834, "maintenanceRatio": 148.46, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
-    {"date": "11/24", "taiex": 40122.35, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": None, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/11", "taiex": None, "usdTwd": None, "marginBal": 5411.58, "marginChg": 44.79, "shortBal": 209019, "shortChg": -2112, "maintenanceRatio": 174.15, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/12", "taiex": None, "usdTwd": None, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/13", "taiex": None, "usdTwd": None, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/16", "taiex": 41040.08, "usdTwd": None, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/17", "taiex": 40092.11, "usdTwd": None, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/18", "taiex": 40194.91, "usdTwd": None, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/19", "taiex": 38426.89, "usdTwd": None, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/20", "taiex": 36033.29, "usdTwd": None, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/24", "taiex": 40122.35, "usdTwd": None, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": None, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11},
+    {"date": "11/25", "taiex": 38195.43, "usdTwd": None, "marginBal": None, "marginChg": None, "shortBal": None, "shortChg": None, "maintenanceRatio": None, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
 ]
 
 DEFAULT_NEWS = {
     "bullish": [
-        "證交所自 2026/11/24 起將信用交易擔保維持率最低標準由 130% 調降至 120%，並取消 11/24 前低於 130% 的追繳紀錄與處分，緩解短期斷頭賣壓。",
-        "放寬可用具流動性與客觀評價之擔保品抵繳，提供融資戶資金緩衝空間。",
+        "【政策・金融】證交所自 2026/11/24 起將信用交易擔保維持率最低標準由 130% 調降至 120%，並取消 11/24 前低於 130% 追繳紀錄與處分，緩解槓桿斷頭壓力。",
+        "【國際】黃仁勳回任輝達執行長一度帶動全球與台股出現強彈，顯示 AI 算力與晶片龍頭話題仍具市場關注度。",
     ],
     "bearish": [
-        "近期大盤與高槓桿部位震盪劇烈，維持率門檻調降雖延後追繳時點，但融資借款本金與帳面波動仍在。",
-        "若國際股市或半導體族群持續修正，市場籌碼與風險偏好仍易受壓抑。",
+        "【國際・半導體】隔夜費城半導體指數重挫近 8%，亞股與半導體供應鏈同步承壓，11/25 台股盤中一度重挫逾 3,400 點、收跌 1,926.92 點。",
+        "【政策・關稅】美國 301 關稅與新關稅措施雜音升溫，加上外資現貨調節與期貨空單部位偏高，壓抑外資風險偏好。",
+        "【能源・金融】全球能源價格、匯率波動與金融市場避險情緒升溫，資金在劇烈震盪下傾向縮減高 Beta 風險部位。",
     ],
-    "summary": "總結：政策面调降維持率至 120% 屬短期防斷頭緩衝利多，有助降低集中殺盤；但盤勢高波動環境未除，操作仍宜控管槓桿、分批布局，並持續追蹤每日融資增減與三大法人動向。",
+    "summary": "總結：短期政策調降維持率至 120% 發揮防斷頭緩衝作用，但國際半導體修正、美方關稅變數與外資籌碼尚未明朗前，大盤仍處高波動震盪期；操作上應避免過度槓桿，採分批與紀律控管風險。",
 }
 
 DEFAULT_WIN_ITEMS = [
@@ -104,6 +105,23 @@ def fetch_taiex_close() -> tuple[float | None, float | None]:
         return None, None
 
 
+def fetch_usd_twd() -> float | None:
+    url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/FX:USD:TWD"
+    try:
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        rows = resp.json().get("data", [])
+        for row in rows:
+            if row.get("0") == "FX:USD:TWD" and row.get("6") is not None:
+                val = float(row["6"])
+                if 25.0 <= val <= 40.0:
+                    return round(val, 2)
+        return None
+    except Exception as exc:
+        print(f"[WARN] 無法取得 1 美元兌台幣匯率，保留原快照數值: {exc}")
+        return None
+
+
 def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
     updated_item = dict(item)
     vol = float(updated_item.get("annualVol") or 0.24)
@@ -162,6 +180,7 @@ def main() -> None:
 
     snap = json.loads(match.group(1))
     close_val, prev_val = fetch_taiex_close()
+    fx_val = fetch_usd_twd()
 
     if close_val is not None and prev_val is not None:
         snap["taiexClose"] = close_val
@@ -169,12 +188,18 @@ def main() -> None:
     else:
         print("[INFO] 保留既有 taiexClose 與 taiexPrev")
 
+    if fx_val is not None:
+        snap["usdTwd"] = fx_val
+
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
         hist = [dict(item) for item in DEFAULT_HISTORY_10D]
     hist = hist[-10:]
     if isinstance(snap.get("taiexClose"), (int, float)):
         hist[-1]["taiex"] = snap["taiexClose"]
+    if fx_val is not None:
+        hist[-1]["usdTwd"] = fx_val
+    hist[-1]["date"] = SHORT_DATE_STR
     snap["history10d"] = hist
 
     if not isinstance(snap.get("news"), dict):
