@@ -17,7 +17,7 @@
       --down: #16a34a;
       --accent: #0f766e;
       --accent-fill: rgba(15, 118, 110, 0.10);
-      --fx: #ea580c;
+      --twd-idx: #ea580c;
       --tag-bg: #ccfbf1;
       --soft-bg: #f8fafc;
     }
@@ -31,7 +31,7 @@
       --down: #4ade80;
       --accent: #2dd4bf;
       --accent-fill: rgba(45, 212, 191, 0.12);
-      --fx: #fb923c;
+      --twd-idx: #fb923c;
       --tag-bg: #134e4a;
       --soft-bg: #192432;
     }
@@ -173,7 +173,7 @@
       margin-bottom: 3px;
     }
     .win-pct {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 800;
       color: var(--accent);
     }
@@ -199,8 +199,8 @@
     </section>
 
     <section class="card">
-      <div class="title">近 10 日加權指數 × 台幣匯率（1 USD = ? TWD）</div>
-      <div class="sub" id="chartMeta">左軸：加權指數（點）｜右副軸：1 美元兌台幣（元）</div>
+      <div class="title">近 10 日加權指數 × 台幣指數</div>
+      <div class="sub" id="chartMeta">左軸：加權指數（點）｜右副軸：台幣指數（基期 32.50=100）</div>
       <div class="chart-wrap">
         <canvas id="dualAxisChart"></canvas>
       </div>
@@ -236,7 +236,7 @@
     </section>
 
     <section class="card">
-      <div class="title">現在買進勝率（持有 20 個交易日）</div>
+      <div class="title">關注標的勝率追蹤（0050 / 00878 / 8086）</div>
       <div class="sub" id="winMeta" style="margin-bottom:8px;"></div>
       <div id="winList"></div>
       <div class="sub" id="winNote" style="margin-top:8px;"></div>
@@ -245,26 +245,27 @@
 
   <script id="gemini-snapshot" type="application/json" data-keep>
   {
-    "version": "gemini-v2.1",
-    "updated": "2026-11-25 14:54",
-    "tradeDate": "2026-11-25",
+    "version": "gemini-v1.9",
+    "updated": "2026-11-25 14:31",
+    "tradeDate": "2026-11-24",
     "taiexClose": 40122.35,
     "taiexPrev": 36811.89,
-    "usdTwd": null,
-    "statusNote": "證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。",
+    "twdIndex": null,
+    "twdFxBase": 32.5,
+    "statusNote": "11/25 盤中參考約 37,972.96 點；證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。",
     "history10d": [
-      { "date": "11/12", "taiex": 36250.0, "usdTwd": 32.58 },
-      { "date": "11/13", "taiex": 36480.0, "usdTwd": 32.54 },
-      { "date": "11/16", "taiex": 36610.0, "usdTwd": 32.51 },
-      { "date": "11/17", "taiex": 36540.0, "usdTwd": 32.55 },
-      { "date": "11/18", "taiex": 36790.0, "usdTwd": 32.49 },
-      { "date": "11/19", "taiex": 36920.0, "usdTwd": 32.46 },
-      { "date": "11/20", "taiex": 36750.0, "usdTwd": 32.50 },
-      { "date": "11/23", "taiex": 36811.89, "usdTwd": 32.48 },
-      { "date": "11/24", "taiex": 40122.35, "usdTwd": 32.42 },
-      { "date": "11/25", "taiex": 37972.96, "usdTwd": 32.45 }
+      { "date": "11/11", "taiex": null, "twdIndex": null },
+      { "date": "11/12", "taiex": null, "twdIndex": null },
+      { "date": "11/13", "taiex": null, "twdIndex": null },
+      { "date": "11/16", "taiex": null, "twdIndex": null },
+      { "date": "11/17", "taiex": null, "twdIndex": null },
+      { "date": "11/18", "taiex": null, "twdIndex": null },
+      { "date": "11/19", "taiex": null, "twdIndex": null },
+      { "date": "11/20", "taiex": null, "twdIndex": null },
+      { "date": "11/23", "taiex": null, "twdIndex": null },
+      { "date": "11/24", "taiex": 40122.35, "twdIndex": null }
     ],
-    "chartNote": "往回朔 10 個交易日；左軸為加權指數（點），右副軸為 1 美元兌台幣匯率（元）。",
+    "chartNote": "往回朔 10 個交易日；左軸為加權指數（點），右副軸為台幣指數（由鉅亨網 USD/TWD 換算，越高代表台幣越強）。",
     "margin": {
       "date": "11/24",
       "marginBalance": null,
@@ -281,37 +282,40 @@
       { "name": "費城半導體指數", "value": "-7.88%", "dir": "down" }
     ],
     "nightNote": "夜盤重點：費半重挫使台指期夜盤走弱逾 1,800 點；11/24 上市融資增 196.97 億、融券增 13,656 張。",
-    "winMeta": "現在買進、持有 20 個交易日之統計推估勝率",
+    "winMeta": "假設持有 22 個交易日｜參數化勝率模型",
     "win": [
       {
         "code": "0050 元大台灣50",
-        "winRate": 53.8,
-        "range": "20日可能區間：-7.9% ~ +9.7%",
-        "annualVol": 0.24,
-        "annualDrift": 0.09,
-        "horizonDays": 20,
+        "winRate": null,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.22,
+        "annualDrift": 0.08,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "與大盤高度連動，波動與預期報酬適中。"
+        "desc": "追蹤台灣50指數，與大盤高度連動，受權值電子與費半波動影響大。"
       },
       {
         "code": "00878 國泰永續高股息",
-        "winRate": 55.1,
-        "range": "20日可能區間：-4.1% ~ +5.4%",
-        "annualVol": 0.13,
-        "annualDrift": 0.065,
-        "horizonDays": 20,
+        "winRate": null,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.14,
+        "annualDrift": 0.06,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "波動最小、短線較抗震，三檔中勝率最高。"
+        "desc": "高股息成分股含金融與傳產，波動通常低於純市值型標的（需納入除息調整）。"
       },
       {
         "code": "8086 宏捷科",
-        "winRate": 50.2,
-        "range": "20日可能區間：-15.4% ~ +17.9%",
-        "annualVol": 0.45,
-        "annualDrift": 0.07,
-        "horizonDays": 20,
+        "winRate": null,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.42,
+        "annualDrift": 0.05,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "個股振幅大，20 日賺賠接近五五波，上下波動最劇烈。"
+        "desc": "砷化鎵晶圓代工族群，個股 Beta 與自有波動較高，受手機 PA 需求與美股半導體氣氛影響。"
       }
     ],
     "winNote": "統計推估僅供參考，未含交易成本與稅，不構成投資建議。"
@@ -321,6 +325,7 @@
   <script data-keep>
     (function () {
       const CNYES_QUOTE_URL = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX,FX:USD:TWD";
+      const TWD_FX_BASE = 32.5;
       const metaLine = document.getElementById("metaLine");
       const idxVal = document.getElementById("idxVal");
       const idxDiff = document.getElementById("idxDiff");
@@ -354,6 +359,12 @@
         return `${hh}:${mm}:${ss}`;
       }
 
+      function calcTwdIndex(usdTwdRate) {
+        const fx = Number(usdTwdRate);
+        if (!Number.isFinite(fx) || fx <= 0) return null;
+        return Number(((TWD_FX_BASE / fx) * 100).toFixed(2));
+      }
+
       function chgClass(str) {
         if (!str || typeof str !== "string") return "flat";
         const s = str.trim();
@@ -376,16 +387,17 @@
           const n = Number(r.taiex);
           return Number.isFinite(n) ? n : null;
         });
-        const fxSeries = sliced.map((r) => {
-          const n = Number(r.usdTwd);
-          return Number.isFinite(n) ? n : null;
+        const twdIdxSeries = sliced.map((r) => {
+          const direct = Number(r.twdIndex);
+          if (Number.isFinite(direct)) return direct;
+          return calcTwdIndex(r.usdTwd);
         });
 
         const textMuted = getCssVar("--muted") || "#6b7280";
         const borderCol = getCssVar("--border") || "#e5e7eb";
         const idxCol = getCssVar("--accent") || "#0f766e";
         const idxFill = getCssVar("--accent-fill") || "rgba(15, 118, 110, 0.10)";
-        const fxCol = getCssVar("--fx") || "#ea580c";
+        const twdCol = getCssVar("--twd-idx") || "#ea580c";
 
         if (dualChart) {
           dualChart.destroy();
@@ -411,11 +423,11 @@
                 spanGaps: true
               },
               {
-                label: "1 美元兌台幣（元）",
-                data: fxSeries,
+                label: "台幣指數",
+                data: twdIdxSeries,
                 yAxisID: "y1",
-                borderColor: fxCol,
-                backgroundColor: fxCol,
+                borderColor: twdCol,
+                backgroundColor: twdCol,
                 fill: false,
                 borderWidth: 2,
                 borderDash: [5, 3],
@@ -442,7 +454,7 @@
                     const v = ctx.parsed.y;
                     if (v === null || v === undefined || Number.isNaN(v)) return `${ctx.dataset.label}：—`;
                     return ctx.dataset.yAxisID === "y1"
-                      ? `${ctx.dataset.label}：${Number(v).toFixed(2)} 元`
+                      ? `${ctx.dataset.label}：${Number(v).toFixed(2)}`
                       : `${ctx.dataset.label}：${Number(v).toLocaleString("en-US", { maximumFractionDigits: 2 })} 點`;
                   }
                 }
@@ -463,7 +475,7 @@
                 type: "linear",
                 position: "right",
                 ticks: {
-                  color: fxCol,
+                  color: twdCol,
                   font: { size: 10 },
                   callback: (val) => Number(val).toFixed(2)
                 },
@@ -529,7 +541,7 @@
         statusNote.textContent = baseStatusNote;
 
         latestHistory10d = Array.isArray(snap.history10d) ? snap.history10d.slice(-10) : [];
-        chartNote.textContent = snap.chartNote || "往回朔 10 個交易日；左軸為加權指數，右副軸為 1 美元兌台幣匯率。";
+        chartNote.textContent = snap.chartNote || "往回朔 10 個交易日；左軸為加權指數，右副軸為台幣指數。";
         renderDualChart(latestHistory10d);
 
         renderMargin(snap.margin);
@@ -554,14 +566,14 @@
           box.className = "win-box";
           const rateText = (w.winRate === null || w.winRate === undefined || w.winRate === "")
             ? "待更新"
-            : `勝率 ${Number(w.winRate).toFixed(1)}%`;
+            : `${Number(w.winRate).toFixed(1)}%`;
           box.innerHTML = `
             <div class="win-top">
               <strong>${w.code || "—"}</strong>
               <span class="win-pct">${rateText}</span>
             </div>
-            <div class="sub">${w.range || "—"}</div>
-            <div class="sub" style="margin-top:2px;">${w.desc || ""}</div>
+            <div class="sub">現價基準：${w.refPrice || "—"}｜區間：${w.range || "—"}</div>
+            <div class="sub" style="margin-top:3px;">${w.desc || ""}</div>
           `;
           winList.appendChild(box);
         });
@@ -593,31 +605,30 @@
           const livePrice = Number(row["6"]);
           const prevClose = Number(row["21"]);
           const liveFx = fxRow ? Number(fxRow["6"]) : NaN;
+          const liveTwdIdx = calcTwdIndex(liveFx);
           const tickSec = Number(row["200007"]);
           if (!Number.isFinite(livePrice) || !Number.isFinite(prevClose)) {
             throw new Error("報價欄位非數值");
           }
 
-          let quoteDateStr = "即時報價";
           let quoteTimeStr = formatClock();
           if (Number.isFinite(tickSec) && tickSec > 0) {
             const d = new Date(tickSec * 1000);
             const yyyy = d.getFullYear();
             const mm = String(d.getMonth() + 1).padStart(2, "0");
             const dd = String(d.getDate()).padStart(2, "0");
-            quoteDateStr = `${yyyy}-${mm}-${dd}`;
-            quoteTimeStr = `${quoteDateStr} ${formatClock(d)}`;
+            quoteTimeStr = `${yyyy}-${mm}-${dd} ${formatClock(d)}`;
           }
 
-          const fxTag = Number.isFinite(liveFx) ? `｜1 USD = ${liveFx.toFixed(2)} TWD` : "";
-          applyTaiex(quoteTimeStr, quoteDateStr, livePrice, prevClose, `（鉅亨網即時 ${formatClock()}${fxTag}）`);
+          const twdTag = Number.isFinite(liveTwdIdx) ? `｜台幣指數 ${liveTwdIdx.toFixed(2)}` : "";
+          applyTaiex(quoteTimeStr, "即時報價", livePrice, prevClose, `（鉅亨網即時 ${formatClock()}${twdTag}）`);
           if (latestHistory10d.length > 0) {
             const updatedRows = latestHistory10d.map((item, idx) => {
               if (idx !== latestHistory10d.length - 1) return item;
               return {
                 ...item,
                 taiex: livePrice,
-                usdTwd: Number.isFinite(liveFx) ? liveFx : item.usdTwd
+                twdIndex: Number.isFinite(liveTwdIdx) ? liveTwdIdx : item.twdIndex
               };
             });
             renderDualChart(updatedRows);
