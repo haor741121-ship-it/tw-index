@@ -1,89 +1,189 @@
-import json
-import re
-from datetime import datetime, timezone, timedelta
-import requests
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="apple-mobile-web-app-title" content="台股戰情 Gemini 版" />
+  <title>台股指數｜Gemini 獨立版</title>
+  <style>
+    :root {
+      --bg: #f4f6f9;
+      --card: #ffffff;
+      --text: #111827;
+      --muted: #6b7280;
+      --border: #e5e7eb;
+      --up: #dc2626;
+      --down: #16a34a;
+      --accent: #0f766e;
+      --tag-bg: #ccfbf1;
+    }
+    body.dark {
+      --bg: #0b1117;
+      --card: #131c26;
+      --text: #f9fafb;
+      --muted: #9ca3af;
+      --border: #243242;
+      --up: #f87171;
+      --down: #4ade80;
+      --accent: #2dd4bf;
+      --tag-bg: #134e4a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 420px;
+      margin: 0 auto;
+      padding: 12px 14px 40px;
+    }
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    h1 {
+      margin: 0;
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .btn-group {
+      display: flex;
+      gap: 6px;
+    }
+    button {
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: 8px;
+      padding: 6px 10px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+    button.dl {
+      background: var(--accent);
+      color: #ffffff;
+      border-color: var(--accent);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      margin-bottom: 10px;
+    }
+    .badge {
+      display: inline-block;
+      background: var(--tag-bg);
+      color: var(--accent);
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 999px;
+      margin-bottom: 6px;
+    }
+    .sub {
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .main-num {
+      font-size: 28px;
+      font-weight: 800;
+      margin: 4px 0;
+    }
+    .up { color: var(--up); font-weight: 700; }
+    .down { color: var(--down); font-weight: 700; }
+    .title {
+      font-size: 14px;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+    .row-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+    .row-item:last-child { border-bottom: none; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="topbar">
+      <h1>台股指數（Gemini 版）</h1>
+      <div class="btn-group">
+        <button id="modeBtn" type="button">深色</button>
+        <button id="saveBtn" class="dl" type="button">下載離線檔</button>
+      </div>
+    </div>
 
-TARGET_HTML = "gemini-tw-index.html"
-SNAPSHOT_ID = "gemini-snapshot"
+    <section class="card">
+      <span class="badge">獨立並行版</span>
+      <div class="sub" id="metaLine">更新：2026-11-25 13:24｜基準日：2026-11-24</div>
+      <div class="main-num" id="idxVal">40,122.35</div>
+      <div id="idxDiff" class="up">+3,310.46 (+8.99%)</div>
+      <div class="sub" style="margin-top:6px;">11/25 盤中參考約 37,972.96 點；證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。</div>
+    </section>
 
-TZ_TPE = timezone(timedelta(hours=8))
-NOW = datetime.now(TZ_TPE)
-TODAY_STR = NOW.strftime("%Y-%m-%d")
-TIME_STR = NOW.strftime("%Y-%m-%d %H:%M")
+    <section class="card">
+      <div class="title">美股與夜盤重點（11/24 美東收盤）</div>
+      <div class="row-item"><span>道瓊工業指數</span><span class="up">50,018.70 (+0.85%)</span></div>
+      <div class="row-item"><span>那斯達克指數</span><span class="down">23,733.54 (-0.48%)</span></div>
+      <div class="row-item"><span>費城半導體指數</span><span class="down">-7.88%</span></div>
+      <div class="sub" style="margin-top:6px;">夜盤重點：費半重挫使台指期夜盤走弱逾 1,800 點；11/24 上市融資增 196.97 億、融券增 13,656 張。</div>
+    </section>
 
-# 證交所非週末休市日（2026 剩餘與 2027 元旦，後續依公告補充）
-HOLIDAYS = {
-    "2026-12-25",
-    "2027-01-01",
-}
+    <section class="card">
+      <div class="title">關注標的勝率追蹤（0050 / 00878 / 8086）</div>
+      <div class="row-item"><span>0050 元大台灣50</span><span>待填入最新模擬勝率</span></div>
+      <div class="row-item"><span>00878 國泰永續高股息</span><span>待填入最新模擬勝率</span></div>
+      <div class="row-item"><span>8086 宏捷科</span><span>待填入最新模擬勝率</span></div>
+      <div class="sub" style="margin-top:6px;">統計推估僅供參考，未含交易成本與稅，不構成投資建議。</div>
+    </section>
+  </div>
 
+  <script id="gemini-snapshot" type="application/json" data-keep>
+  {
+    "version": "gemini-v1.0",
+    "updated": "2026-11-25 13:24",
+    "tradeDate": "2026-11-24",
+    "taiexClose": 40122.35,
+    "taiexPrev": 36811.89
+  }
+  </script>
 
-def should_skip(dt: datetime) -> tuple[bool, str]:
-    if dt.weekday() >= 5:
-        return True, f"今天台北時間 {TODAY_STR} 為週末休市，本輪跳過"
-    if TODAY_STR in HOLIDAYS:
-        return True, f"今天台北時間 {TODAY_STR} 為國定假日休市，本輪跳過"
-    return False, ""
+  <script data-keep>
+    (function () {
+      const modeBtn = document.getElementById("modeBtn");
+      modeBtn.addEventListener("click", () => {
+        document.body.classList.toggle("dark");
+        modeBtn.textContent = document.body.classList.contains("dark") ? "淺色" : "深色";
+      });
 
-
-def fetch_taiex_close() -> tuple[float | None, float | None]:
-    """從鉅亨網報價 API 取得加權指數現價／收盤與昨收，失敗時回傳 (None, None)"""
-    url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX"
-    try:
-        resp = requests.get(url, timeout=10)
-        resp.raise_for_status()
-        rows = resp.json().get("data", [])
-        for row in rows:
-            if row.get("0") == "TWS:TSE01:INDEX":
-                close_val = row.get("6")
-                prev_val = row.get("21")
-                if close_val is not None and prev_val is not None:
-                    return float(close_val), float(prev_val)
-        return None, None
-    except Exception as exc:
-        print(f"[WARN] 無法取得加權指數報價，保留原快照數值: {exc}")
-        return None, None
-
-
-def replace_snapshot_json(html: str, script_id: str, data: dict) -> str:
-    pattern = rf'(<script\s+id="{re.escape(script_id)}"[^>]*>)(.*?)(</script>)'
-    pretty = "\n  " + json.dumps(data, ensure_ascii=False, indent=2).replace("\n", "\n  ") + "\n  "
-    updated_html, count = re.subn(pattern, rf"\g<1>{pretty}\g<3>", html, count=1, flags=re.S)
-    if count == 0:
-        raise RuntimeError(f"找不到 #{script_id} 區塊")
-    return updated_html
-
-
-def main() -> None:
-    skip, msg = should_skip(NOW)
-    if skip:
-        print(msg)
-        return
-
-    with open(TARGET_HTML, "r", encoding="utf-8") as f:
-        html = f.read()
-
-    match = re.search(rf'<script\s+id="{SNAPSHOT_ID}"[^>]*>(.*?)</script>', html, re.S)
-    if not match:
-        raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
-
-    snap = json.loads(match.group(1))
-    close_val, prev_val = fetch_taiex_close()
-
-    if close_val is not None and prev_val is not None:
-        snap["taiexClose"] = close_val
-        snap["taiexPrev"] = prev_val
-    else:
-        print("[INFO] 保留既有 taiexClose 與 taiexPrev")
-
-    snap["updated"] = TIME_STR
-
-    new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
-    with open(TARGET_HTML, "w", encoding="utf-8") as f:
-        f.write(new_html)
-
-    print(f"已更新 {TARGET_HTML}（#{SNAPSHOT_ID}）於 {TIME_STR}")
-
-
-if __name__ == "__main__":
-    main()
+      document.getElementById("saveBtn").addEventListener("click", () => {
+        const clone = document.documentElement.cloneNode(true);
+        clone.querySelectorAll("script:not([data-keep])").forEach((el) => el.remove());
+        const content = "<!DOCTYPE html>\n" + clone.outerHTML;
+        const blob = new Blob([content], { type: "text/html;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = "gemini-tw-index-2026-11-25.html";
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+      });
+    })();
+  </script>
+</body>
+</html>
