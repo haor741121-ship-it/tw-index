@@ -17,6 +17,7 @@
       --down: #16a34a;
       --accent: #0f766e;
       --accent-fill: rgba(15, 118, 110, 0.10);
+      --fx: #ea580c;
       --ratio-line: #2563eb;
       --tag-bg: #ccfbf1;
       --soft-bg: #f8fafc;
@@ -31,6 +32,7 @@
       --down: #4ade80;
       --accent: #2dd4bf;
       --accent-fill: rgba(45, 212, 191, 0.12);
+      --fx: #fb923c;
       --ratio-line: #60a5fa;
       --tag-bg: #134e4a;
       --soft-bg: #192432;
@@ -117,7 +119,7 @@
     }
     .chart-wrap {
       position: relative;
-      height: 235px;
+      height: 230px;
       width: 100%;
       margin-top: 6px;
     }
@@ -224,12 +226,20 @@
     </section>
 
     <section class="card">
+      <div class="title">近 10 日加權指數 × 美元兌台幣（主／副座標）</div>
+      <div class="sub">左主軸：加權指數（點）｜右副軸：1 美元兌台幣（元）</div>
+      <div class="chart-wrap">
+        <canvas id="fxIndexChart"></canvas>
+      </div>
+      <div class="sub" id="fxChartNote" style="margin-top:6px;"></div>
+    </section>
+
+    <section class="card">
       <div class="title">近 10 日融資維持率 × 加權指數（正副座標）</div>
       <div class="sub">左主軸：加權指數（點）｜右副軸：融資維持率（%）｜追繳門檻 120%</div>
       <div class="chart-wrap">
         <canvas id="ratioIndexChart"></canvas>
       </div>
-      <div class="sub" id="ratioChartNote" style="margin-top:6px;"></div>
     </section>
 
     <section class="card">
@@ -253,7 +263,7 @@
     </section>
 
     <section class="card">
-      <div class="title">三大法人買賣超（近 10 日增減）</div>
+      <div class="title">三大法人買賣超（近 10 日增減，億元）</div>
       <div class="sub" id="inst10dMeta"></div>
       <div class="tbl-wrap">
         <table>
@@ -273,13 +283,13 @@
     </section>
 
     <section class="card">
-      <div class="title">消息面利多／利空判斷與總結</div>
+      <div class="title">消息面利多／利空判斷與總結（含國際面向）</div>
       <div class="news-box">
-        <div class="news-tag-bull">▲ 偏多／緩衝訊息</div>
+        <div class="news-tag-bull">▲ 偏多／緩衝訊息（政策・金融・國際）</div>
         <div id="bullList"></div>
       </div>
       <div class="news-box">
-        <div class="news-tag-bear">▼ 偏空／風險訊息</div>
+        <div class="news-tag-bear">▼ 偏空／風險訊息（國際・半導體・關稅・能源）</div>
         <div id="bearList"></div>
       </div>
       <div class="sum-box" id="newsSummary"></div>
@@ -295,161 +305,44 @@
 
   <script id="gemini-snapshot" type="application/json" data-keep>
   {
-    "version": "gemini-v2.2",
-    "updated": "2026-11-25 15:20",
+    "version": "gemini-v2.3",
+    "updated": "2026-11-25 15:24",
     "tradeDate": "2026-11-25",
     "taiexClose": 38195.43,
     "taiexPrev": 40122.35,
-    "statusNote": "證交所自 2026/11/24 起信用交易整戶擔保維持率最低標準由 130% 調降至 120%。",
+    "usdTwd": null,
+    "statusNote": "11/25 收盤 38,195.43 點（11/24 收盤 40,122.35 點）；證交所自 2026/11/24 起信用維持率追繳門檻調整為 120%。",
     "history10d": [
-      {
-        "date": "11/11",
-        "taiex": null,
-        "marginBal": 5411.58,
-        "marginChg": 44.79,
-        "shortBal": 209019,
-        "shortChg": -2112,
-        "maintenanceRatio": 174.15,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/12",
-        "taiex": null,
-        "marginBal": 5334.75,
-        "marginChg": -76.83,
-        "shortBal": 210522,
-        "shortChg": 1503,
-        "maintenanceRatio": 167.22,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/13",
-        "taiex": null,
-        "marginBal": 5365.99,
-        "marginChg": 31.24,
-        "shortBal": 208773,
-        "shortChg": -1749,
-        "maintenanceRatio": 170.67,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/16",
-        "taiex": 41040.08,
-        "marginBal": 5244.98,
-        "marginChg": -121.01,
-        "shortBal": 217384,
-        "shortChg": 8611,
-        "maintenanceRatio": 158.5,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/17",
-        "taiex": 40092.11,
-        "marginBal": 5087.21,
-        "marginChg": -157.77,
-        "shortBal": 207959,
-        "shortChg": -9425,
-        "maintenanceRatio": 153.71,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/18",
-        "taiex": 40194.91,
-        "marginBal": 5080.27,
-        "marginChg": -6.95,
-        "shortBal": 193544,
-        "shortChg": -14415,
-        "maintenanceRatio": 156.22,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/19",
-        "taiex": 38426.89,
-        "marginBal": 4843.68,
-        "marginChg": -236.58,
-        "shortBal": 209819,
-        "shortChg": 16275,
-        "maintenanceRatio": 147.9,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/20",
-        "taiex": 36033.29,
-        "marginBal": 4352.27,
-        "marginChg": -491.41,
-        "shortBal": 199791,
-        "shortChg": -10028,
-        "maintenanceRatio": 140.4,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/23",
-        "taiex": 36811.89,
-        "marginBal": 4338.08,
-        "marginChg": -14.2,
-        "shortBal": 172957,
-        "shortChg": -26834,
-        "maintenanceRatio": 148.46,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      },
-      {
-        "date": "11/24",
-        "taiex": 38195.43,
-        "marginBal": 4535.05,
-        "marginChg": 196.97,
-        "shortBal": 186613,
-        "shortChg": 13656,
-        "maintenanceRatio": null,
-        "foreign": null,
-        "trust": null,
-        "dealer": null,
-        "instTotal": null
-      }
+      { "date": "11/11", "taiex": null, "usdTwd": null, "marginBal": 5411.58, "marginChg": 44.79, "shortBal": 209019, "shortChg": -2112, "maintenanceRatio": 174.15, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/12", "taiex": null, "usdTwd": null, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/13", "taiex": null, "usdTwd": null, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/16", "taiex": 41040.08, "usdTwd": null, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/17", "taiex": 40092.11, "usdTwd": null, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/18", "taiex": 40194.91, "usdTwd": null, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/19", "taiex": 38426.89, "usdTwd": null, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/20", "taiex": 36033.29, "usdTwd": null, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
+      { "date": "11/24", "taiex": 40122.35, "usdTwd": null, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": null, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11 },
+      { "date": "11/25", "taiex": 38195.43, "usdTwd": null, "marginBal": null, "marginChg": null, "shortBal": null, "shortChg": null, "maintenanceRatio": null, "foreign": null, "trust": null, "dealer": null, "instTotal": null }
     ],
+    "fxChartNote": "左主軸為加權指數（點），右副軸為 1 美元兌台幣匯率（元）。",
     "news": {
       "bullish": [
-        "證交所自 2026/11/24 起將信用交易擔保維持率最低標準由 130% 調降至 120%，並取消 11/24 前低於 130% 的追繳紀錄與處分，緩解短期斷頭賣壓。",
-        "放寬可用具流動性與客觀評價之擔保品抵繳，提供融資戶資金緩衝空間。"
+        "【政策・金融】證交所自 2026/11/24 起將信用交易擔保維持率最低標準由 130% 調降至 120%，並取消 11/24 前低於 130% 追繳紀錄與處分，緩解槓桿斷頭壓力。",
+        "【國際】黃仁勳回任輝達執行長一度帶動全球與台股出現強彈，顯示 AI 算力與晶片龍頭話題仍具市場關注度。"
       ],
       "bearish": [
-        "近期大盤與高槓桿部位震盪劇烈，維持率門檻調降雖延後追繳時點，但融資借款本金與帳面波動仍在。",
-        "若國際股市或半導體族群持續修正，市場籌碼與風險偏好仍易受壓抑。"
+        "【國際・半導體】隔夜費城半導體指數重挫近 8%，亞股與半導體供應鏈同步承壓，11/25 台股盤中一度重挫逾 3,400 點、收跌 1,926.92 點。",
+        "【政策・關稅】美國 301 關稅與新關稅措施雜音升溫，加上外資現貨調節與期貨空單部位偏高，壓抑外資風險偏好。",
+        "【能源・金融】全球能源價格、匯率波動與金融市場避險情緒升溫，資金在劇烈震盪下傾向縮減高 Beta 風險部位。"
       ],
-      "summary": "總結：政策面调降維持率至 120% 屬短期防斷頭緩衝利多，有助降低集中殺盤；但盤勢高波動環境未除，操作仍宜控管槓桿、分批布局，並持續追蹤每日融資增減與三大法人動向。"
+      "summary": "總結：短期政策調降維持率至 120% 發揮防斷頭緩衝作用，但國際半導體修正、美方關稅變數與外資籌碼尚未明朗前，大盤仍處高波動震盪期；操作上應避免過度槓桿，採分批與紀律控管風險。"
     },
-    "winMeta": "排程同步：2026-11-25 15:20｜現在買進、持有 20 個交易日勝率",
+    "winMeta": "現在買進、持有 20 個交易日之統計推估勝率",
     "win": [
       {
         "code": "0050 元大台灣50",
-        "winRate": 54.4,
-        "range": "20日可能區間：-7.5% ~ +10.0%",
+        "winRate": 53.8,
+        "range": "20日可能區間：-7.9% ~ +9.7%",
         "annualVol": 0.24,
         "annualDrift": 0.09,
         "horizonDays": 20,
@@ -458,7 +351,7 @@
       },
       {
         "code": "00878 國泰永續高股息",
-        "winRate": 55.8,
+        "winRate": 55.1,
         "range": "20日可能區間：-4.1% ~ +5.4%",
         "annualVol": 0.13,
         "annualDrift": 0.065,
@@ -468,8 +361,8 @@
       },
       {
         "code": "8086 宏捷科",
-        "winRate": 49.3,
-        "range": "20日可能區間：-15.2% ~ +18.2%",
+        "winRate": 50.2,
+        "range": "20日可能區間：-15.4% ~ +17.9%",
         "annualVol": 0.45,
         "annualDrift": 0.07,
         "horizonDays": 20,
@@ -483,11 +376,12 @@
 
   <script data-keep>
     (function () {
-      const CNYES_QUOTE_URL = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX";
+      const CNYES_QUOTE_URL = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX,FX:USD:TWD";
       const metaLine = document.getElementById("metaLine");
       const idxVal = document.getElementById("idxVal");
       const idxDiff = document.getElementById("idxDiff");
       const statusNote = document.getElementById("statusNote");
+      const fxChartNote = document.getElementById("fxChartNote");
       const margin10dMeta = document.getElementById("margin10dMeta");
       const margin10dBody = document.getElementById("margin10dBody");
       const inst10dMeta = document.getElementById("inst10dMeta");
@@ -504,6 +398,7 @@
       let currentUpdated = "—";
       let baseStatusNote = "";
       let latestRows10d = [];
+      let fxChart = null;
       let ratioChart = null;
 
       function formatClock(d = new Date()) {
@@ -535,6 +430,94 @@
 
       function getCssVar(name) {
         return getComputedStyle(document.body).getPropertyValue(name).trim();
+      }
+
+      function renderFxIndexChart(rows) {
+        const canvas = document.getElementById("fxIndexChart");
+        if (!canvas || typeof Chart === "undefined") return;
+
+        const sliced = Array.isArray(rows) ? rows.slice(-10) : [];
+        const labels = sliced.map((r) => r.date || "—");
+        const taiexSeries = sliced.map((r) => numOrNull(r.taiex));
+        const fxSeries = sliced.map((r) => numOrNull(r.usdTwd));
+
+        const textMuted = getCssVar("--muted") || "#6b7280";
+        const borderCol = getCssVar("--border") || "#e5e7eb";
+        const idxCol = getCssVar("--accent") || "#0f766e";
+        const idxFill = getCssVar("--accent-fill") || "rgba(15, 118, 110, 0.10)";
+        const fxCol = getCssVar("--fx") || "#ea580c";
+
+        if (fxChart) {
+          fxChart.destroy();
+          fxChart = null;
+        }
+
+        fxChart = new Chart(canvas.getContext("2d"), {
+          type: "line",
+          data: {
+            labels,
+            datasets: [
+              {
+                label: "加權指數（左主軸）",
+                data: taiexSeries,
+                yAxisID: "y",
+                borderColor: idxCol,
+                backgroundColor: idxFill,
+                fill: true,
+                borderWidth: 2.2,
+                pointRadius: 2.5,
+                tension: 0.25,
+                spanGaps: true
+              },
+              {
+                label: "1 美元兌台幣（右副軸）",
+                data: fxSeries,
+                yAxisID: "y1",
+                borderColor: fxCol,
+                backgroundColor: fxCol,
+                fill: false,
+                borderWidth: 2,
+                borderDash: [5, 3],
+                pointRadius: 2.5,
+                tension: 0.25,
+                spanGaps: true
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: {
+                position: "top",
+                labels: { color: textMuted, boxWidth: 12, font: { size: 11, weight: "bold" } }
+              }
+            },
+            scales: {
+              x: {
+                ticks: { color: textMuted, font: { size: 10 }, maxRotation: 0 },
+                grid: { color: borderCol, drawBorder: false }
+              },
+              y: {
+                type: "linear",
+                position: "left",
+                ticks: { color: idxCol, font: { size: 10 } },
+                grid: { color: borderCol, drawBorder: false }
+              },
+              y1: {
+                type: "linear",
+                position: "right",
+                ticks: {
+                  color: fxCol,
+                  font: { size: 10 },
+                  callback: (v) => Number(v).toFixed(2)
+                },
+                grid: { drawOnChartArea: false, drawBorder: false }
+              }
+            }
+          }
+        });
       }
 
       function renderRatioIndexChart(rows) {
@@ -668,7 +651,7 @@
           const dVal = numOrNull(r.dealer);
           let totVal = numOrNull(r.instTotal);
           if (totVal === null && (fVal !== null || tVal !== null || dVal !== null)) {
-            totVal = (fVal || 0) + (tVal || 0) + (dVal || 0);
+            totVal = Number(((fVal || 0) + (tVal || 0) + (dVal || 0)).toFixed(2));
           }
           if (totVal !== null) {
             cumTotal = Number((cumTotal + totVal).toFixed(2));
@@ -728,8 +711,10 @@
       function renderSections(snap) {
         baseStatusNote = snap.statusNote || "";
         statusNote.textContent = baseStatusNote;
+        fxChartNote.textContent = snap.fxChartNote || "左主軸為加權指數（點），右副軸為 1 美元兌台幣匯率（元）。";
 
         latestRows10d = Array.isArray(snap.history10d) ? snap.history10d.slice(-10) : [];
+        renderFxIndexChart(latestRows10d);
         renderRatioIndexChart(latestRows10d);
         renderMargin10dTable(latestRows10d);
         renderInst10dTable(latestRows10d);
@@ -774,13 +759,14 @@
           });
           if (!res.ok) throw new Error(`HTTP ${res.status}`);
           const json = await res.json();
-          const row = Array.isArray(json.data)
-            ? json.data.find((item) => item && item["0"] === "TWS:TSE01:INDEX")
-            : null;
+          const dataArr = Array.isArray(json.data) ? json.data : [];
+          const row = dataArr.find((item) => item && item["0"] === "TWS:TSE01:INDEX");
+          const fxRow = dataArr.find((item) => item && item["0"] === "FX:USD:TWD");
           if (!row) throw new Error("查無 TWS:TSE01:INDEX 報價");
 
           const livePrice = numOrNull(row["6"]);
           const prevClose = numOrNull(row["21"]);
+          const liveFx = fxRow ? numOrNull(fxRow["6"]) : null;
           const tickSec = numOrNull(row["200007"]);
           if (livePrice === null || prevClose === null) throw new Error("報價欄位非數值");
 
@@ -795,11 +781,18 @@
             quoteTimeStr = `${quoteDateStr} ${formatClock(d)}`;
           }
 
-          applyTaiex(quoteTimeStr, quoteDateStr, livePrice, prevClose, `（鉅亨網即時 ${formatClock()}）`);
+          const fxTag = liveFx !== null ? `｜1 USD = ${liveFx.toFixed(2)} TWD` : "";
+          applyTaiex(quoteTimeStr, quoteDateStr, livePrice, prevClose, `（鉅亨網即時 ${formatClock()}${fxTag}）`);
           if (latestRows10d.length > 0) {
-            const updatedRows = latestRows10d.map((item, idx) =>
-              idx === latestRows10d.length - 1 ? { ...item, taiex: livePrice } : item
-            );
+            const updatedRows = latestRows10d.map((item, idx) => {
+              if (idx !== latestRows10d.length - 1) return item;
+              return {
+                ...item,
+                taiex: livePrice,
+                usdTwd: liveFx !== null ? liveFx : item.usdTwd
+              };
+            });
+            renderFxIndexChart(updatedRows);
             renderRatioIndexChart(updatedRows);
             renderMargin10dTable(updatedRows);
           }
@@ -827,6 +820,7 @@
       modeBtn.addEventListener("click", () => {
         document.body.classList.toggle("dark");
         modeBtn.textContent = document.body.classList.contains("dark") ? "淺色" : "深色";
+        renderFxIndexChart(latestRows10d);
         renderRatioIndexChart(latestRows10d);
       });
 
