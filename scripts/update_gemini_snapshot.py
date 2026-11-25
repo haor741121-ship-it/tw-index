@@ -7,6 +7,7 @@ import requests
 
 TARGET_HTML = "gemini-tw-index.html"
 SNAPSHOT_ID = "gemini-snapshot"
+TWD_FX_BASE = 32.5
 
 TZ_TPE = timezone(timedelta(hours=8))
 NOW = datetime.now(TZ_TPE)
@@ -21,16 +22,16 @@ HOLIDAYS = {
 }
 
 DEFAULT_HISTORY_10D = [
-    {"date": "11/11", "taiex": None, "usdTwd": None},
-    {"date": "11/12", "taiex": None, "usdTwd": None},
-    {"date": "11/13", "taiex": None, "usdTwd": None},
-    {"date": "11/16", "taiex": None, "usdTwd": None},
-    {"date": "11/17", "taiex": None, "usdTwd": None},
-    {"date": "11/18", "taiex": None, "usdTwd": None},
-    {"date": "11/19", "taiex": None, "usdTwd": None},
-    {"date": "11/20", "taiex": None, "usdTwd": None},
-    {"date": "11/23", "taiex": None, "usdTwd": None},
-    {"date": "11/24", "taiex": 40122.35, "usdTwd": None},
+    {"date": "11/11", "taiex": None, "twdIndex": None},
+    {"date": "11/12", "taiex": None, "twdIndex": None},
+    {"date": "11/13", "taiex": None, "twdIndex": None},
+    {"date": "11/16", "taiex": None, "twdIndex": None},
+    {"date": "11/17", "taiex": None, "twdIndex": None},
+    {"date": "11/18", "taiex": None, "twdIndex": None},
+    {"date": "11/19", "taiex": None, "twdIndex": None},
+    {"date": "11/20", "taiex": None, "twdIndex": None},
+    {"date": "11/23", "taiex": None, "twdIndex": None},
+    {"date": "11/24", "taiex": 40122.35, "twdIndex": None},
 ]
 
 DEFAULT_MARGIN = {
@@ -107,33 +108,22 @@ def fetch_taiex_close() -> tuple[float | None, float | None]:
         return None, None
 
 
-def fetch_usd_twd() -> float | None:
-    """自動抓取美元兌新台幣匯率（先試鉅亨網 FX，再試 Frankfurter 公開 API）"""
+def fetch_cnyes_twd_index(fx_base: float = TWD_FX_BASE) -> float | None:
+    """從鉅亨網外匯報價 API 抓取 USD/TWD 並換算為台幣指數（基期 32.50 = 100）"""
+    url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/FX:USD:TWD"
     try:
-        url1 = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/FX:USD:TWD"
-        r1 = requests.get(url1, timeout=8)
-        r1.raise_for_status()
-        for row in r1.json().get("data", []):
+        resp = requests.get(url, timeout=10)
+        resp.raise_for_status()
+        rows = resp.json().get("data", [])
+        for row in rows:
             if row.get("0") == "FX:USD:TWD" and row.get("6") is not None:
-                val = float(row["6"])
-                if 25.0 <= val <= 40.0:
-                    return round(val, 2)
+                fx_val = float(row["6"])
+                if 25.0 <= fx_val <= 40.0 and fx_base > 0:
+                    return round((fx_base / fx_val) * 100.0, 2)
+        return None
     except Exception as exc:
-        print(f"[WARN] 鉅亨網 USD/TWD 抓取失敗，改試備援匯率 API: {exc}")
-
-    try:
-        url2 = "https://api.frankfurter.app/latest?from=USD&to=TWD"
-        r2 = requests.get(url2, timeout=8)
-        r2.raise_for_status()
-        rate = r2.json().get("rates", {}).get("TWD")
-        if rate is not None:
-            val = float(rate)
-            if 25.0 <= val <= 40.0:
-                return round(val, 2)
-    except Exception as exc:
-        print(f"[WARN] 備援 USD/TWD 抓取失敗，保留既有匯率: {exc}")
-
-    return None
+        print(f"[WARN] 無法從鉅亨網取得台幣指數，保留原快照數值: {exc}")
+        return None
 
 
 def _parse_num(raw) -> float | None:
@@ -264,8 +254,9 @@ def main() -> None:
         raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
 
     snap = json.loads(match.group(1))
+    fx_base = float(snap.get("twdFxBase") or TWD_FX_BASE)
     close_val, prev_val = fetch_taiex_close()
-    fx_val = fetch_usd_twd()
+    twd_idx_val = fetch_cnyes_twd_index(fx_base=fx_base)
 
     if close_val is not None and prev_val is not None:
         snap["taiexClose"] = close_val
@@ -273,8 +264,8 @@ def main() -> None:
     else:
         print("[INFO] 保留既有 taiexClose 與 taiexPrev")
 
-    if fx_val is not None:
-        snap["usdTwd"] = fx_val
+    if twd_idx_val is not None:
+        snap["twdIndex"] = twd_idx_val
 
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
@@ -282,8 +273,8 @@ def main() -> None:
     hist = hist[-10:]
     if isinstance(snap.get("taiexClose"), (int, float)):
         hist[-1]["taiex"] = snap["taiexClose"]
-    if fx_val is not None:
-        hist[-1]["usdTwd"] = fx_val
+    if twd_idx_val is not None:
+        hist[-1]["twdIndex"] = twd_idx_val
     snap["history10d"] = hist
 
     existing_margin = snap.get("margin") if isinstance(snap.get("margin"), dict) else {}
