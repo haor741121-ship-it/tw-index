@@ -173,7 +173,7 @@
       margin-bottom: 3px;
     }
     .win-pct {
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 800;
       color: var(--accent);
     }
@@ -236,7 +236,7 @@
     </section>
 
     <section class="card">
-      <div class="title">關注標的勝率追蹤（0050 / 00878 / 8086）</div>
+      <div class="title">現在買進勝率（持有 20 個交易日）</div>
       <div class="sub" id="winMeta" style="margin-bottom:8px;"></div>
       <div id="winList"></div>
       <div class="sub" id="winNote" style="margin-top:8px;"></div>
@@ -245,8 +245,8 @@
 
   <script id="gemini-snapshot" type="application/json" data-keep>
   {
-    "version": "gemini-v1.9",
-    "updated": "2026-11-25 14:31",
+    "version": "gemini-v2.0",
+    "updated": "2026-11-25 14:40",
     "tradeDate": "2026-11-24",
     "taiexClose": 40122.35,
     "taiexPrev": 36811.89,
@@ -282,40 +282,37 @@
       { "name": "費城半導體指數", "value": "-7.88%", "dir": "down" }
     ],
     "nightNote": "夜盤重點：費半重挫使台指期夜盤走弱逾 1,800 點；11/24 上市融資增 196.97 億、融券增 13,656 張。",
-    "winMeta": "假設持有 22 個交易日｜參數化勝率模型",
+    "winMeta": "現在買進、持有 20 個交易日之統計推估勝率",
     "win": [
       {
         "code": "0050 元大台灣50",
-        "winRate": null,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.22,
-        "annualDrift": 0.08,
-        "horizonDays": 22,
+        "winRate": 53.8,
+        "range": "20日可能區間：-7.9% ~ +9.7%",
+        "annualVol": 0.24,
+        "annualDrift": 0.09,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "追蹤台灣50指數，與大盤高度連動，受權值電子與費半波動影響大。"
+        "desc": "與大盤高度連動，波動與預期報酬適中。"
       },
       {
         "code": "00878 國泰永續高股息",
-        "winRate": null,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.14,
-        "annualDrift": 0.06,
-        "horizonDays": 22,
+        "winRate": 55.1,
+        "range": "20日可能區間：-4.1% ~ +5.4%",
+        "annualVol": 0.13,
+        "annualDrift": 0.065,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "高股息成分股含金融與傳產，波動通常低於純市值型標的（需納入除息調整）。"
+        "desc": "波動最小、短線較抗震，三檔中勝率最高。"
       },
       {
         "code": "8086 宏捷科",
-        "winRate": null,
-        "refPrice": "待排程更新",
-        "range": "待 22 日模擬區間",
-        "annualVol": 0.42,
-        "annualDrift": 0.05,
-        "horizonDays": 22,
+        "winRate": 50.2,
+        "range": "20日可能區間：-15.4% ~ +17.9%",
+        "annualVol": 0.45,
+        "annualDrift": 0.07,
+        "horizonDays": 20,
         "targetPct": 0.0,
-        "desc": "砷化鎵晶圓代工族群，個股 Beta 與自有波動較高，受手機 PA 需求與美股半導體氣氛影響。"
+        "desc": "個股振幅大，20 日賺賠接近五五波，上下波動最劇烈。"
       }
     ],
     "winNote": "統計推估僅供參考，未含交易成本與稅，不構成投資建議。"
@@ -566,14 +563,14 @@
           box.className = "win-box";
           const rateText = (w.winRate === null || w.winRate === undefined || w.winRate === "")
             ? "待更新"
-            : `${Number(w.winRate).toFixed(1)}%`;
+            : `勝率 ${Number(w.winRate).toFixed(1)}%`;
           box.innerHTML = `
             <div class="win-top">
               <strong>${w.code || "—"}</strong>
               <span class="win-pct">${rateText}</span>
             </div>
-            <div class="sub">現價基準：${w.refPrice || "—"}｜區間：${w.range || "—"}</div>
-            <div class="sub" style="margin-top:3px;">${w.desc || ""}</div>
+            <div class="sub">${w.range || "—"}</div>
+            <div class="sub" style="margin-top:2px;">${w.desc || ""}</div>
           `;
           winList.appendChild(box);
         });
