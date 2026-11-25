@@ -7,6 +7,7 @@ import requests
 
 TARGET_HTML = "gemini-tw-index.html"
 SNAPSHOT_ID = "gemini-snapshot"
+TWD_FX_BASE = 32.5
 
 TZ_TPE = timezone(timedelta(hours=8))
 NOW = datetime.now(TZ_TPE)
@@ -14,22 +15,23 @@ TODAY_STR = NOW.strftime("%Y-%m-%d")
 SHORT_DATE_STR = NOW.strftime("%m/%d")
 TIME_STR = NOW.strftime("%Y-%m-%d %H:%M")
 
+# 證交所非週末休市日（2026 剩餘與 2027 元旦，後續依公告補充）
 HOLIDAYS = {
     "2026-12-25",
     "2027-01-01",
 }
 
 DEFAULT_HISTORY_10D = [
-    {"date": "11/12", "taiex": 36250.0, "usdTwd": 32.58},
-    {"date": "11/13", "taiex": 36480.0, "usdTwd": 32.54},
-    {"date": "11/16", "taiex": 36610.0, "usdTwd": 32.51},
-    {"date": "11/17", "taiex": 36540.0, "usdTwd": 32.55},
-    {"date": "11/18", "taiex": 36790.0, "usdTwd": 32.49},
-    {"date": "11/19", "taiex": 36920.0, "usdTwd": 32.46},
-    {"date": "11/20", "taiex": 36750.0, "usdTwd": 32.50},
-    {"date": "11/23", "taiex": 36811.89, "usdTwd": 32.48},
-    {"date": "11/24", "taiex": 40122.35, "usdTwd": 32.42},
-    {"date": "11/25", "taiex": 37972.96, "usdTwd": 32.45},
+    {"date": "11/11", "taiex": None, "twdIndex": None},
+    {"date": "11/12", "taiex": None, "twdIndex": None},
+    {"date": "11/13", "taiex": None, "twdIndex": None},
+    {"date": "11/16", "taiex": None, "twdIndex": None},
+    {"date": "11/17", "taiex": None, "twdIndex": None},
+    {"date": "11/18", "taiex": None, "twdIndex": None},
+    {"date": "11/19", "taiex": None, "twdIndex": None},
+    {"date": "11/20", "taiex": None, "twdIndex": None},
+    {"date": "11/23", "taiex": None, "twdIndex": None},
+    {"date": "11/24", "taiex": 40122.35, "twdIndex": None},
 ]
 
 DEFAULT_MARGIN = {
@@ -45,33 +47,36 @@ DEFAULT_MARGIN = {
 DEFAULT_WIN_ITEMS = [
     {
         "code": "0050 元大台灣50",
-        "winRate": 53.8,
-        "range": "20日可能區間：-7.9% ~ +9.7%",
-        "annualVol": 0.24,
-        "annualDrift": 0.09,
-        "horizonDays": 20,
+        "winRate": None,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.22,
+        "annualDrift": 0.08,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "與大盤高度連動，波動與預期報酬適中。",
+        "desc": "追蹤台灣50指數，與大盤高度連動，受權值電子與費半波動影響大。",
     },
     {
         "code": "00878 國泰永續高股息",
-        "winRate": 55.1,
-        "range": "20日可能區間：-4.1% ~ +5.4%",
-        "annualVol": 0.13,
-        "annualDrift": 0.065,
-        "horizonDays": 20,
+        "winRate": None,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.14,
+        "annualDrift": 0.06,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "波動最小、短線較抗震，三檔中勝率最高。",
+        "desc": "高股息成分股含金融與傳產，波動通常低於純市值型標的（需納入除息調整）。",
     },
     {
         "code": "8086 宏捷科",
-        "winRate": 50.2,
-        "range": "20日可能區間：-15.4% ~ +17.9%",
-        "annualVol": 0.45,
-        "annualDrift": 0.07,
-        "horizonDays": 20,
+        "winRate": None,
+        "refPrice": "待排程更新",
+        "range": "待 22 日模擬區間",
+        "annualVol": 0.42,
+        "annualDrift": 0.05,
+        "horizonDays": 22,
         "targetPct": 0.0,
-        "desc": "個股振幅大，20 日賺賠接近五五波，上下波動最劇烈。",
+        "desc": "砷化鎵晶圓代工族群，個股 Beta 與自有波動較高，受手機 PA 需求與美股半導體氣氛影響。",
     },
 ]
 
@@ -85,6 +90,7 @@ def should_skip(dt: datetime) -> tuple[bool, str]:
 
 
 def fetch_taiex_close() -> tuple[float | None, float | None]:
+    """從鉅亨網報價 API 取得加權指數現價／收盤與昨收，失敗時回傳 (None, None)"""
     url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX"
     try:
         resp = requests.get(url, timeout=10)
@@ -102,8 +108,8 @@ def fetch_taiex_close() -> tuple[float | None, float | None]:
         return None, None
 
 
-def fetch_usd_twd() -> float | None:
-    """從鉅亨網抓取 1 美元兌台幣匯率（USD/TWD）"""
+def fetch_cnyes_twd_index(fx_base: float = TWD_FX_BASE) -> float | None:
+    """從鉅亨網外匯報價 API 抓取 USD/TWD 並換算為台幣指數（基期 32.50 = 100）"""
     url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/FX:USD:TWD"
     try:
         resp = requests.get(url, timeout=10)
@@ -111,12 +117,12 @@ def fetch_usd_twd() -> float | None:
         rows = resp.json().get("data", [])
         for row in rows:
             if row.get("0") == "FX:USD:TWD" and row.get("6") is not None:
-                val = float(row["6"])
-                if 25.0 <= val <= 40.0:
-                    return round(val, 2)
+                fx_val = float(row["6"])
+                if 25.0 <= fx_val <= 40.0 and fx_base > 0:
+                    return round((fx_base / fx_val) * 100.0, 2)
         return None
     except Exception as exc:
-        print(f"[WARN] 無法從鉅亨網取得 1 美元兌台幣匯率，保留原快照數值: {exc}")
+        print(f"[WARN] 無法從鉅亨網取得台幣指數，保留原快照數值: {exc}")
         return None
 
 
@@ -133,6 +139,7 @@ def _parse_num(raw) -> float | None:
 
 
 def fetch_twse_margin(existing_margin: dict) -> dict:
+    """嘗試從證交所 MI_MARGN 抓取上市融資融券餘額與維持率，失敗則安全保留既有值"""
     out = {**DEFAULT_MARGIN, **(existing_margin or {})}
     date_compact = NOW.strftime("%Y%m%d")
     url = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
@@ -190,10 +197,11 @@ def fetch_twse_margin(existing_margin: dict) -> dict:
 
 
 def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
+    """依標的年化波動率、漂移率、持有日數與目標漲幅計算勝率與預期區間"""
     updated_item = dict(item)
-    vol = float(updated_item.get("annualVol") or 0.24)
-    drift = float(updated_item.get("annualDrift") or 0.07)
-    days = int(updated_item.get("horizonDays") or 20)
+    vol = float(updated_item.get("annualVol") or 0.25)
+    drift = float(updated_item.get("annualDrift") or 0.06)
+    days = int(updated_item.get("horizonDays") or 22)
     target_pct = float(updated_item.get("targetPct") or 0.0)
 
     dt = days / 252.0
@@ -219,7 +227,7 @@ def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
     updated_item["winRate"] = win_rate
     s10 = "+" if p10 >= 0 else ""
     s90 = "+" if p90 >= 0 else ""
-    updated_item["range"] = f"{days}日可能區間：{s10}{p10:.1f}% ~ {s90}{p90:.1f}%"
+    updated_item["range"] = f"{days}日P10~P90：{s10}{p10:.1f}% ~ {s90}{p90:.1f}%"
     return updated_item
 
 
@@ -246,8 +254,9 @@ def main() -> None:
         raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
 
     snap = json.loads(match.group(1))
+    fx_base = float(snap.get("twdFxBase") or TWD_FX_BASE)
     close_val, prev_val = fetch_taiex_close()
-    fx_val = fetch_usd_twd()
+    twd_idx_val = fetch_cnyes_twd_index(fx_base=fx_base)
 
     if close_val is not None and prev_val is not None:
         snap["taiexClose"] = close_val
@@ -255,8 +264,8 @@ def main() -> None:
     else:
         print("[INFO] 保留既有 taiexClose 與 taiexPrev")
 
-    if fx_val is not None:
-        snap["usdTwd"] = fx_val
+    if twd_idx_val is not None:
+        snap["twdIndex"] = twd_idx_val
 
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
@@ -264,33 +273,19 @@ def main() -> None:
     hist = hist[-10:]
     if isinstance(snap.get("taiexClose"), (int, float)):
         hist[-1]["taiex"] = snap["taiexClose"]
-    if fx_val is not None:
-        hist[-1]["usdTwd"] = fx_val
-    hist[-1]["date"] = SHORT_DATE_STR
+    if twd_idx_val is not None:
+        hist[-1]["twdIndex"] = twd_idx_val
     snap["history10d"] = hist
 
     existing_margin = snap.get("margin") if isinstance(snap.get("margin"), dict) else {}
     snap["margin"] = fetch_twse_margin(existing_margin)
 
-    default_map = {item["code"]: item for item in DEFAULT_WIN_ITEMS}
     win_items = snap.get("win")
     if not isinstance(win_items, list) or len(win_items) == 0:
         win_items = [dict(item) for item in DEFAULT_WIN_ITEMS]
-    else:
-        merged_win = []
-        for w in win_items:
-            base = dict(default_map.get(w.get("code"), {}))
-            base.update({
-                k: v for k, v in w.items()
-                if k not in {"annualVol", "annualDrift", "horizonDays", "targetPct"}
-            })
-            merged_win.append(base)
-        win_items = merged_win
-
     salt = int(NOW.strftime("%Y%m%d"))
     snap["win"] = [compute_win_stats(w, seed_salt=salt) for w in win_items]
-    snap["winMeta"] = f"排程同步：{TIME_STR}｜現在買進、持有 20 個交易日勝率"
-    snap["tradeDate"] = TODAY_STR
+    snap["winMeta"] = f"排程同步時間：{TIME_STR}｜22 日模擬勝率與 P10~P90 區間"
     snap["updated"] = TIME_STR
 
     new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
