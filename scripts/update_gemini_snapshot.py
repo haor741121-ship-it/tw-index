@@ -40,3 +40,50 @@ def fetch_taiex_close() -> tuple[float | None, float | None]:
                 if close_val is not None and prev_val is not None:
                     return float(close_val), float(prev_val)
         return None, None
+    except Exception as exc:
+        print(f"[WARN] 無法取得加權指數報價，保留原快照數值: {exc}")
+        return None, None
+
+
+def replace_snapshot_json(html: str, script_id: str, data: dict) -> str:
+    pattern = rf'(<script\s+id="{re.escape(script_id)}"[^>]*>)(.*?)(</script>)'
+    pretty = "\n  " + json.dumps(data, ensure_ascii=False, indent=2).replace("\n", "\n  ") + "\n  "
+    updated_html, count = re.subn(pattern, rf"\g<1>{pretty}\g<3>", html, count=1, flags=re.S)
+    if count == 0:
+        raise RuntimeError(f"找不到 #{script_id} 區塊")
+    return updated_html
+
+
+def main() -> None:
+    skip, msg = should_skip(NOW)
+    if skip:
+        print(msg)
+        return
+
+    with open(TARGET_HTML, "r", encoding="utf-8") as f:
+        html = f.read()
+
+    match = re.search(rf'<script\s+id="{SNAPSHOT_ID}"[^>]*>(.*?)</script>', html, re.S)
+    if not match:
+        raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
+
+    snap = json.loads(match.group(1))
+    close_val, prev_val = fetch_taiex_close()
+
+    if close_val is not None and prev_val is not None:
+        snap["taiexClose"] = close_val
+        snap["taiexPrev"] = prev_val
+    else:
+        print("[INFO] 保留既有 taiexClose 與 taiexPrev")
+
+    snap["updated"] = TIME_STR
+
+    new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
+    with open(TARGET_HTML, "w", encoding="utf-8") as f:
+        f.write(new_html)
+
+    print(f"已更新 {TARGET_HTML}（#{SNAPSHOT_ID}）於 {TIME_STR}")
+
+
+if __name__ == "__main__":
+    main()
