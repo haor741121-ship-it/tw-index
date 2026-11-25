@@ -19,18 +19,18 @@ HOLIDAYS = {
     "2027-01-01",
 }
 
-DEFAULT_history10d": [
-      { "date": "11/12", "taiex": null, "usdTwd": 32.94, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/13", "taiex": null, "usdTwd": 32.88, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/16", "taiex": 41040.08, "usdTwd": 32.96, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/17", "taiex": 40092.11, "usdTwd": 32.91, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/18", "taiex": 40194.91, "usdTwd": 32.93, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/19", "taiex": 38426.89, "usdTwd": 33.03, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/20", "taiex": 36033.29, "usdTwd": 32.95, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/23", "taiex": 36811.89, "usdTwd": 32.85, "marginBal": 4338.08, "marginChg": -14.20, "shortBal": 172957, "shortChg": -26834, "maintenanceRatio": 148.46, "foreign": null, "trust": null, "dealer": null, "instTotal": null },
-      { "date": "11/24", "taiex": 40122.35, "usdTwd": 32.94, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": null, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11 },
-      { "date": "11/25", "taiex": 38195.43, "usdTwd": 33.13, "marginBal": null, "marginChg": null, "shortBal": null, "shortChg": null, "maintenanceRatio": null, "foreign": null, "trust": null, "dealer": null, "instTotal": null }
-    ],
+DEFAULT_HISTORY_10D = [
+    {"date": "11/12", "taiex": None, "usdTwd": 32.94, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/13", "taiex": None, "usdTwd": 32.88, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/16", "taiex": 41040.08, "usdTwd": 32.96, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.50, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/17", "taiex": 40092.11, "usdTwd": 32.91, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/18", "taiex": 40194.91, "usdTwd": 32.93, "marginBal": 5080.27, "marginChg": -6.95, "shortBal": 193544, "shortChg": -14415, "maintenanceRatio": 156.22, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/19", "taiex": 38426.89, "usdTwd": 33.03, "marginBal": 4843.68, "marginChg": -236.58, "shortBal": 209819, "shortChg": 16275, "maintenanceRatio": 147.90, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/20", "taiex": 36033.29, "usdTwd": 32.95, "marginBal": 4352.27, "marginChg": -491.41, "shortBal": 199791, "shortChg": -10028, "maintenanceRatio": 140.40, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/23", "taiex": 36811.89, "usdTwd": 32.85, "marginBal": 4338.08, "marginChg": -14.20, "shortBal": 172957, "shortChg": -26834, "maintenanceRatio": 148.46, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+    {"date": "11/24", "taiex": 40122.35, "usdTwd": 32.94, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": None, "foreign": -503.90, "trust": 84.04, "dealer": -826.12, "instTotal": -1230.11},
+    {"date": "11/25", "taiex": 38195.43, "usdTwd": 33.13, "marginBal": None, "marginChg": None, "shortBal": None, "shortChg": None, "maintenanceRatio": None, "foreign": None, "trust": None, "dealer": None, "instTotal": None},
+]
 
 DEFAULT_NEWS = {
     "bullish": [
@@ -122,6 +122,90 @@ def fetch_usd_twd() -> float | None:
         return None
 
 
+def _parse_twse_num(raw) -> float | None:
+    if raw is None:
+        return None
+    s = str(raw).replace(",", "").strip()
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
+def fetch_twse_inst_for_date(date_obj: datetime) -> dict | None:
+    """從證交所 BFI82U 抓取單日三大法人買賣超（換算為億元）"""
+    day_str = date_obj.strftime("%Y%m%d")
+    url = f"https://www.twse.com.tw/rwd/zh/fund/BFI82U?dayDate={day_str}&response=json"
+    try:
+        resp = requests.get(url, timeout=10, headers={"User-Agent": "Mozilla/5.0"})
+        resp.raise_for_status()
+        payload = resp.json()
+        if payload.get("stat") != "OK":
+            return None
+
+        foreign = 0.0
+        trust = 0.0
+        dealer = 0.0
+        total = None
+
+        for row in payload.get("data", []):
+            if len(row) < 4:
+                continue
+            name = str(row[0])
+            diff = _parse_twse_num(row[3])
+            if diff is None:
+                continue
+            diff_yi = diff / 1e8  # 元 -> 億元
+
+            if "合計" in name:
+                total = diff_yi
+            elif "外資" in name:
+                foreign += diff_yi
+            elif "投信" in name:
+                trust += diff_yi
+            elif "自營商" in name:
+                dealer += diff_yi
+
+        if total is None:
+            total = foreign + trust + dealer
+
+        return {
+            "foreign": round(foreign, 2),
+            "trust": round(trust, 2),
+            "dealer": round(dealer, 2),
+            "instTotal": round(total, 2),
+        }
+    except Exception as exc:
+        print(f"[WARN] 無法取得 {day_str} 三大法人資料: {exc}")
+        return None
+
+
+def fill_inst_10d(hist: list[dict]) -> list[dict]:
+    """往回掃描近 18 天日曆日，把對應日期的三大法人買賣超補進 history10d"""
+    target_dates = {item.get("date") for item in hist if item.get("date")}
+    inst_map: dict[str, dict] = {}
+
+    for offset in range(18):
+        d = NOW - timedelta(days=offset)
+        if d.weekday() >= 5:
+            continue
+        short_d = d.strftime("%m/%d")
+        if short_d not in target_dates or short_d in inst_map:
+            continue
+        res = fetch_twse_inst_for_date(d)
+        if res is not None:
+            inst_map[short_d] = res
+
+    updated = []
+    for item in hist:
+        row = dict(item)
+        d_key = row.get("date")
+        if d_key in inst_map:
+            row.update(inst_map[d_key])
+        updated.append(row)
+    return updated
+
+
 def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
     updated_item = dict(item)
     vol = float(updated_item.get("annualVol") or 0.24)
@@ -200,6 +284,7 @@ def main() -> None:
     if fx_val is not None:
         hist[-1]["usdTwd"] = fx_val
     hist[-1]["date"] = SHORT_DATE_STR
+    hist = fill_inst_10d(hist)
     snap["history10d"] = hist
 
     if not isinstance(snap.get("news"), dict):
