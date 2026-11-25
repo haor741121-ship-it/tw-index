@@ -401,6 +401,13 @@ async def scenario(p, mode):
         if US.get('night'):
             nt = await pg.inner_text('#usNight')
             check(tag + '美股卡：顯示台指期夜盤', '夜盤' in nt and len(nt) > 6, nt[:30])
+        un = await pg.evaluate("()=>{ var e=document.getElementById('usNote'); return [e.hidden, e.textContent]; }")
+        if US.get('note'):
+            check(tag + '美股卡：顯示休市／交易提醒', un[0] is False and US['note'] in un[1], str(un))
+        else:
+            check(tag + '美股卡：無提醒時隱藏提醒列', un[0] is True, str(un))
+        un2 = await pg.evaluate("()=>{ window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}]}); var a=document.getElementById('usNote').hidden; window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}],note:'測試<b>'}); var e=document.getElementById('usNote'); return [a,e.hidden,e.textContent,e.innerHTML.indexOf('<b>')<0]; }")
+        check(tag + '美股卡：提醒列可切換且跳脫文字', un2[0] is True and un2[1] is False and '測試<b>' in un2[2] and un2[3], str(un2))
         uh = await pg.evaluate("()=>{ window.__twUS(null); var a=document.getElementById('usBox').hidden; window.__twUS({asof:'x'}); var b=document.getElementById('usBox').hidden; window.__twUS(%s); return [a,b,document.getElementById('usBox').hidden]; }" % json.dumps(US, ensure_ascii=False))
         check(tag + '美股卡：缺欄位時隱藏、恢復後顯示', uh == [True, True, False], str(uh))
     for href in ('#outlook', '#win', '#idx', '#trend', '#chips', '#ana', '#src', '#install', '#iter'):
