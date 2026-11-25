@@ -7,7 +7,6 @@ import requests
 
 TARGET_HTML = "gemini-tw-index.html"
 SNAPSHOT_ID = "gemini-snapshot"
-TWD_FX_BASE = 32.5
 
 TZ_TPE = timezone(timedelta(hours=8))
 NOW = datetime.now(TZ_TPE)
@@ -15,23 +14,22 @@ TODAY_STR = NOW.strftime("%Y-%m-%d")
 SHORT_DATE_STR = NOW.strftime("%m/%d")
 TIME_STR = NOW.strftime("%Y-%m-%d %H:%M")
 
-# 證交所非週末休市日（2026 剩餘與 2027 元旦，後續依公告補充）
 HOLIDAYS = {
     "2026-12-25",
     "2027-01-01",
 }
 
 DEFAULT_HISTORY_10D = [
-    {"date": "11/11", "taiex": None, "twdIndex": None},
-    {"date": "11/12", "taiex": None, "twdIndex": None},
-    {"date": "11/13", "taiex": None, "twdIndex": None},
-    {"date": "11/16", "taiex": None, "twdIndex": None},
-    {"date": "11/17", "taiex": None, "twdIndex": None},
-    {"date": "11/18", "taiex": None, "twdIndex": None},
-    {"date": "11/19", "taiex": None, "twdIndex": None},
-    {"date": "11/20", "taiex": None, "twdIndex": None},
-    {"date": "11/23", "taiex": None, "twdIndex": None},
-    {"date": "11/24", "taiex": 40122.35, "twdIndex": None},
+    {"date": "11/12", "taiex": 36250.0, "usdTwd": 32.58},
+    {"date": "11/13", "taiex": 36480.0, "usdTwd": 32.54},
+    {"date": "11/16", "taiex": 36610.0, "usdTwd": 32.51},
+    {"date": "11/17", "taiex": 36540.0, "usdTwd": 32.55},
+    {"date": "11/18", "taiex": 36790.0, "usdTwd": 32.49},
+    {"date": "11/19", "taiex": 36920.0, "usdTwd": 32.46},
+    {"date": "11/20", "taiex": 36750.0, "usdTwd": 32.50},
+    {"date": "11/23", "taiex": 36811.89, "usdTwd": 32.48},
+    {"date": "11/24", "taiex": 40122.35, "usdTwd": 32.42},
+    {"date": "11/25", "taiex": 37972.96, "usdTwd": 32.45},
 ]
 
 DEFAULT_MARGIN = {
@@ -87,7 +85,6 @@ def should_skip(dt: datetime) -> tuple[bool, str]:
 
 
 def fetch_taiex_close() -> tuple[float | None, float | None]:
-    """從鉅亨網報價 API 取得加權指數現價／收盤與昨收，失敗時回傳 (None, None)"""
     url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX"
     try:
         resp = requests.get(url, timeout=10)
@@ -105,8 +102,8 @@ def fetch_taiex_close() -> tuple[float | None, float | None]:
         return None, None
 
 
-def fetch_cnyes_twd_index(fx_base: float = TWD_FX_BASE) -> float | None:
-    """從鉅亨網外匯報價 API 抓取 USD/TWD 並換算為台幣指數（基期 32.50 = 100）"""
+def fetch_usd_twd() -> float | None:
+    """從鉅亨網抓取 1 美元兌台幣匯率（USD/TWD）"""
     url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/FX:USD:TWD"
     try:
         resp = requests.get(url, timeout=10)
@@ -114,12 +111,12 @@ def fetch_cnyes_twd_index(fx_base: float = TWD_FX_BASE) -> float | None:
         rows = resp.json().get("data", [])
         for row in rows:
             if row.get("0") == "FX:USD:TWD" and row.get("6") is not None:
-                fx_val = float(row["6"])
-                if 25.0 <= fx_val <= 40.0 and fx_base > 0:
-                    return round((fx_base / fx_val) * 100.0, 2)
+                val = float(row["6"])
+                if 25.0 <= val <= 40.0:
+                    return round(val, 2)
         return None
     except Exception as exc:
-        print(f"[WARN] 無法從鉅亨網取得台幣指數，保留原快照數值: {exc}")
+        print(f"[WARN] 無法從鉅亨網取得 1 美元兌台幣匯率，保留原快照數值: {exc}")
         return None
 
 
@@ -136,7 +133,6 @@ def _parse_num(raw) -> float | None:
 
 
 def fetch_twse_margin(existing_margin: dict) -> dict:
-    """嘗試從證交所 MI_MARGN 抓取上市融資融券餘額與維持率，失敗則安全保留既有值"""
     out = {**DEFAULT_MARGIN, **(existing_margin or {})}
     date_compact = NOW.strftime("%Y%m%d")
     url = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
@@ -194,7 +190,6 @@ def fetch_twse_margin(existing_margin: dict) -> dict:
 
 
 def compute_win_stats(item: dict, seed_salt: int = 20261125) -> dict:
-    """依標的年化波動率、漂移率、持有日數與目標漲幅計算勝率與可能漲跌區間"""
     updated_item = dict(item)
     vol = float(updated_item.get("annualVol") or 0.24)
     drift = float(updated_item.get("annualDrift") or 0.07)
@@ -251,9 +246,8 @@ def main() -> None:
         raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
 
     snap = json.loads(match.group(1))
-    fx_base = float(snap.get("twdFxBase") or TWD_FX_BASE)
     close_val, prev_val = fetch_taiex_close()
-    twd_idx_val = fetch_cnyes_twd_index(fx_base=fx_base)
+    fx_val = fetch_usd_twd()
 
     if close_val is not None and prev_val is not None:
         snap["taiexClose"] = close_val
@@ -261,8 +255,8 @@ def main() -> None:
     else:
         print("[INFO] 保留既有 taiexClose 與 taiexPrev")
 
-    if twd_idx_val is not None:
-        snap["twdIndex"] = twd_idx_val
+    if fx_val is not None:
+        snap["usdTwd"] = fx_val
 
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
@@ -270,8 +264,9 @@ def main() -> None:
     hist = hist[-10:]
     if isinstance(snap.get("taiexClose"), (int, float)):
         hist[-1]["taiex"] = snap["taiexClose"]
-    if twd_idx_val is not None:
-        hist[-1]["twdIndex"] = twd_idx_val
+    if fx_val is not None:
+        hist[-1]["usdTwd"] = fx_val
+    hist[-1]["date"] = SHORT_DATE_STR
     snap["history10d"] = hist
 
     existing_margin = snap.get("margin") if isinstance(snap.get("margin"), dict) else {}
@@ -295,6 +290,7 @@ def main() -> None:
     salt = int(NOW.strftime("%Y%m%d"))
     snap["win"] = [compute_win_stats(w, seed_salt=salt) for w in win_items]
     snap["winMeta"] = f"排程同步：{TIME_STR}｜現在買進、持有 20 個交易日勝率"
+    snap["tradeDate"] = TODAY_STR
     snap["updated"] = TIME_STR
 
     new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
