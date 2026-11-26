@@ -273,7 +273,8 @@ def fetch_taifex_foreign_fut_net(date_obj: datetime) -> int | None:
             if net_val is not None:
                 return int(round(net_val))
         return None
-    except Exception:
+    except Exception as exc:
+        print(f"[WARN] 查詢期交所 {y_str}/{m_str}/{d_str} 外資期貨淨口數失敗: {exc}")
         return None
 
 
@@ -396,7 +397,8 @@ def main() -> None:
         hist[-1]["taiex"] = snap["taiexClose"]
     if fx_val is not None:
         hist[-1]["usdTwd"] = fx_val
-    hist[-1]["date"] = SHORT_DATE_STR
+    if close_val is not None or fx_val is not None:
+        hist[-1]["date"] = SHORT_DATE_STR
     hist = fill_inst_10d(hist)
     snap["history10d"] = hist
 
