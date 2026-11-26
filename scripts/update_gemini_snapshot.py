@@ -140,6 +140,43 @@ def fetch_usd_twd() -> float | None:
         return None
 
 
+def fetch_wantgoo_maintenance_10d() -> dict[str, float]:
+    """從玩股網大盤融資維持率頁面抓取每日維持率（%）"""
+    urls = [
+        "https://www.wantgoo.com/stock/tw/margin-maintenance",
+        "https://www.wantgoo.com/stock/margin",
+    ]
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept-Language": "zh-TW,zh;q=0.9,en;q=0.8",
+        "Referer": "https://www.wantgoo.com/",
+    }
+    result: dict[str, float] = {}
+    for url in urls:
+        try:
+            resp = requests.get(url, timeout=12, headers=headers)
+            resp.raise_for_status()
+            text = re.sub(r"<[^>]+>", " ", resp.text)
+            text = re.sub(r"\s+", " ", text)
+
+            # 匹配如 2026/11/26 ... 156.42% 或 11/26 ... 156.42%
+            for m in re.finditer(r"(?:\d{4}/)?(\d{1,2})/(\d{1,2})\b([^0-9]{0,80}?)(\d{2,3}\.\d{1,2})\s*%", text):
+                mm, dd = m.group(1), m.group(2)
+                short_d = f"{int(mm):02d}/{int(dd):02d}"
+                val = _parse_num(m.group(4))
+                if val is not None and 80.0 <= val <= 260.0 and short_d not in result:
+                    result[short_d] = round(val, 2)
+
+            if result:
+                print(f"[INFO] 玩股網成功取得 {len(result)} 天融資維持率")
+                return result
+        except Exception as exc:
+            print(f"[WARN] 玩股網 {url} 抓取失敗: {exc}")
+
+    print("[WARN] 玩股網未取得維持率，缺漏日將保留 None（顯示 —）")
+    return {}
+
+
 def fetch_finmind_margin_10d() -> dict[str, dict]:
     """從 FinMind 抓取近 20 天大盤融資融券餘額與增減（主力來源）"""
     start_str = (NOW - timedelta(days=20)).strftime("%Y-%m-%d")
@@ -192,32 +229,27 @@ def fetch_finmind_margin_10d() -> dict[str, dict]:
         return {}
 
 
-def fetch_twse_margin_and_ratio(date_obj: datetime, need_ratio: bool = True) -> dict | None:
-    """從證交所 MI_MARGN + MI_INDEX 抓取單日資券餘額，並以官方公式自算大盤融資維持率"""
+def fetch_twse_margin_for_date(date_obj: datetime) -> dict | None:
+    """從證交所 MI_MARGN 抓取單日上市融資融券餘額與增減（備援來源）"""
     date_compact = date_obj.strftime("%Y%m%d")
+    url = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
     headers = {
         "User-Agent": "Mozilla/5.0",
         "Referer": "https://www.twse.com.tw/zh/marginTrading/MI_MARGN.html",
     }
-    url_margn = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
     try:
-        resp = requests.get(url_margn, timeout=12, headers=headers)
+        resp = requests.get(url, timeout=12, headers=headers)
         resp.raise_for_status()
         payload = resp.json()
         if payload.get("stat") != "OK":
             return None
 
         out: dict = {}
-        total_margin_loan_ntd: float | None = None
-        stock_margin_lots: dict[str, float] = {}
-
         for tbl in payload.get("tables", []):
             fields = [str(x) for x in tbl.get("fields", [])]
             rows = tbl.get("data", [])
             if not fields or not rows:
                 continue
-
-            # 1) 信用交易統計摘要表（抓融資金額與融券張數）
             if any("項目" in f for f in fields) and any("今日餘額" in f for f in fields):
                 for r in rows:
                     if len(r) < 6:
@@ -228,7 +260,6 @@ def fetch_twse_margin_and_ratio(date_obj: datetime, need_ratio: bool = True) -> 
                     if curr_v is None:
                         continue
                     if "融資金額" in label:
-                        total_margin_loan_ntd = curr_v * 1000.0
                         curr_yi = round(curr_v / 100000.0, 2)
                         out["marginBal"] = curr_yi
                         if prev_v is not None:
@@ -238,105 +269,73 @@ def fetch_twse_margin_and_ratio(date_obj: datetime, need_ratio: bool = True) -> 
                         if prev_v is not None:
                             out["shortChg"] = int(round(curr_v - prev_v))
 
-            # 2) 個股融資融券明細表（供自算融資維持率）
-            if need_ratio and any("股票代號" in f for f in fields) and len(fields) >= 7:
-                for r in rows:
-                    if len(r) < 7:
-                        continue
-                    code = str(r[0]).strip()
-                    lots = _parse_num(r[6])
-                    if code and lots is not None and lots > 0:
-                        stock_margin_lots[code] = lots
-
-        # 3) 搭配 MI_INDEX 收盤價自算大盤融資維持率
-        if need_ratio and total_margin_loan_ntd and total_margin_loan_ntd > 0 and stock_margin_lots:
-            time.sleep(0.8)
-            url_idx = f"https://www.twse.com.tw/rwd/zh/afterTrading/MI_INDEX?date={date_compact}&type=ALLBUT0999&response=json"
-            resp_idx = requests.get(url_idx, timeout=15, headers=headers)
-            resp_idx.raise_for_status()
-            idx_payload = resp_idx.json()
-            if idx_payload.get("stat") == "OK":
-                close_prices: dict[str, float] = {}
-                for tbl in idx_payload.get("tables", []):
-                    flds = [str(x) for x in tbl.get("fields", [])]
-                    if "證券代號" in flds and "收盤價" in flds:
-                        c_idx = flds.index("證券代號")
-                        p_idx = flds.index("收盤價")
-                        for r in tbl.get("data", []):
-                            if len(r) <= max(c_idx, p_idx):
-                                continue
-                            code = str(r[c_idx]).strip()
-                            price = _parse_num(r[p_idx])
-                            if code and price is not None and price > 0:
-                                close_prices[code] = price
-
-                total_collateral = 0.0
-                for code, lots in stock_margin_lots.items():
-                    px = close_prices.get(code)
-                    if px is not None:
-                        total_collateral += lots * 1000.0 * px
-
-                if total_collateral > 0:
-                    ratio = round((total_collateral / total_margin_loan_ntd) * 100.0, 2)
-                    if 50.0 <= ratio <= 300.0:
-                        out["maintenanceRatio"] = ratio
-                        print(f"[INFO] 證交所 {date_compact} 自算融資維持率成功: {ratio}%")
-
         return out if out else None
     except Exception as exc:
-        print(f"[WARN] 證交所 {date_compact} 資券／維持率抓取失敗: {exc}")
+        print(f"[WARN] 證交所 {date_compact} 融資融券抓取失敗: {exc}")
         return None
 
 
-def fill_margin_and_ratio_10d(hist: list[dict]) -> list[dict]:
-    """補齊 history10d 缺少的融資融券（FinMind 主力＋證交所備援）與融資維持率（證交所自算）"""
-    need_margin_dates = {
+def fill_margin_10d(hist: list[dict]) -> list[dict]:
+    """優先用 FinMind 補齊融資融券，仍有缺漏日再由證交所 MI_MARGN 備援"""
+    target_dates = {
         item.get("date")
         for item in hist
         if item.get("date")
         and (item.get("marginBal") is None or item.get("shortBal") is None)
     }
-    need_ratio_dates = {
-        item.get("date")
-        for item in hist
-        if item.get("date") and item.get("maintenanceRatio") is None
-    }
-
-    if not need_margin_dates and not need_ratio_dates:
+    if not target_dates:
         return hist
 
-    data_map: dict[str, dict] = {}
-    if need_margin_dates:
-        data_map = fetch_finmind_margin_10d()
+    margin_map = fetch_finmind_margin_10d()
+    missing_dates = {
+        d for d in target_dates
+        if d not in margin_map
+        or margin_map[d].get("marginBal") is None
+        or margin_map[d].get("shortBal") is None
+    }
 
-    twse_targets = set(need_ratio_dates)
-    for d_key in need_margin_dates:
-        slot = data_map.get(d_key, {})
-        if slot.get("marginBal") is None or slot.get("shortBal") is None:
-            twse_targets.add(d_key)
-
-    if twse_targets:
+    if missing_dates:
         for offset in range(18):
             d = NOW - timedelta(days=offset)
             if d.weekday() >= 5:
                 continue
             short_d = d.strftime("%m/%d")
-            if short_d not in twse_targets:
+            if short_d not in missing_dates:
                 continue
-            res = fetch_twse_margin_and_ratio(d, need_ratio=(short_d in need_ratio_dates))
-            if res:
-                data_map.setdefault(short_d, {}).update(res)
-            time.sleep(1.0)
+            res = fetch_twse_margin_for_date(d)
+            if res is not None:
+                margin_map.setdefault(short_d, {}).update(res)
+            time.sleep(0.8)
 
     updated = []
     for item in hist:
         row = dict(item)
         d_key = row.get("date")
-        if d_key in data_map:
-            for k in ("marginBal", "marginChg", "shortBal", "shortChg", "maintenanceRatio"):
-                val = data_map[d_key].get(k)
+        if d_key in margin_map:
+            for k in ("marginBal", "marginChg", "shortBal", "shortChg"):
+                val = margin_map[d_key].get(k)
                 if row.get(k) is None and val is not None:
                     row[k] = val
+        updated.append(row)
+    return updated
+
+
+def fill_maintenance_10d(hist: list[dict]) -> list[dict]:
+    """補齊 history10d 中缺少的融資維持率"""
+    has_missing = any(item.get("maintenanceRatio") is None for item in hist)
+    if not has_missing:
+        return hist
+
+    ratio_map = fetch_wantgoo_maintenance_10d()
+    if not ratio_map:
+        return hist
+
+    updated = []
+    for item in hist:
+        row = dict(item)
+        d_key = row.get("date")
+        if row.get("maintenanceRatio") is None and d_key in ratio_map:
+            row["maintenanceRatio"] = ratio_map[d_key]
         updated.append(row)
     return updated
 
@@ -632,7 +631,8 @@ def main() -> None:
 
     hist = hist[-10:]
     hist = fill_inst_10d(hist)
-    hist = fill_margin_and_ratio_10d(hist)
+    hist = fill_margin_10d(hist)
+    hist = fill_maintenance_10d(hist)
     snap["history10d"] = hist
 
     latest_fut = None
