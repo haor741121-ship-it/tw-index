@@ -492,16 +492,31 @@ def main() -> None:
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
         hist = [dict(item) for item in DEFAULT_HISTORY_10D]
+
+    if not pre_mkt and (close_val is not None or fx_val is not None):
+        if hist[-1].get("date") != SHORT_DATE_STR:
+            hist.append({
+                "date": SHORT_DATE_STR,
+                "taiex": close_val,
+                "usdTwd": fx_val,
+                "marginBal": None,
+                "marginChg": None,
+                "shortBal": None,
+                "shortChg": None,
+                "maintenanceRatio": None,
+                "foreign": None,
+                "trust": None,
+                "dealer": None,
+                "instTotal": None,
+                "foreignFutNet": None,
+            })
+        else:
+            if close_val is not None:
+                hist[-1]["taiex"] = close_val
+            if fx_val is not None:
+                hist[-1]["usdTwd"] = fx_val
+
     hist = hist[-10:]
-
-    if not pre_mkt:
-        if isinstance(snap.get("taiexClose"), (int, float)) and close_val is not None:
-            hist[-1]["taiex"] = snap["taiexClose"]
-        if fx_val is not None:
-            hist[-1]["usdTwd"] = fx_val
-        if close_val is not None or fx_val is not None:
-            hist[-1]["date"] = SHORT_DATE_STR
-
     hist = fill_inst_10d(hist)
     hist = fill_margin_10d(hist)
     snap["history10d"] = hist
