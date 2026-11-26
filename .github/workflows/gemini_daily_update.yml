@@ -2,7 +2,9 @@ name: Gemini TW Index Daily Snapshot
 
 on:
   schedule:
-    # 台北時間 07:30 = UTC 23:30（週日至週四對應台北週一至週五開盤前）
+    # 台北時間 20:30 = UTC 12:30（週一至週五盤後：新增當日收盤、法人、融資融券）
+    - cron: '30 12 * * 1-5'
+    # 台北時間 07:30 = UTC 23:30（週日至週四對應台北週一至週五盤前：補抓遺漏值）
     - cron: '30 23 * * 0-4'
   workflow_dispatch:
 
@@ -32,12 +34,13 @@ jobs:
       - name: Commit and push gemini-tw-index.html
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if ! git diff --quiet gemini-tw-index.html; then
             TS=$(TZ=Asia/Taipei date +"%Y-%m-%d %H:%M")
             git add gemini-tw-index.html
             git commit -m "gemini-tw-index 快照更新 ${TS}"
-            git push
+            git pull --rebase --autostash origin main
+            git push origin main
           else
             echo "休市或無變更，略過推送"
           fi
