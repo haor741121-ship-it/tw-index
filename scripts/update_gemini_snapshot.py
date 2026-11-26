@@ -88,6 +88,23 @@ def should_skip(dt: datetime) -> tuple[bool, str]:
     return False, ""
 
 
+def is_pre_market(dt: datetime) -> bool:
+    """台股開盤前（09:00 前）視為尚未開始當日交易，避免誤把前一日資料標成當日"""
+    return dt.hour < 9
+
+
+def _parse_num(raw) -> float | None:
+    if raw is None:
+        return None
+    s = str(raw).replace(",", "").replace("%", "").replace("億", "").replace("張", "").strip()
+    if not s or s in {"-", "--", "N/A", "None"}:
+        return None
+    try:
+        return float(s)
+    except ValueError:
+        return None
+
+
 def fetch_taiex_close() -> tuple[float | None, float | None]:
     url = "https://ws.api.cnyes.com/ws/api/v1/quote/quotes/TWS:TSE01:INDEX"
     try:
@@ -123,14 +140,91 @@ def fetch_usd_twd() -> float | None:
         return None
 
 
-def _parse_twse_num(raw) -> float | None:
-    if raw is None:
-        return None
-    s = str(raw).replace(",", "").strip()
+def fetch_twse_margin_for_date(date_obj: datetime) -> dict | None:
+    """從證交所 MI_MARGN 抓取單日上市融資融券餘額與增減"""
+    date_compact = date_obj.strftime("%Y%m%d")
+    url = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
+    headers = {
+        "User-Agent": "Mozilla/5.0",
+        "Referer": "https://www.twse.com.tw/zh/marginTrading/MI_MARGN.html",
+    }
     try:
-        return float(s)
-    except ValueError:
+        resp = requests.get(url, timeout=10, headers=headers)
+        resp.raise_for_status()
+        payload = resp.json()
+        if payload.get("stat") != "OK":
+            return None
+
+        out: dict = {}
+        for tbl in payload.get("tables", []):
+            fields = tbl.get("fields", [])
+            rows = tbl.get("data", [])
+            if not fields or not rows:
+                continue
+            joined_fields = "".join(str(x) for x in fields)
+            if "融資" in joined_fields and "融券" in joined_fields and len(rows) >= 2:
+                row_amt = rows[0]
+                row_sh = rows[1]
+                if len(row_amt) >= 6:
+                    prev_amt = _parse_num(row_amt[4])
+                    curr_amt = _parse_num(row_amt[5])
+                    if curr_amt is not None:
+                        curr_yi = round(curr_amt / 100000.0, 2)
+                        out["marginBal"] = curr_yi
+                        if prev_amt is not None:
+                            prev_yi = prev_amt / 100000.0
+                            out["marginChg"] = round(curr_yi - prev_yi, 2)
+                if len(row_sh) >= 6:
+                    prev_sh = _parse_num(row_sh[4])
+                    curr_sh = _parse_num(row_sh[5])
+                    if curr_sh is not None:
+                        curr_int = int(round(curr_sh))
+                        out["shortBal"] = curr_int
+                        if prev_sh is not None:
+                            out["shortChg"] = int(round(curr_sh - prev_sh))
+
+        if any(k in out for k in ("marginBal", "shortBal")):
+            return out
         return None
+    except Exception as exc:
+        print(f"[WARN] 無法取得 {date_compact} 融資融券資料: {exc}")
+        return None
+
+
+def fill_margin_10d(hist: list[dict]) -> list[dict]:
+    """補齊 history10d 中缺少融資融券數值的交易日（抓不到則維持既有值／None）"""
+    target_dates = {
+        item.get("date")
+        for item in hist
+        if item.get("date")
+        and (item.get("marginBal") is None or item.get("shortBal") is None)
+    }
+    if not target_dates:
+        return hist
+
+    margin_map: dict[str, dict] = {}
+    for offset in range(18):
+        d = NOW - timedelta(days=offset)
+        if d.weekday() >= 5:
+            continue
+        short_d = d.strftime("%m/%d")
+        if short_d not in target_dates or short_d in margin_map:
+            continue
+        res = fetch_twse_margin_for_date(d)
+        if res is not None:
+            margin_map[short_d] = res
+        time.sleep(0.8)
+
+    updated = []
+    for item in hist:
+        row = dict(item)
+        d_key = row.get("date")
+        if d_key in margin_map:
+            for k, v in margin_map[d_key].items():
+                if row.get(k) is None:
+                    row[k] = v
+        updated.append(row)
+    return updated
 
 
 def fetch_finmind_inst_10d() -> dict[str, dict]:
@@ -215,7 +309,7 @@ def fetch_twse_inst_for_date(date_obj: datetime) -> dict | None:
             if len(row) < 4:
                 continue
             name = str(row[0])
-            diff = _parse_twse_num(row[3])
+            diff = _parse_num(row[3])
             if diff is None:
                 continue
             diff_yi = diff / 1e8
@@ -269,7 +363,7 @@ def fetch_taifex_foreign_fut_net(date_obj: datetime) -> int | None:
             text,
         )
         if m:
-            net_val = _parse_twse_num(m.group(6))
+            net_val = _parse_num(m.group(6))
             if net_val is not None:
                 return int(round(net_val))
         return None
@@ -377,29 +471,39 @@ def main() -> None:
         raise RuntimeError(f"{TARGET_HTML} 缺少 #{SNAPSHOT_ID}")
 
     snap = json.loads(match.group(1))
+    pre_mkt = is_pre_market(NOW)
+
     close_val, prev_val = fetch_taiex_close()
     fx_val = fetch_usd_twd()
 
-    if close_val is not None and prev_val is not None:
-        snap["taiexClose"] = close_val
-        snap["taiexPrev"] = prev_val
-    else:
-        print("[INFO] 保留既有 taiexClose 與 taiexPrev")
+    if not pre_mkt:
+        if close_val is not None and prev_val is not None:
+            snap["taiexClose"] = close_val
+            snap["taiexPrev"] = prev_val
+        else:
+            print("[INFO] 保留既有 taiexClose 與 taiexPrev")
 
-    if fx_val is not None:
-        snap["usdTwd"] = fx_val
+        if fx_val is not None:
+            snap["usdTwd"] = fx_val
+        snap["tradeDate"] = TODAY_STR
+    else:
+        print(f"[INFO] 盤前時段（{TIME_STR}），保留既有基準日與收盤數值，不覆蓋 {snap.get('tradeDate')}")
 
     hist = snap.get("history10d")
     if not isinstance(hist, list) or len(hist) == 0:
         hist = [dict(item) for item in DEFAULT_HISTORY_10D]
     hist = hist[-10:]
-    if isinstance(snap.get("taiexClose"), (int, float)):
-        hist[-1]["taiex"] = snap["taiexClose"]
-    if fx_val is not None:
-        hist[-1]["usdTwd"] = fx_val
-    if close_val is not None or fx_val is not None:
-        hist[-1]["date"] = SHORT_DATE_STR
+
+    if not pre_mkt:
+        if isinstance(snap.get("taiexClose"), (int, float)) and close_val is not None:
+            hist[-1]["taiex"] = snap["taiexClose"]
+        if fx_val is not None:
+            hist[-1]["usdTwd"] = fx_val
+        if close_val is not None or fx_val is not None:
+            hist[-1]["date"] = SHORT_DATE_STR
+
     hist = fill_inst_10d(hist)
+    hist = fill_margin_10d(hist)
     snap["history10d"] = hist
 
     latest_fut = None
@@ -434,7 +538,6 @@ def main() -> None:
     salt = int(NOW.strftime("%Y%m%d"))
     snap["win"] = [compute_win_stats(w, seed_salt=salt) for w in win_items]
     snap["winMeta"] = f"排程同步：{TIME_STR}｜現在買進、持有 20 個交易日勝率"
-    snap["tradeDate"] = TODAY_STR
     snap["updated"] = TIME_STR
 
     new_html = replace_snapshot_json(html, SNAPSHOT_ID, snap)
