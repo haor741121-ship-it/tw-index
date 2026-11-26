@@ -405,8 +405,13 @@ async def scenario(p, mode):
         if US.get('note'):
             check(tag + '美股卡：顯示休市／交易提醒', un[0] is False and US['note'] in un[1], str(un))
         else:
-            check(tag + '美股卡：無提醒時隱藏提醒列', un[0] is True, str(un))
-        un2 = await pg.evaluate("()=>{ window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}]}); var a=document.getElementById('usNote').hidden; window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}],note:'測試<b>'}); var e=document.getElementById('usNote'); return [a,e.hidden,e.textContent,e.innerHTML.indexOf('<b>')<0]; }")
+            auto = await pg.evaluate("()=>window.__twUSHol((function(){var p=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Taipei'}).format(new Date());return p;})())")
+            check(tag + '美股卡：無提醒時隱藏提醒列（遇美股休市日則自動標示）', un[0] is (not auto), str(un) + '｜' + auto)
+        hol = await pg.evaluate("()=>[window.__twUSHol('2026-11-27'), window.__twUSHol('2026-11-26'), window.__twUSHol('2027-03-29'), window.__twUSHol('2026-11-30'), window.__twUSHol('')]")
+        check(tag + '美股卡：美股休市日自動判斷（感恩節隔天標示、週一回看週五）', '11/26' in hol[0] and '感恩節' in hol[0] and hol[1] == '' and '3/26' in hol[2] and hol[3] == '' and hol[4] == '', str(hol))
+        un3 = await pg.evaluate("()=>{ window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}]}, '2026-11-27'); var e=document.getElementById('usNote'); var a=[e.hidden,e.textContent]; window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}],note:'美股 11/26 感恩節休市'}, '2026-11-27'); a.push(e.textContent); return a; }")
+        check(tag + '美股卡：休市日無提醒時自動補標、已有提醒時不重複', un3[0] is False and '自動判斷' in un3[1] and '自動判斷' not in un3[2], str(un3))
+        un2 = await pg.evaluate("()=>{ window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}]}, '2026-11-25'); var a=document.getElementById('usNote').hidden; window.__twUS({asof:'x',items:[{k:'道瓊',v:1,d:1}],note:'測試<b>'}, '2026-11-25'); var e=document.getElementById('usNote'); return [a,e.hidden,e.textContent,e.innerHTML.indexOf('<b>')<0]; }")
         check(tag + '美股卡：提醒列可切換且跳脫文字', un2[0] is True and un2[1] is False and '測試<b>' in un2[2] and un2[3], str(un2))
         uh = await pg.evaluate("()=>{ window.__twUS(null); var a=document.getElementById('usBox').hidden; window.__twUS({asof:'x'}); var b=document.getElementById('usBox').hidden; window.__twUS(%s); return [a,b,document.getElementById('usBox').hidden]; }" % json.dumps(US, ensure_ascii=False))
         check(tag + '美股卡：缺欄位時隱藏、恢復後顯示', uh == [True, True, False], str(uh))
