@@ -140,6 +140,45 @@ def fetch_usd_twd() -> float | None:
         return None
 
 
+def fetch_kgi_maintenance_10d() -> dict[str, dict]:
+    """從凱基證券大盤動態表抓取免費融資融券與融資維持率"""
+    url = "https://www.kgi.com.tw/zh-tw/product-market/stock-market-overview/tw-stock-market/tw-stock-market-detail?a=B658010E71E243C4A1D6B5F7BE914BDC&b=5D48401A7CE148CD8ABAC965F9B5AFBF"
+    headers = {"User-Agent": "Mozilla/5.0"}
+    try:
+        resp = requests.get(url, timeout=15, headers=headers)
+        resp.raise_for_status()
+        text = re.sub(r"<[^>]+>", " ", resp.text)
+        text = re.sub(r"\s+", " ", text)
+        # 抓取格式：11/25 -193.67 4,341.38 -17,248 169,365 151.61
+        pattern = re.compile(
+            r"\b(\d{1,2}/\d{1,2})\s+([+-]?[\d,.]+)\s+([\d,.]+)\s+([+-]?[\d,]+)\s+([\d,]+)\s+([\d.]+)\b"
+        )
+        result: dict[str, dict] = {}
+        for m in pattern.finditer(text):
+            mm, dd = m.group(1).split("/")
+            short_d = f"{int(mm):02d}/{int(dd):02d}"
+            if short_d in result:
+                continue
+            m_chg = _parse_num(m.group(2))
+            m_bal = _parse_num(m.group(3))
+            s_chg = _parse_num(m.group(4))
+            s_bal = _parse_num(m.group(5))
+            ratio = _parse_num(m.group(6))
+            if ratio is not None and 50.0 <= ratio <= 300.0:
+                result[short_d] = {
+                    "marginChg": round(m_chg, 2) if m_chg is not None else None,
+                    "marginBal": round(m_bal, 2) if m_bal is not None else None,
+                    "shortChg": int(round(s_chg)) if s_chg is not None else None,
+                    "shortBal": int(round(s_bal)) if s_bal is not None else None,
+                    "maintenanceRatio": round(ratio, 2),
+                }
+        print(f"[INFO] 凱基證券成功取得 {len(result)} 天資券與維持率資料")
+        return result
+    except Exception as exc:
+        print(f"[WARN] 凱基證券抓取失敗: {exc}")
+        return {}
+
+
 def fetch_finmind_margin_10d() -> dict[str, dict]:
     """從 FinMind 抓取近 20 天大盤融資融券餘額與增減（主力來源）"""
     start_str = (NOW - timedelta(days=20)).strftime("%Y-%m-%d")
@@ -174,7 +213,6 @@ def fetch_finmind_margin_10d() -> dict[str, dict]:
                 result[short_d] = {}
 
             if name == "MarginPurchaseMoney":
-                # 自動相容 FinMind 單位（若數值 > 1e10 為元，否則為千元）
                 div = 1e8 if curr > 1e10 else 1e5
                 curr_yi = round(curr / div, 2)
                 result[short_d]["marginBal"] = curr_yi
@@ -244,8 +282,8 @@ def fetch_twse_margin_for_date(date_obj: datetime) -> dict | None:
         return None
 
 
-def fill_margin_10d(hist: list[dict]) -> list[dict]:
-    """優先用 FinMind 補齊融資融券，仍有缺漏日再由證交所 MI_MARGN 備援"""
+def fill_margin_10d(hist: list[dict], kgi_map: dict[str, dict]) -> list[dict]:
+    """優先用 FinMind，再由凱基證券與證交所 MI_MARGN 備援補齊融資融券"""
     target_dates = {
         item.get("date")
         for item in hist
@@ -256,6 +294,13 @@ def fill_margin_10d(hist: list[dict]) -> list[dict]:
         return hist
 
     margin_map = fetch_finmind_margin_10d()
+
+    for d_key in target_dates:
+        if d_key in kgi_map:
+            slot = margin_map.setdefault(d_key, {})
+            for k in ("marginBal", "marginChg", "shortBal", "shortChg"):
+                if slot.get(k) is None and kgi_map[d_key].get(k) is not None:
+                    slot[k] = kgi_map[d_key][k]
 
     missing_dates = {
         d for d in target_dates
@@ -282,15 +327,16 @@ def fill_margin_10d(hist: list[dict]) -> list[dict]:
         row = dict(item)
         d_key = row.get("date")
         if d_key in margin_map:
-            for k, v in margin_map[d_key].items():
-                if row.get(k) is None and v is not None:
-                    row[k] = v
+            for k in ("marginBal", "marginChg", "shortBal", "shortChg"):
+                val = margin_map[d_key].get(k)
+                if row.get(k) is None and val is not None:
+                    row[k] = val
         updated.append(row)
     return updated
 
 
 def fetch_finmind_maintenance_10d() -> dict[str, float]:
-    """從 FinMind 抓取近 20 天台灣大盤融資維持率"""
+    """從 FinMind 抓取台灣大盤融資維持率（備援）"""
     start_str = (NOW - timedelta(days=20)).strftime("%Y-%m-%d")
     end_str = NOW.strftime("%Y-%m-%d")
     url = "https://api.finmindtrade.com/api/v4/data"
@@ -304,7 +350,6 @@ def fetch_finmind_maintenance_10d() -> dict[str, float]:
         resp.raise_for_status()
         rows = resp.json().get("data", [])
         if not rows:
-            print("[WARN] FinMind 融資維持率回傳空資料")
             return {}
 
         result: dict[str, float] = {}
@@ -325,23 +370,32 @@ def fetch_finmind_maintenance_10d() -> dict[str, float]:
                         break
             if val is not None:
                 result[short_d] = round(val, 2)
-
-        print(f"[INFO] FinMind 成功取得 {len(result)} 天融資維持率資料")
         return result
     except Exception as exc:
-        print(f"[WARN] FinMind 融資維持率抓取失敗: {exc}")
+        print(f"[WARN] FinMind 融資維持率備援抓取失敗: {exc}")
         return {}
 
 
-def fill_maintenance_10d(hist: list[dict]) -> list[dict]:
-    """補齊 history10d 中缺少的融資維持率"""
+def fill_maintenance_10d(hist: list[dict], kgi_map: dict[str, dict]) -> list[dict]:
+    """優先用凱基證券補齊融資維持率，仍有缺漏再嘗試 FinMind"""
     has_missing = any(item.get("maintenanceRatio") is None for item in hist)
     if not has_missing:
         return hist
 
-    ratio_map = fetch_finmind_maintenance_10d()
-    if not ratio_map:
-        return hist
+    ratio_map: dict[str, float] = {}
+    for d_key, vals in kgi_map.items():
+        if vals.get("maintenanceRatio") is not None:
+            ratio_map[d_key] = vals["maintenanceRatio"]
+
+    still_missing = any(
+        item.get("maintenanceRatio") is None and item.get("date") not in ratio_map
+        for item in hist
+    )
+    if still_missing:
+        fm_map = fetch_finmind_maintenance_10d()
+        for d_key, val in fm_map.items():
+            if d_key not in ratio_map:
+                ratio_map[d_key] = val
 
     updated = []
     for item in hist:
@@ -644,8 +698,17 @@ def main() -> None:
 
     hist = hist[-10:]
     hist = fill_inst_10d(hist)
-    hist = fill_margin_10d(hist)
-    hist = fill_maintenance_10d(hist)
+
+    need_kgi = any(
+        item.get("maintenanceRatio") is None
+        or item.get("marginBal") is None
+        or item.get("shortBal") is None
+        for item in hist
+    )
+    kgi_map = fetch_kgi_maintenance_10d() if need_kgi else {}
+
+    hist = fill_margin_10d(hist, kgi_map)
+    hist = fill_maintenance_10d(hist, kgi_map)
     snap["history10d"] = hist
 
     latest_fut = None
