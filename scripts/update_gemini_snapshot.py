@@ -21,7 +21,6 @@ HOLIDAYS = {
 }
 
 DEFAULT_HISTORY_10D = [
-    {"date": "11/12", "taiex": 43091.87, "usdTwd": 32.94, "marginBal": 5334.75, "marginChg": -76.83, "shortBal": 210522, "shortChg": 1503, "maintenanceRatio": 167.22, "foreign": -6.85, "trust": 125.68, "dealer": -65.41, "instTotal": 53.42, "foreignFutNet": -99573},
     {"date": "11/13", "taiex": 43675.12, "usdTwd": 32.88, "marginBal": 5365.99, "marginChg": 31.24, "shortBal": 208773, "shortChg": -1749, "maintenanceRatio": 170.67, "foreign": 288.37, "trust": 95.39, "dealer": 68.92, "instTotal": 452.68, "foreignFutNet": -100870},
     {"date": "11/16", "taiex": 41040.08, "usdTwd": 32.96, "marginBal": 5244.98, "marginChg": -121.01, "shortBal": 217384, "shortChg": 8611, "maintenanceRatio": 158.5, "foreign": -701.89, "trust": -183.02, "dealer": -259.03, "instTotal": -1143.94, "foreignFutNet": -96787},
     {"date": "11/17", "taiex": 40092.11, "usdTwd": 32.91, "marginBal": 5087.21, "marginChg": -157.77, "shortBal": 207959, "shortChg": -9425, "maintenanceRatio": 153.71, "foreign": -380.94, "trust": -38.21, "dealer": -156.96, "instTotal": -576.11, "foreignFutNet": -97896},
@@ -31,6 +30,7 @@ DEFAULT_HISTORY_10D = [
     {"date": "11/23", "taiex": 36811.89, "usdTwd": 32.85, "marginBal": 4338.08, "marginChg": -14.2, "shortBal": 172957, "shortChg": -26834, "maintenanceRatio": 148.46, "foreign": -289.48, "trust": -41.55, "dealer": -190.01, "instTotal": -521.04, "foreignFutNet": None},
     {"date": "11/24", "taiex": 40122.35, "usdTwd": 32.94, "marginBal": 4535.05, "marginChg": 196.97, "shortBal": 186613, "shortChg": 13656, "maintenanceRatio": None, "foreign": -503.9, "trust": 97.63, "dealer": -810.25, "instTotal": -1216.52, "foreignFutNet": -103182},
     {"date": "11/25", "taiex": 38195.43, "usdTwd": 33.13, "marginBal": None, "marginChg": None, "shortBal": None, "shortChg": None, "maintenanceRatio": None, "foreign": -1236.55, "trust": 535.32, "dealer": -128.33, "instTotal": -829.56, "foreignFutNet": None},
+    {"date": "11/26", "taiex": 39151.81, "usdTwd": 33.13, "marginBal": None, "marginChg": None, "shortBal": None, "shortChg": None, "maintenanceRatio": None, "foreign": -491.81, "trust": 212.13, "dealer": 128.65, "instTotal": -151.03, "foreignFutNet": None},
 ]
 
 DEFAULT_NEWS = {
@@ -140,8 +140,61 @@ def fetch_usd_twd() -> float | None:
         return None
 
 
+def fetch_finmind_margin_10d() -> dict[str, dict]:
+    """從 FinMind 抓取近 20 天大盤融資融券餘額與增減（主力來源）"""
+    start_str = (NOW - timedelta(days=20)).strftime("%Y-%m-%d")
+    end_str = NOW.strftime("%Y-%m-%d")
+    url = "https://api.finmindtrade.com/api/v4/data"
+    params = {
+        "dataset": "TaiwanStockTotalMarginPurchaseShortSale",
+        "start_date": start_str,
+        "end_date": end_str,
+    }
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        rows = resp.json().get("data", [])
+        if not rows:
+            print("[WARN] FinMind 融資融券回傳空資料")
+            return {}
+
+        result: dict[str, dict] = {}
+        for r in rows:
+            d_raw = str(r.get("date", ""))
+            if len(d_raw) < 10:
+                continue
+            short_d = f"{d_raw[5:7]}/{d_raw[8:10]}"
+            name = str(r.get("name", ""))
+            curr = _parse_num(r.get("TodayBalance"))
+            prev = _parse_num(r.get("YesBalance"))
+            if curr is None:
+                continue
+
+            if short_d not in result:
+                result[short_d] = {}
+
+            if name == "MarginPurchaseMoney":
+                # 自動相容 FinMind 單位（若數值 > 1e10 為元，否則為千元）
+                div = 1e8 if curr > 1e10 else 1e5
+                curr_yi = round(curr / div, 2)
+                result[short_d]["marginBal"] = curr_yi
+                if prev is not None:
+                    result[short_d]["marginChg"] = round(curr_yi - (prev / div), 2)
+            elif name == "ShortSale":
+                curr_int = int(round(curr))
+                result[short_d]["shortBal"] = curr_int
+                if prev is not None:
+                    result[short_d]["shortChg"] = int(round(curr - prev))
+
+        print(f"[INFO] FinMind 成功取得 {len(result)} 天融資融券資料")
+        return result
+    except Exception as exc:
+        print(f"[WARN] FinMind 融資融券抓取失敗: {exc}")
+        return {}
+
+
 def fetch_twse_margin_for_date(date_obj: datetime) -> dict | None:
-    """從證交所 MI_MARGN 抓取單日上市融資融券餘額與增減"""
+    """從證交所 MI_MARGN 抓取單日上市融資融券餘額與增減（備援來源）"""
     date_compact = date_obj.strftime("%Y%m%d")
     url = f"https://www.twse.com.tw/rwd/zh/margin/MI_MARGN?date={date_compact}&selectType=ALL&response=json"
     headers = {
@@ -187,12 +240,12 @@ def fetch_twse_margin_for_date(date_obj: datetime) -> dict | None:
             return out
         return None
     except Exception as exc:
-        print(f"[WARN] 無法取得 {date_compact} 融資融券資料: {exc}")
+        print(f"[WARN] 證交所 {date_compact} 融資融券抓取失敗: {exc}")
         return None
 
 
 def fill_margin_10d(hist: list[dict]) -> list[dict]:
-    """補齊 history10d 中缺少融資融券數值的交易日（抓不到則維持既有值／None）"""
+    """優先用 FinMind 補齊融資融券，仍有缺漏日再由證交所 MI_MARGN 備援"""
     target_dates = {
         item.get("date")
         for item in hist
@@ -202,18 +255,27 @@ def fill_margin_10d(hist: list[dict]) -> list[dict]:
     if not target_dates:
         return hist
 
-    margin_map: dict[str, dict] = {}
-    for offset in range(18):
-        d = NOW - timedelta(days=offset)
-        if d.weekday() >= 5:
-            continue
-        short_d = d.strftime("%m/%d")
-        if short_d not in target_dates or short_d in margin_map:
-            continue
-        res = fetch_twse_margin_for_date(d)
-        if res is not None:
-            margin_map[short_d] = res
-        time.sleep(0.8)
+    margin_map = fetch_finmind_margin_10d()
+
+    missing_dates = {
+        d for d in target_dates
+        if d not in margin_map
+        or margin_map[d].get("marginBal") is None
+        or margin_map[d].get("shortBal") is None
+    }
+
+    if missing_dates:
+        for offset in range(18):
+            d = NOW - timedelta(days=offset)
+            if d.weekday() >= 5:
+                continue
+            short_d = d.strftime("%m/%d")
+            if short_d not in missing_dates:
+                continue
+            res = fetch_twse_margin_for_date(d)
+            if res is not None:
+                margin_map.setdefault(short_d, {}).update(res)
+            time.sleep(0.8)
 
     updated = []
     for item in hist:
@@ -221,8 +283,72 @@ def fill_margin_10d(hist: list[dict]) -> list[dict]:
         d_key = row.get("date")
         if d_key in margin_map:
             for k, v in margin_map[d_key].items():
-                if row.get(k) is None:
+                if row.get(k) is None and v is not None:
                     row[k] = v
+        updated.append(row)
+    return updated
+
+
+def fetch_finmind_maintenance_10d() -> dict[str, float]:
+    """從 FinMind 抓取近 20 天台灣大盤融資維持率"""
+    start_str = (NOW - timedelta(days=20)).strftime("%Y-%m-%d")
+    end_str = NOW.strftime("%Y-%m-%d")
+    url = "https://api.finmindtrade.com/api/v4/data"
+    params = {
+        "dataset": "TaiwanTotalExchangeMarginMaintenance",
+        "start_date": start_str,
+        "end_date": end_str,
+    }
+    try:
+        resp = requests.get(url, params=params, timeout=15)
+        resp.raise_for_status()
+        rows = resp.json().get("data", [])
+        if not rows:
+            print("[WARN] FinMind 融資維持率回傳空資料")
+            return {}
+
+        result: dict[str, float] = {}
+        for r in rows:
+            d_raw = str(r.get("date", ""))
+            if len(d_raw) < 10:
+                continue
+            short_d = f"{d_raw[5:7]}/{d_raw[8:10]}"
+
+            val = _parse_num(r.get("TotalExchangeMarginMaintenance"))
+            if val is None:
+                for k, v in r.items():
+                    if k == "date":
+                        continue
+                    cand = _parse_num(v)
+                    if cand is not None and 50.0 <= cand <= 300.0:
+                        val = cand
+                        break
+            if val is not None:
+                result[short_d] = round(val, 2)
+
+        print(f"[INFO] FinMind 成功取得 {len(result)} 天融資維持率資料")
+        return result
+    except Exception as exc:
+        print(f"[WARN] FinMind 融資維持率抓取失敗: {exc}")
+        return {}
+
+
+def fill_maintenance_10d(hist: list[dict]) -> list[dict]:
+    """補齊 history10d 中缺少的融資維持率"""
+    has_missing = any(item.get("maintenanceRatio") is None for item in hist)
+    if not has_missing:
+        return hist
+
+    ratio_map = fetch_finmind_maintenance_10d()
+    if not ratio_map:
+        return hist
+
+    updated = []
+    for item in hist:
+        row = dict(item)
+        d_key = row.get("date")
+        if row.get("maintenanceRatio") is None and d_key in ratio_map:
+            row["maintenanceRatio"] = ratio_map[d_key]
         updated.append(row)
     return updated
 
@@ -241,7 +367,7 @@ def fetch_finmind_inst_10d() -> dict[str, dict]:
         resp.raise_for_status()
         rows = resp.json().get("data", [])
         if not rows:
-            print("[WARN] FinMind 回傳空資料")
+            print("[WARN] FinMind 三大法人回傳空資料")
             return {}
 
         daily: dict[str, dict[str, float | None]] = {}
@@ -333,7 +459,7 @@ def fetch_twse_inst_for_date(date_obj: datetime) -> dict | None:
             "instTotal": round(total, 2),
         }
     except Exception as exc:
-        print(f"[WARN] 證交所 {day_str} 抓取失敗: {exc}")
+        print(f"[WARN] 證交所 {day_str} 三大法人抓取失敗: {exc}")
         return None
 
 
@@ -519,6 +645,7 @@ def main() -> None:
     hist = hist[-10:]
     hist = fill_inst_10d(hist)
     hist = fill_margin_10d(hist)
+    hist = fill_maintenance_10d(hist)
     snap["history10d"] = hist
 
     latest_fut = None
